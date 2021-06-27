@@ -166,7 +166,7 @@ class LiveTokenManager {
       }
     }
     this.polling = false
-    throw Error('Authenitcation failed, timed out')
+    throw Error('Authentication failed, timed out')
   }
 }
 
