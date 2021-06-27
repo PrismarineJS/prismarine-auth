@@ -36,7 +36,7 @@ doAuth()
 ```
 
 ### Expected Response
-```json
+```php
 {
     "userXUID": "2584878536129841", // May be null
     "userHash": "3218841136841218711",
@@ -48,7 +48,7 @@ doAuth()
 ### Parameters
 - options {Object?}
     - username {string} - Required for authentication.
-    - [password] {string} - Optional, if provided we will attempt password authentication first.
+    - [password] {string} - If passed we will do password based authentication.
     - cacheDirectory {string} - Where we will store your tokens until you attempt to login next time.
     - onMsaCode {Function} - 
     - authTitle {string} - Used in authenticating with Switch or Bedrock accounts. See https://github.com/PrismarineJS/xboxlive-auth/src/Constants.js
