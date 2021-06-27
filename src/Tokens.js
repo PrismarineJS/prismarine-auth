@@ -68,7 +68,7 @@ class LiveTokenManager {
     }
 
     const token = await fetch(Authentication.LiveTokenRequest, codeRequest).then(checkStatus)
-    this.updateCachce(token)
+    this.updateCache(token)
     return token
   }
 
@@ -88,7 +88,7 @@ class LiveTokenManager {
     return { valid, until: until, token: token.refresh_token }
   }
 
-  updateCachce (data) {
+  updateCache (data) {
     data.obtainedOn = Date.now()
     this.cache.token = data
     fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
@@ -158,7 +158,7 @@ class LiveTokenManager {
             }
           })
         if (!token) continue
-        this.updateCachce(token)
+        this.updateCache(token)
         this.polling = false
         return { accessToken: token.access_token }
       } catch (e) {
