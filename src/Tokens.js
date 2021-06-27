@@ -15,14 +15,14 @@ const UUID = require('uuid-1345')
 const nextUUID = () => UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: Date.now().toString() })
 
 class LiveTokenManager {
-  constructor (clientId, scopes, cacheLocation) {
+  constructor(clientId, scopes, cacheLocation) {
     this.clientId = clientId
     this.scopes = scopes
     this.cacheLocation = cacheLocation
     this.reloadCache()
   }
 
-  reloadCache () {
+  reloadCache() {
     try {
       this.cache = require(this.cacheLocation)
     } catch (e) {
@@ -31,7 +31,7 @@ class LiveTokenManager {
     }
   }
 
-  async verifyTokens () {
+  async verifyTokens() {
     if (this.forceRefresh) try { await this.refreshTokens() } catch { }
     const at = this.getAccessToken()
     const rt = this.getRefreshToken()
@@ -52,7 +52,7 @@ class LiveTokenManager {
     }
   }
 
-  async refreshTokens () {
+  async refreshTokens() {
     const rtoken = this.getRefreshToken()
     if (!rtoken) {
       throw new Error('Cannot refresh without refresh token')
@@ -72,7 +72,7 @@ class LiveTokenManager {
     return token
   }
 
-  getAccessToken () {
+  getAccessToken() {
     const token = this.cache.token
     if (!token) return
     const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
@@ -80,7 +80,7 @@ class LiveTokenManager {
     return { valid, until: until, token: token.access_token }
   }
 
-  getRefreshToken () {
+  getRefreshToken() {
     const token = this.cache.token
     if (!token) return
     const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
@@ -88,13 +88,13 @@ class LiveTokenManager {
     return { valid, until: until, token: token.refresh_token }
   }
 
-  updateCache (data) {
+  updateCache(data) {
     data.obtainedOn = Date.now()
     this.cache.token = data
     fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
   }
 
-  async authDeviceCode (deviceCodeCallback) {
+  async authDeviceCode(deviceCodeCallback) {
     const acquireTime = Date.now()
     const codeRequest = {
       method: 'post',
@@ -172,7 +172,7 @@ class LiveTokenManager {
 
 // Manages Microsoft account tokens
 class MsaTokenManager {
-  constructor (msalConfig, scopes, cacheLocation) {
+  constructor(msalConfig, scopes, cacheLocation) {
     this.msaClientId = msalConfig.auth.clientId
     this.scopes = scopes
     this.cacheLocation = cacheLocation || path.join(__dirname, './msa-cache.json')
@@ -201,7 +201,7 @@ class MsaTokenManager {
     this.msalConfig = msalConfig
   }
 
-  reloadCache () {
+  reloadCache() {
     try {
       this.msaCache = require(this.cacheLocation)
     } catch (e) {
@@ -210,7 +210,7 @@ class MsaTokenManager {
     }
   }
 
-  getUsers () {
+  getUsers() {
     const accounts = this.msaCache.Account
     const users = []
     if (!accounts) return users
@@ -220,7 +220,7 @@ class MsaTokenManager {
     return users
   }
 
-  getAccessToken () {
+  getAccessToken() {
     const tokens = this.msaCache.AccessToken
     if (!tokens) return
     const account = Object.values(tokens).filter(t => t.client_id === this.msaClientId)[0]
@@ -233,7 +233,7 @@ class MsaTokenManager {
     return { valid, until: until, token: account.secret }
   }
 
-  getRefreshToken () {
+  getRefreshToken() {
     const tokens = this.msaCache.RefreshToken
     if (!tokens) return
     const account = Object.values(tokens).filter(t => t.client_id === this.msaClientId)[0]
@@ -244,7 +244,7 @@ class MsaTokenManager {
     return { token: account.secret }
   }
 
-  async refreshTokens () {
+  async refreshTokens() {
     const rtoken = this.getRefreshToken()
     if (!rtoken) {
       throw new Error('Cannot refresh without refresh token')
@@ -266,7 +266,7 @@ class MsaTokenManager {
     })
   }
 
-  async verifyTokens () {
+  async verifyTokens() {
     if (this.forceRefresh) try { await this.refreshTokens() } catch { }
     const at = this.getAccessToken()
     const rt = this.getRefreshToken()
@@ -288,7 +288,8 @@ class MsaTokenManager {
   }
 
   // Authenticate with device_code flow
-  async authDeviceCode (dataCallback) {
+  async authDeviceCode(dataCallback) {
+
     const deviceCodeRequest = {
       deviceCodeCallback: (resp) => {
         debug('[msa] device_code response: ', resp)
@@ -313,7 +314,7 @@ class MsaTokenManager {
 
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {
-  constructor (relyingParty, ecKey, cacheLocation) {
+  constructor(relyingParty, ecKey, cacheLocation) {
     this.relyingParty = relyingParty
     this.key = ecKey
     jose.fromKeyLike(ecKey.publicKey).then(jwk => {
@@ -329,7 +330,7 @@ class XboxTokenManager {
     this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
   }
 
-  getCachedUserToken () {
+  getCachedUserToken() {
     const token = this.cache.userToken
     if (!token) return
     const until = new Date(token.NotAfter)
@@ -339,7 +340,7 @@ class XboxTokenManager {
     return { valid, token: token.Token, data: token }
   }
 
-  getCachedXstsToken () {
+  getCachedXstsToken() {
     const token = this.cache.xstsToken
     if (!token) return
     const until = new Date(token.expiresOn)
@@ -349,17 +350,17 @@ class XboxTokenManager {
     return { valid, token: token.XSTSToken, data: token }
   }
 
-  setCachedUserToken (data) {
+  setCachedUserToken(data) {
     this.cache.userToken = data
     fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
   }
 
-  setCachedXstsToken (data) {
+  setCachedXstsToken(data) {
     this.cache.xstsToken = data
     fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
   }
 
-  async verifyTokens () {
+  async verifyTokens() {
     const ut = this.getCachedUserToken()
     const xt = this.getCachedXstsToken()
     if (!ut || !xt || this.forceRefresh) {
@@ -379,7 +380,7 @@ class XboxTokenManager {
     return false
   }
 
-  async getUserToken (msaAccessToken, azure) {
+  async getUserToken(msaAccessToken, azure) {
     debug('[xbl] obtaining xbox token with ms token', msaAccessToken)
     msaAccessToken = (azure ? 'd=' : 't=') + msaAccessToken
     const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(msaAccessToken)
@@ -389,7 +390,7 @@ class XboxTokenManager {
   }
 
   // Make signature for the data being sent to server with our private key; server is sent our public key in plaintext
-  sign (url, authorizationToken, payload) {
+  sign(url, authorizationToken, payload) {
     // Their backend servers use Windows epoch timestamps, account for that. The server is very picky,
     // bad percision or wrong epoch may fail the request.
     const windowsTimestamp = (BigInt((Date.now() / 1000) | 0) + 11644473600n) * 10000000n
@@ -419,10 +420,34 @@ class XboxTokenManager {
     return header.toBuffer()
   }
 
+  async doReplayAuth(email, password) {
+    try {
+      // This is literally copied from https://github.com/XboxReplay/xboxlive-auth/blob/master/src/index.ts#L70
+      // Just so I can get the User Token needed for caching.
+      // No clue if this works right now. - Kashall
+
+      // Holy cow its working. If the auth fails, it goes straight to deviceCode
+      const preAuthResponse = await XboxLiveAuth.preAuth();
+      const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password });
+      const exchangeRpsTicketForUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(
+        logUserResponse.access_token
+      );
+      this.setCachedUserToken(exchangeRpsTicketForUserToken)
+      
+      const xsts = await XboxLiveAuth.exchangeUserTokenForXSTSIdentity(exchangeRpsTicketForUserToken.Token,
+        { XSTSRelyingParty: 'rp://api.minecraftservices.com/', raw: false })
+      this.setCachedXstsToken(xsts);
+      return xsts;
+    } catch (error) {
+      console.log(`[XboxLive-Auth] Authentication using a password has failed.\n${error}`);
+      return false;
+    }
+  }
   // If we don't need Xbox Title Authentication, we can have xboxreplay lib
   // handle the auth, otherwise we need to build the request ourselves with
   // the extra token data.
-  async getXSTSToken (xblUserToken, deviceToken, titleToken) {
+  async getXSTSToken(xblUserToken, deviceToken, titleToken) {
+    console.log(xblUserToken)
     if (deviceToken && titleToken) return this.getXSTSTokenWithTitle(xblUserToken, deviceToken, titleToken)
 
     debug('[xbl] obtaining xsts token with xbox user token (with XboxReplay)', xblUserToken.Token)
@@ -432,7 +457,7 @@ class XboxTokenManager {
     return xsts
   }
 
-  async getXSTSTokenWithTitle (xblUserToken, deviceToken, titleToken, optionalDisplayClaims) {
+  async getXSTSTokenWithTitle(xblUserToken, deviceToken, titleToken, optionalDisplayClaims) {
     const userToken = xblUserToken.Token
     debug('[xbl] obtaining xsts token with xbox user token', userToken)
 
@@ -471,7 +496,7 @@ class XboxTokenManager {
      * Requests an Xbox Live-related device token that uniquely links the XToken (aka xsts token)
      * @param {{ DeviceType, Version }} asDevice The hardware type and version to auth as, for example Android or Nintendo
      */
-  async getDeviceToken (asDevice) {
+  async getDeviceToken(asDevice) {
     const payload = {
       Properties: {
         AuthMethod: 'ProofOfPossession',
@@ -495,7 +520,7 @@ class XboxTokenManager {
   }
 
   // This *only* works with live.com auth
-  async getTitleToken (msaAccessToken, deviceToken) {
+  async getTitleToken(msaAccessToken, deviceToken) {
     const payload = {
       Properties: {
         AuthMethod: 'RPS',
@@ -518,7 +543,7 @@ class XboxTokenManager {
   }
 }
 
-function checkStatus (res) {
+function checkStatus(res) {
   if (res.ok) { // res.status >= 200 && res.status < 300
     return res.json()
   } else {
