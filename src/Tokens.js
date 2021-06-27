@@ -427,8 +427,9 @@ class XboxTokenManager {
       const xsts = await this.getXSTSToken(exchangeRpsTicketForUserToken)
       return xsts
     } catch (error) {
-      console.log(`[XboxLive-Auth] Authentication using a password has failed.\n${error}`)
-      return false
+      console.log('[XboxLive-Auth] Authentication using a password has failed.')
+      console.log(error)
+      throw error
     }
   }
 
