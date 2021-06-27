@@ -17,19 +17,19 @@ async function authenticatePassword(client, options) {
 * then connects to the specified server in Client Options
 *
 * @function
-* @param {object} client - The client passed to protocol
 * @param {object} options - Client Options
+* @param {string} options.username The email of the Minecraft User.Error
+* @param {string} options.cacheDirectory The directory where you would like to store your tokens for later use.
+* @param {Function} options.onMsaCode The call back function for when we recieve your microsoft auth code.
+* @param {string} options.authTitle Whether we should be authenticating for the Nintendo Switch, or Bedrock Windows 10
 */
-async function authenticateDeviceCode(client, options) {
+async function authenticateDeviceCode(options) {
     try {
-        const flow = new MsAuthFlow(options.username, options.profilesFolder, options, options.onMsaCode)
-
-        const chain = await flow.getMinecraftToken(client.clientX509)
-        // console.log('Chain', chain)
-        await postAuthenticate(client, options, chain)
+        const flow = new MsAuthFlow(options.username, options.cacheDirectory, options, options.onMsaCode)
+        const chain = await flow.getMinecraftToken(options.clientX509)
+        return chain;
     } catch (err) {
-        console.error(err)
-        client.emit('error', err)
+        throw err;
     }
 }
 
