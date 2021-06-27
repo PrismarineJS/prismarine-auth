@@ -7,7 +7,6 @@ if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[
 module.exports = {
   Tokens: require('./src/Tokens'),
   Authflow: require('./src/MicrosoftAuthFlow'),
-
-  Authenticate: require('./src/MicrosoftAuthentication'),
-  authenticate: require('./src/MicrosoftAuthentication')
+  authenticate: require('./src/MicrosoftAuthentication'),
+  ...require('./src/Constants') // Titles, Authenticatiom msalConfig
 }

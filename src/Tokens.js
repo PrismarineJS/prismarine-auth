@@ -77,7 +77,7 @@ class LiveTokenManager {
     if (!token) return
     const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
     const valid = until > 1000
-    return { valid, until: until, token: token.access_token }
+    return { valid, until, token: token.access_token }
   }
 
   getRefreshToken () {
@@ -85,7 +85,7 @@ class LiveTokenManager {
     if (!token) return
     const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
     const valid = until > 1000
-    return { valid, until: until, token: token.refresh_token }
+    return { valid, until, token: token.refresh_token }
   }
 
   updateCache (data) {
@@ -230,7 +230,7 @@ class MsaTokenManager {
     }
     const until = new Date(account.expires_on * 1000) - Date.now()
     const valid = until > 1000
-    return { valid, until: until, token: account.secret }
+    return { valid, until, token: account.secret }
   }
 
   getRefreshToken () {

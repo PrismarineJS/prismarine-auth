@@ -46,7 +46,6 @@ class MicrosoftAuthFlow {
       live: path.join(cache, `./${hash}_live-cache.json`),
       msa: path.join(cache, `./${hash}_msa-cache.json`),
       xbl: path.join(cache, `./${hash}_xbl-cache.json`),
-      bed: path.join(cache, `./${hash}_bed-cache.json`)
     }
 
     if (this.options.authTitle) { // Login with login.live.com

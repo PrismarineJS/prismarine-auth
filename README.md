@@ -8,7 +8,7 @@ Quickly and easily obtain an xbox token to authenticate with Minecraft/Mojang
 
 ## Installation
 ```shell
-npm install @prismarinejs/xboxlive-auth
+npm install xboxlive-auth
 ```
 
 ## Usage
@@ -16,8 +16,8 @@ npm install @prismarinejs/xboxlive-auth
 Device Code Authentication:
 ```js
 const doAuth = async() => {
-    const PrismarineXAuth = require('@prismarinejs/xboxlive-auth');
-    const XSTSToken = await PrismarineXAuth({ username: 'mineflayer@is.cool' });
+    const XAuth = require('xboxlive-auth');
+    const XSTSToken = await XAuth({ username: 'mineflayer@is.cool' });
     console.log(XSTSToken)
 }
 
@@ -27,15 +27,15 @@ doAuth()
 Password Authentication (falls back to DeviceCode):
 ```js
 const doAuth = async() => {
-    const PrismarineXAuth = require('@prismarinejs/xboxlive-auth');
-    const XSTSToken = await PrismarineXAuth({ username: 'mineflayer@is.cool', password: 'GoCheckItOut!123' });
+    const XAuth = require('xboxlive-auth');
+    const XSTSToken = await XAuth({ username: 'mineflayer@is.cool', password: 'GoCheckItOut!123' });
     console.log(XSTSToken)
 }
 
 doAuth()
 ```
 
-###Expected Response:
+### Expected Response
 ```json
 {
     "userXUID": "2584878536129841", // May be null
