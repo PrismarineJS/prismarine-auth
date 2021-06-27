@@ -1,4 +1,4 @@
-const MicrosoftAuthFlow = require('./MicrosoftAuthFlow');
+const MicrosoftAuthFlow = require('./MicrosoftAuthFlow')
 
 /**
  * Authenticates with Mincrosoft through user credentials, then
@@ -7,8 +7,8 @@ const MicrosoftAuthFlow = require('./MicrosoftAuthFlow');
  * @function
  * @param {object} options - Client Options
  */
-async function authenticatePassword(options) {
-    throw Error('Not implemented')
+async function authenticatePassword (options) {
+  throw Error('Not implemented')
 }
 
 /**
@@ -22,14 +22,10 @@ async function authenticatePassword(options) {
 * @param {Function} options.onMsaCode The call back function for when we recieve your microsoft auth code.
 * @param {string} options.authTitle Whether we should be authenticating for the Nintendo Switch, or Bedrock Windows 10
 */
-async function authenticateDeviceCode(options) {
-    try {
-        const flow = new MsAuthFlow(options.username, options.cacheDirectory, options, options.onMsaCode)
-        const chain = await flow.getMinecraftToken(options.clientX509)
-        return chain;
-    } catch (err) {
-        throw err;
-    }
+async function authenticateDeviceCode (options) {
+  const flow = new MicrosoftAuthFlow(options.username, options.cacheDirectory, options, options.onMsaCode)
+  const chain = await flow.getMinecraftToken(options.clientX509)
+  return chain
 }
 
 module.exports = { authenticateDeviceCode, authenticatePassword }
