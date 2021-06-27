@@ -9,7 +9,7 @@ const { SmartBuffer } = require('smart-buffer')
 const jose = require('jose-node-cjs-runtime/jwk/from_key_like')
 const fetch = require('node-fetch')
 
-const authConstants = require('./authConstants')
+const { Authentication } = require('./Constants')
 
 const UUID = require('uuid-1345');
 const nextUUID = () => UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: Date.now().toString() })
@@ -68,7 +68,7 @@ class LiveTokenManager {
             credentials: 'include' // This cookie handler does not work on node-fetch ...
         }
 
-        const token = await fetch(authConstants.LiveTokenRequest, codeRequest).then(checkStatus)
+        const token = await fetch(Authentication.LiveTokenRequest, codeRequest).then(checkStatus)
         this.updateCachce(token)
         return token
     }
@@ -110,7 +110,7 @@ class LiveTokenManager {
 
         const cookies = []
 
-        const res = await fetch(authConstants.LiveDeviceCodeRequest, codeRequest)
+        const res = await fetch(Authentication.LiveDeviceCodeRequest, codeRequest)
             .then(res => {
                 if (res.status !== 200) {
                     res.text().then(console.warn)
@@ -146,7 +146,7 @@ class LiveTokenManager {
                     }).toString()
                 }
 
-                const token = await fetch(authConstants.LiveTokenRequest + '?client_id=' + this.clientId, verifi)
+                const token = await fetch(Authentication.LiveTokenRequest + '?client_id=' + this.clientId, verifi)
                     .then(res => res.json()).then(res => {
                         if (res.error) {
                             if (res.error === 'authorization_pending') {
@@ -451,11 +451,11 @@ class XboxTokenManager {
         }
 
         const body = JSON.stringify(payload)
-        const signature = this.sign(authConstants.XstsAuthorize, '', body).toString('base64')
+        const signature = this.sign(Authentication.XstsAuthorize, '', body).toString('base64')
 
         const headers = { ...this.headers, Signature: signature }
 
-        const ret = await fetch(authConstants.XstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
+        const ret = await fetch(Authentication.XstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
         const xsts = {
             userXUID: ret.DisplayClaims.xui[0].xid || null,
             userHash: ret.DisplayClaims.xui[0].uhs,
@@ -488,11 +488,11 @@ class XboxTokenManager {
 
         const body = JSON.stringify(payload)
 
-        const signature = this.sign(authConstants.XboxDeviceAuth, '', body).toString('base64')
+        const signature = this.sign(Authentication.XboxDeviceAuth, '', body).toString('base64')
 
         const headers = { ...this.headers, Signature: signature }
 
-        const ret = await fetch(authConstants.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
+        const ret = await fetch(Authentication.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
         debug('Xbox Device Token', ret)
         return ret.Token
     }
@@ -511,11 +511,11 @@ class XboxTokenManager {
             TokenType: 'JWT'
         }
         const body = JSON.stringify(payload)
-        const signature = this.sign(authConstants.XboxTitleAuth, '', body).toString('base64')
+        const signature = this.sign(Authentication.XboxTitleAuth, '', body).toString('base64')
 
         const headers = { ...this.headers, Signature: signature }
 
-        const ret = await fetch(authConstants.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
+        const ret = await fetch(Authentication.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
         debug('Xbox Title Token', ret)
         return ret.Token
     }

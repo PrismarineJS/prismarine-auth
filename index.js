@@ -4,6 +4,8 @@ if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[
   process.exit(1)
 }
 
-module.exports.helloWorld = function () {
-  console.log('Hello world !')
+module.exports = {
+  Tokens: require('./src/Tokens'),
+  Authflow: require('./src/MicrosoftAuthFlow'),
+  ...require('./src/MicrosoftAuthentication')
 }
