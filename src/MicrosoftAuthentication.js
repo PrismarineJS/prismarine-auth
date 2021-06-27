@@ -5,10 +5,9 @@ const MicrosoftAuthFlow = require('./MicrosoftAuthFlow');
  * with Xbox Live, Minecraft, checks entitlements and returns profile
  *
  * @function
- * @param {object} client - The client passed to protocol
  * @param {object} options - Client Options
  */
-async function authenticatePassword(client, options) {
+async function authenticatePassword(options) {
     throw Error('Not implemented')
 }
 
