@@ -58,7 +58,6 @@ class MicrosoftAuthFlow {
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
     this.xbl = new XboxTokenManager(Authentication.XSTSRelyingParty, keyPair, cachePaths.xbl)
-    // this.mca = new MinecraftTokenManager(cachePaths.bed)
   }
 
   static resetTokenCaches (cacheDir = minecraftFolderPath) {
@@ -117,29 +116,6 @@ class MicrosoftAuthFlow {
           return xsts
         }
       }, () => { this.msa.forceRefresh = true }, 2)
-    }
-  }
-
-  async getMinecraftToken (publicKey) {
-    // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
-    // is this even a good idea to cache?
-        if (await this.mca.verifyTokens() && false) { // eslint-disable-line
-      debug('[mc] Using existing tokens')
-      return this.mca.getCachedAccessToken().chain
-    } else {
-      if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
-      debug('[mc] Need to obtain tokens')
-      return await retry(async () => {
-        const xsts = await this.getXboxToken()
-        debug('[xbl] xsts data', xsts)
-        const token = await this.mca.getAccessToken(publicKey, xsts)
-        // If we want to auth with a title ID, make sure there's a TitleID in the response
-        const body = JSON.parse(Buffer.from(token.chain[1].split('.')[1], 'base64').toString())
-        if (!body.extraData.titleId && this.options.authTitle) {
-          throw Error('missing titleId in response')
-        }
-        return token.chain
-      }, () => { this.xbl.forceRefresh = true }, 2)
     }
   }
 }
