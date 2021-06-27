@@ -1,10 +1,10 @@
-const test = require('./');
+const test = require('./')
 
-const user = { username: 'not.a.valid.email@cuz.yeah'};
+const user = { username: 'not.a.valid.email@cuz.yeah' }
 
-const init = async () => {  
-    const auth = await test.Authenticate(user)
-    console.log(auth)
+const init = async () => {
+  const auth = await test.Authenticate(user)
+  console.log(auth)
 }
 
-init();
+init()

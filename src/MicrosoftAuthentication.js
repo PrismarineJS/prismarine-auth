@@ -18,4 +18,4 @@ async function authenticate (options) {
   return token
 }
 
-module.exports = authenticate;
+module.exports = authenticate
