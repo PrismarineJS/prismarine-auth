@@ -125,7 +125,7 @@ class MicrosoftAuthFlow {
 }
 
 function sha1 (data) {
-  return crypto.createHash('sha1').update(data || '', 'binary').digest('hex')
+  return crypto.createHash('sha1').update(data ?? '', 'binary').digest('hex')
 }
 
 module.exports = MicrosoftAuthFlow
