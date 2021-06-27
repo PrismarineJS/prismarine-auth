@@ -25,7 +25,6 @@
   "homepage": "https://github.com/PrismarineJS/prismarine-template#readme",
   "devDependencies": {
     "jest": "^27.0.4",
-    "prismarine-template": "file:.",
     "standard": "^16.0.1"
   }
 }
