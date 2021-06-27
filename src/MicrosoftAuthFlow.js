@@ -103,10 +103,6 @@ class MicrosoftAuthFlow {
     } else if (this.options.password) {
       debug('[xbl] password is present, trying to authenticate using xboxreplay/xboxlive-auth')
       const xsts = await this.xbl.doReplayAuth(this.username, this.options.password)
-      if (!xsts) {
-        delete this.options.password
-        return this.getXboxToken()
-      }
       return xsts
     } else {
       debug('[xbl] Need to obtain tokens')
