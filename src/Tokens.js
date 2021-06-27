@@ -487,9 +487,7 @@ class XboxTokenManager {
         }
 
         const body = JSON.stringify(payload)
-
         const signature = this.sign(Authentication.XboxDeviceAuth, '', body).toString('base64')
-
         const headers = { ...this.headers, Signature: signature }
 
         const ret = await fetch(Authentication.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
@@ -530,4 +528,4 @@ function checkStatus(res) {
     }
 }
 
-module.exports = { LiveTokenManager, MsaTokenManager, XboxTokenManager, }
+module.exports = { LiveTokenManager, MsaTokenManager, XboxTokenManager }
