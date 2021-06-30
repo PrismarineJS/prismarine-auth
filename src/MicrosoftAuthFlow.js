@@ -5,8 +5,13 @@ const crypto = require('crypto')
 const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('xboxlive-auth')
 
-const { Authentication, msalConfig } = require('./Constants')
-const { LiveTokenManager, MsaTokenManager, XboxTokenManager } = require('./Tokens')
+const { Authentication, msalConfig } = require('./common/Constants')
+
+const LiveTokenManager = require('./TokenManagers/LiveTokenManager')
+const JavaTokenManager = require('./TokenManagers/JavaTokenManager')
+const XboxTokenManager = require('./TokenManagers/XboxTokenManager')
+const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
+const BedrockTokenManager = require('./TokenManagers/BedrockTokenManager')
 
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
@@ -45,7 +50,9 @@ class MicrosoftAuthFlow {
     const cachePaths = {
       live: path.join(cache, `./${hash}_live-cache.json`),
       msa: path.join(cache, `./${hash}_msa-cache.json`),
-      xbl: path.join(cache, `./${hash}_xbl-cache.json`)
+      xbl: path.join(cache, `./${hash}_xbl-cache.json`),
+      mca: path.join(cache, `./${hash}_mca-cache.json`),
+      mba: path.join(cache, `./${hash}_mca-cache.json`)
     }
 
     if (this.options.authTitle) { // Login with login.live.com
@@ -58,6 +65,12 @@ class MicrosoftAuthFlow {
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
     this.xbl = new XboxTokenManager(Authentication.XSTSRelyingParty, keyPair, cachePaths.xbl)
+
+    if (this.options.authTitle) { // Login with bedrock
+      this.mba = new BedrockTokenManager(keyPair, cachePaths.mba)
+    } else {
+      this.mca = new JavaTokenManager(cachePaths.mca)
+    }
   }
 
   static resetTokenCaches (cacheDir = minecraftFolderPath) {
@@ -120,6 +133,34 @@ class MicrosoftAuthFlow {
           return xsts
         }
       }, () => { this.msa.forceRefresh = true }, 2)
+    }
+  }
+
+  async getJavaToken () {
+    if (await this.mca.verifyTokens()) {
+      debug('[mc] Using existing tokens')
+      return this.mca.getCachedAccessToken().token
+    } else {
+      debug('[mc] Need to obtain tokens')
+      return await retry(async () => {
+        const xsts = await this.getXboxToken()
+        debug('[xbl] xsts data', xsts)
+        return this.mca.getAccessToken(xsts)
+      }, () => { this.xbl.forceRefresh = true }, 2)
+    }
+  }
+
+  async getBedrockToken () {
+    if (await this.mca.verifyTokens()) {
+      debug('[mc] Using existing tokens')
+      return this.mca.getCachedAccessToken().token
+    } else {
+      debug('[mc] Need to obtain tokens')
+      return await retry(async () => {
+        const xsts = await this.getXboxToken()
+        debug('[xbl] xsts data', xsts)
+        return this.mca.getAccessToken(xsts)
+      }, () => { this.xbl.forceRefresh = true }, 2)
     }
   }
 }
