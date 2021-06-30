@@ -1,7 +1,7 @@
 {
   "name": "xboxlive-auth",
-  "version": "1.0.0",
-  "description": "A template repository to make it easy to create new prismarine repo",
+  "version": "0.0.1",
+  "description": "A package to authenticate with xbox live.",
   "main": "index.js",
   "scripts": {
     "prepare": "npm install require-self && require-self",
