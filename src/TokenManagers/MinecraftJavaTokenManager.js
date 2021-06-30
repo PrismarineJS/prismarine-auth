@@ -4,17 +4,9 @@ const debug = require('debug')('xboxlive-auth')
 const fetch = require('node-fetch')
 
 const { Authentication } = require('../common/Constants')
+const { checkStatus } = require('../common/Util')
 
-function checkStatus (res) {
-  if (res.ok) { // res.status >= 200 && res.status < 300
-    return res.json()
-  } else {
-    debug('Request fail', res)
-    throw Error(res.statusText)
-  }
-}
-
-class JavaTokenManager {
+class MinecraftJavaTokenManager {
   constructor (cacheLocation) {
     this.cacheLocation = cacheLocation || path.join(__dirname, './mca-cache.json')
     try {
@@ -71,4 +63,4 @@ class JavaTokenManager {
     return MineServicesResponse.access_token
   }
 }
-module.exports = JavaTokenManager
+module.exports = MinecraftJavaTokenManager

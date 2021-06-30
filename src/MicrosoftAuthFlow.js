@@ -1,17 +1,17 @@
 const fs = require('fs')
+const assert = require('assert')
 const path = require('path')
 const crypto = require('crypto')
 
-const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('xboxlive-auth')
 
 const { Authentication, msalConfig } = require('./common/Constants')
 
 const LiveTokenManager = require('./TokenManagers/LiveTokenManager')
-const JavaTokenManager = require('./TokenManagers/JavaTokenManager')
+const JavaTokenManager = require('./TokenManagers/MinecraftJavaTokenManager')
 const XboxTokenManager = require('./TokenManagers/XboxTokenManager')
 const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
-const BedrockTokenManager = require('./TokenManagers/BedrockTokenManager')
+const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManager')
 
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
@@ -26,7 +26,10 @@ async function retry (methodFn, beforeRetry, times) {
 }
 
 class MicrosoftAuthFlow {
-  constructor (username, cacheDir = minecraftFolderPath, options = {}, codeCallback) {
+  constructor (username, cacheDir, options = {}, codeCallback) {
+    assert.ok(username, 'username is required')
+    assert.ok(cacheDir, 'cacheDirectory is required')
+
     this.username = username
     this.options = options
     this.initTokenCaches(username, cacheDir)
@@ -52,7 +55,7 @@ class MicrosoftAuthFlow {
       msa: path.join(cache, `./${hash}_msa-cache.json`),
       xbl: path.join(cache, `./${hash}_xbl-cache.json`),
       mca: path.join(cache, `./${hash}_mca-cache.json`),
-      mba: path.join(cache, `./${hash}_mca-cache.json`)
+      mba: path.join(cache, `./${hash}_mba-cache.json`)
     }
 
     if (this.options.authTitle) { // Login with login.live.com
@@ -73,7 +76,8 @@ class MicrosoftAuthFlow {
     }
   }
 
-  static resetTokenCaches (cacheDir = minecraftFolderPath) {
+  static resetTokenCaches (cacheDir) {
+    if (!cacheDir) throw new Error('You must provide a cache directory to reset.')
     const cache = path.join(cacheDir, 'npm-cache')
     try {
       if (fs.existsSync(cache)) {
@@ -136,7 +140,7 @@ class MicrosoftAuthFlow {
     }
   }
 
-  async getJavaToken () {
+  async getMinecraftJavaToken () {
     if (await this.mca.verifyTokens()) {
       debug('[mc] Using existing tokens')
       return this.mca.getCachedAccessToken().token
@@ -150,16 +154,25 @@ class MicrosoftAuthFlow {
     }
   }
 
-  async getBedrockToken () {
-    if (await this.mca.verifyTokens()) {
+  async getMinecraftBedrockToken (publicKey) {
+    // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
+    // is this even a good idea to cache?
+    if (await this.mba.verifyTokens() && false) { // eslint-disable-line
       debug('[mc] Using existing tokens')
-      return this.mca.getCachedAccessToken().token
+      return this.mba.getCachedAccessToken().chain
     } else {
+      if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
       debug('[mc] Need to obtain tokens')
       return await retry(async () => {
         const xsts = await this.getXboxToken()
         debug('[xbl] xsts data', xsts)
-        return this.mca.getAccessToken(xsts)
+        const token = await this.mba.getAccessToken(publicKey, xsts)
+        // If we want to auth with a title ID, make sure there's a TitleID in the response
+        const body = JSON.parse(Buffer.from(token.chain[1].split('.')[1], 'base64').toString())
+        if (!body.extraData.titleId && this.options.authTitle) {
+          throw Error('missing titleId in response')
+        }
+        return token.chain
       }, () => { this.xbl.forceRefresh = true }, 2)
     }
   }

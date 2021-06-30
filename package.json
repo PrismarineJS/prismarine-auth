@@ -34,7 +34,6 @@
     "@azure/msal-node": "^1.1.0",
     "@xboxreplay/xboxlive-auth": "^3.3.3",
     "jose-node-cjs-runtime": "^3.13.0",
-    "minecraft-folder-path": "^1.2.0",
     "node-fetch": "^2.6.1",
     "require-self": "^0.2.3",
     "smart-buffer": "^4.1.0",

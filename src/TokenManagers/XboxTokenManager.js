@@ -9,18 +9,10 @@ const jose = require('jose-node-cjs-runtime/jwk/from_key_like')
 const fetch = require('node-fetch')
 
 const { Authentication } = require('../common/Constants')
+const { checkStatus } = require('../common/Util')
 
 const UUID = require('uuid-1345')
 const nextUUID = () => UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: Date.now().toString() })
-
-function checkStatus (res) {
-  if (res.ok) { // res.status >= 200 && res.status < 300
-    return res.json()
-  } else {
-    debug('Request fail', res)
-    throw Error(res.statusText)
-  }
-}
 
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {

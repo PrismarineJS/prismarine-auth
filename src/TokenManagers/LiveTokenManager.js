@@ -3,15 +3,7 @@ const debug = require('debug')('xboxlive-auth')
 const fetch = require('node-fetch')
 
 const { Authentication } = require('../common/Constants')
-
-function checkStatus (res) {
-  if (res.ok) { // res.status >= 200 && res.status < 300
-    return res.json()
-  } else {
-    debug('Request fail', res)
-    throw Error(res.statusText)
-  }
-}
+const { checkStatus } = require('../common/Util')
 
 class LiveTokenManager {
   constructor (clientId, scopes, cacheLocation) {

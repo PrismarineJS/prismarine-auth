@@ -17,7 +17,7 @@ Device Code Authentication:
 ```js
 const doAuth = async() => {
     const XAuth = require('xboxlive-auth');
-    const XSTSToken = await XAuth({ username: 'mineflayer@is.cool' });
+    const XSTSToken = await XAuth.authenticate({ username: 'mineflayer@is.cool' });
     console.log(XSTSToken)
 }
 
@@ -28,7 +28,7 @@ Password Authentication (falls back to DeviceCode):
 ```js
 const doAuth = async() => {
     const XAuth = require('xboxlive-auth');
-    const XSTSToken = await XAuth({ username: 'mineflayer@is.cool', password: 'GoCheckItOut!123' });
+    const XSTSToken = await XAuth.authenticate({ username: 'mineflayer@is.cool', password: 'GoCheckItOut!123' });
     console.log(XSTSToken)
 }
 
