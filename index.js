@@ -5,8 +5,12 @@ if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[
 }
 
 module.exports = {
-  Tokens: require('./src/Tokens'),
+  BedrockTokenManager: require('./src/TokenManagers/BedrockTokenManager'),
+  JavaTokenManager: require('./src/TokenManagers/JavaTokenManager'),
+  LiveTokenManager: require('./src/TokenManagers/LiveTokenManager'),
+  MsaTokenManager: require('./src/TokenManagers/MsaTokenManager'),
+  XboxTokenManager: require('./src/TokenManagers/XboxTokenManager'),
   Authflow: require('./src/MicrosoftAuthFlow'),
   authenticate: require('./src/MicrosoftAuthentication'),
-  ...require('./src/Constants') // Titles, Authenticatiom msalConfig
+  ...require('./src/common/Constants') // Titles, Authenticatiom msalConfig
 }
