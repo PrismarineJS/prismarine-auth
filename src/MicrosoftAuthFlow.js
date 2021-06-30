@@ -68,12 +68,8 @@ class MicrosoftAuthFlow {
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
     this.xbl = new XboxTokenManager(Authentication.XSTSRelyingParty, keyPair, cachePaths.xbl)
-
-    if (this.options.authTitle) { // Login with bedrock
-      this.mba = new BedrockTokenManager(keyPair.publicKey, cachePaths.mba)
-    } else {
-      this.mca = new JavaTokenManager(cachePaths.mca)
-    }
+    this.mba = new BedrockTokenManager(keyPair.publicKey, cachePaths.mba)
+    this.mca = new JavaTokenManager(cachePaths.mca)
   }
 
   static resetTokenCaches (cacheDir) {

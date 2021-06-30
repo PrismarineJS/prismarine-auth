@@ -8,7 +8,7 @@ const XboxLiveAuth = require('../')
 
 describe('device code authentication', () => {
   it('should fail if not given any options', async () => {
-    await expect(XboxLiveAuth.authenticate({ })).to.eventually.be.rejectedWith('options.username is a required identifier')
+    await expect(XboxLiveAuth.authenticate({ })).to.eventually.be.rejected
   })
   it('should fail if not given the right options', async () => {
     await expect(XboxLiveAuth.authenticate(false)).to.eventually.be.rejected
@@ -18,6 +18,6 @@ describe('device code authentication', () => {
       if (!code) done(Error('missing user code'))
       if (code.userCode) done()
     }
-    XboxLiveAuth.authenticate({ username: 'emailIdentifier@test.prismarine', onMsaCode })
+    XboxLiveAuth.authenticate({ username: 'emailIdentifier@test.prismarine', onMsaCode, cacheDirectory: './' })
   })
 })
