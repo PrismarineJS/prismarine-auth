@@ -5,11 +5,13 @@ module.exports = {
   },
   Authentication: {
     XSTSRelyingParty: 'https://multiplayer.minecraft.net/',
-    MinecraftAuth: 'https://multiplayer.minecraft.net/authentication',
+    BedrockAuth: 'https://multiplayer.minecraft.net/authentication',
     XboxDeviceAuth: 'https://device.auth.xboxlive.com/device/authenticate',
     XboxTitleAuth: 'https://title.auth.xboxlive.com/title/authenticate',
     XstsAuthorize: 'https://xsts.auth.xboxlive.com/xsts/authorize',
-
+    MinecraftServicesLogWithXbox: 'https://api.minecraftservices.com/authentication/login_with_xbox',
+    MinecraftServicesEntitlement: 'https://api.minecraftservices.com/entitlements/mcstore',
+    MinecraftServicesProfile: 'https://api.minecraftservices.com/minecraft/profile',
     LiveDeviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
     LiveTokenRequest: 'https://login.live.com/oauth20_token.srf'
   },
