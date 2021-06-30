@@ -67,7 +67,7 @@ class MicrosoftAuthFlow {
     this.xbl = new XboxTokenManager(Authentication.XSTSRelyingParty, keyPair, cachePaths.xbl)
 
     if (this.options.authTitle) { // Login with bedrock
-      this.mba = new BedrockTokenManager(keyPair, cachePaths.mba)
+      this.mba = new BedrockTokenManager(keyPair.publicKey, cachePaths.mba)
     } else {
       this.mca = new JavaTokenManager(cachePaths.mca)
     }
