@@ -4,7 +4,7 @@ const crypto = require('crypto')
 
 const msal = require('@azure/msal-node')
 const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
-const debug = require('debug')('minecraft-protocol')
+const debug = require('debug')('xboxlive-auth')
 const { SmartBuffer } = require('smart-buffer')
 const jose = require('jose-node-cjs-runtime/jwk/from_key_like')
 const fetch = require('node-fetch')
@@ -437,7 +437,6 @@ class XboxTokenManager {
   // handle the auth, otherwise we need to build the request ourselves with
   // the extra token data.
   async getXSTSToken (xblUserToken, deviceToken, titleToken) {
-    console.log(xblUserToken)
     if (deviceToken && titleToken) return this.getXSTSTokenWithTitle(xblUserToken, deviceToken, titleToken)
 
     debug('[xbl] obtaining xsts token with xbox user token (with XboxReplay)', xblUserToken.Token)

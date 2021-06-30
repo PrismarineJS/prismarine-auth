@@ -3,7 +3,7 @@ const path = require('path')
 const crypto = require('crypto')
 
 const minecraftFolderPath = require('minecraft-folder-path')
-const debug = require('debug')('minecraft-protocol')
+const debug = require('debug')('xboxlive-auth')
 
 const { Authentication, msalConfig } = require('./Constants')
 const { LiveTokenManager, MsaTokenManager, XboxTokenManager } = require('./Tokens')
