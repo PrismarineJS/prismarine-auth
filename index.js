@@ -5,11 +5,6 @@ if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[
 }
 
 module.exports = {
-  MinecraftBedrockTokenManager: require('./src/TokenManagers/MinecraftBedrockTokenManager'),
-  MinecraftJavaTokenManager: require('./src/TokenManagers/MinecraftJavaTokenManager'),
-  LiveTokenManager: require('./src/TokenManagers/LiveTokenManager'),
-  MsaTokenManager: require('./src/TokenManagers/MsaTokenManager'),
-  XboxTokenManager: require('./src/TokenManagers/XboxTokenManager'),
   Authflow: require('./src/MicrosoftAuthFlow'),
   authenticate: require('./src/MicrosoftAuthentication'),
   ...require('./src/common/Constants') // Titles, Authenticatiom msalConfig
