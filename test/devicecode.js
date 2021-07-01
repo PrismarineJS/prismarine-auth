@@ -22,11 +22,11 @@ describe('device code authentication', () => {
       if (!code) done(Error('missing user code'))
       if (code.userCode) done()
     }
-    const flow = new Authflow('emailIdentifier@test.prismarine', './', { }, onMsaCode)
+    const flow = new Authflow('emailIdentifier@test.prismarine', './test', { }, onMsaCode)
     flow.getXboxToken()
   })
   it('should error if no certificate is present for bedrock', async () => {
-    const flow = new Authflow('testauthflow', './')
+    const flow = new Authflow('testauthflow', './test')
     await expect(flow.getMinecraftBedrockToken()).to.eventually.be.rejectedWith('Need to specifiy a ECDH x509 URL encoded public key')
   })
   it('should give us a token for bedrock', (done) => {
@@ -37,7 +37,7 @@ describe('device code authentication', () => {
 
     const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve })
     const clientX509 = keypair.toString('base64')
-    const flow = new Authflow('username', './', { }, onMsaCode)
+    const flow = new Authflow('username', './test', { }, onMsaCode)
     flow.getMinecraftBedrockToken(clientX509)
   })
 })
