@@ -7,8 +7,7 @@ const { Authentication } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class BedrockTokenManager {
-  constructor (clientPublicKey, cacheLocation) {
-    this.clientPublicKey = clientPublicKey
+  constructor (cacheLocation) {
     this.cacheLocation = cacheLocation || path.join(__dirname, './bed-cache.json')
     try {
       this.cache = require(this.cacheLocation)

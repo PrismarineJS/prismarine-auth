@@ -25,20 +25,19 @@ async function retry (methodFn, beforeRetry, times) {
 }
 
 class MicrosoftAuthFlow {
-  constructor (username, cacheDir, options = {}, codeCallback) {
+  constructor (username, cache, options = {}, codeCallback) {
     if (!username) throw new Error('username is required')
-    if (!cacheDir) throw new Error('cacheDirectory is required')
+    if (!cache) throw new Error('cacheDirectory is required')
 
     this.username = username
     this.options = options
-    this.initTokenCaches(username, cacheDir)
+    this.initTokenCaches(username, cache)
     this.codeCallback = codeCallback
   }
 
-  initTokenCaches (username, cacheDir) {
+  initTokenCaches (username, cache) {
     const hash = sha1(username).substr(0, 6)
 
-    let cache = path.join(cacheDir, 'npm-cache')
     debug(`Using cache path: ${cache}`)
     try {
       if (!fs.existsSync(cache)) {
@@ -67,13 +66,12 @@ class MicrosoftAuthFlow {
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
     this.xbl = new XboxTokenManager(Authentication.BedrockXSTSRelyingParty, keyPair, cachePaths.xbl)
-    this.mba = new BedrockTokenManager(keyPair.publicKey, cachePaths.mba)
+    this.mba = new BedrockTokenManager(cachePaths.mba)
     this.mca = new JavaTokenManager(cachePaths.mca)
   }
 
-  static resetTokenCaches (cacheDir) {
-    if (!cacheDir) throw new Error('You must provide a cache directory to reset.')
-    const cache = path.join(cacheDir, 'npm-cache')
+  static resetTokenCaches (cache) {
+    if (!cache) throw new Error('You must provide a cache directory to reset.')
     try {
       if (fs.existsSync(cache)) {
         fs.rmdirSync(cache, { recursive: true })
