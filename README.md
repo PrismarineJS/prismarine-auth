@@ -30,7 +30,7 @@ const doAuth = async() => {
 doAuth()
 ```
 
-Password Authentication (falls back to DeviceCode):
+Password Authentication:
 ```js
 /* const crypto = require('crypto')
 const curve = 'secp384r1'
