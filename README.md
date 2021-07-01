@@ -15,9 +15,15 @@ npm install xboxlive-auth
 
 Device Code Authentication:
 ```js
+/* const crypto = require('crypto')
+const curve = 'secp384r1'
+
+const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve }).toString('base64') */
 const doAuth = async() => {
-    const XAuth = require('xboxlive-auth');
-    const XSTSToken = await XAuth.authenticate({ username: 'mineflayer@is.cool', cacheDirectory: './' });
+    const { Authflow } = require('xboxlive-auth');
+    const flow = new Authflow('mineflayer@is.cool', './')
+    const XSTSToken = await flow.getMinecraftJavaToken()
+    // const XSTSToken = await flow.getMinecraftBedrockToken(keypair)
     console.log(XSTSToken)
 }
 
@@ -26,9 +32,15 @@ doAuth()
 
 Password Authentication (falls back to DeviceCode):
 ```js
+/* const crypto = require('crypto')
+const curve = 'secp384r1'
+
+const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve }).toString('base64') */
 const doAuth = async() => {
-    const XAuth = require('xboxlive-auth');
-    const XSTSToken = await XAuth.authenticate({ username: 'mineflayer@is.cool', password: 'GoCheckItOut!123', cacheDirectory: './' });
+    const { Authflow } = require('xboxlive-auth');
+    const flow = new Authflow('mineflayer@is.cool', './', { password: 'thisIsAFakePassword123'})
+    const XSTSToken = await flow.getMinecraftJavaToken()
+    // const XSTSToken = await flow.getMinecraftBedrockToken(keypair)
     console.log(XSTSToken)
 }
 
@@ -46,9 +58,11 @@ doAuth()
 ```
 
 ### Parameters
+Authflow class
+- username {String} - Username for authentication
+- cacheDirectory {String} - Where we will store your tokens
 - options {Object?}
-    - username {string} - Required for authentication.
     - [password] {string} - If passed we will do password based authentication.
     - cacheDirectory {string} - Where we will store your tokens until you attempt to login next time.
-    - onMsaCode {Function} - 
     - authTitle {string} - Used in authenticating with Switch or Bedrock accounts. See https://github.com/PrismarineJS/xboxlive-auth/src/Constants.js
+- onMsaCode {Function} - 
