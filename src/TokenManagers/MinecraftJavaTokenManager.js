@@ -52,6 +52,7 @@ class MinecraftJavaTokenManager {
         'User-Agent': 'node-minecraft-protocol'
       }
     }
+
     const MineServicesResponse = await fetch(Authentication.MinecraftServicesLogWithXbox, {
       method: 'post',
       ...getFetchOptions,

@@ -4,10 +4,11 @@ const chaiAsPromised = require('chai-as-promised')
 chai.use(chaiAsPromised)
 const { expect } = chai
 
-const XboxLiveAuth = require('../')
+const { Authflow } = require('../')
 
-describe('password authentication', () => {
+describe('password authentication', async () => {
   it('should fail if not given a valid password', async () => {
-    await expect(XboxLiveAuth.authenticate({ username: 'this.is.not@valid.email.lol', password: 'sdfasdgf', cacheDirectory: './' })).to.eventually.be.rejectedWith('Invalid credentials')
+    const flow = new Authflow('this.is.not@valid.email.lol', './', { password: 'sdfasdfas' })
+    await expect(flow.getXboxToken()).to.eventually.be.rejectedWith('Invalid credentials')
   })
 })

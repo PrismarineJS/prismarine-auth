@@ -126,7 +126,7 @@ class XboxTokenManager {
     try {
       const preAuthResponse = await XboxLiveAuth.preAuth()
       const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password })
-      const exchangeRpsTicketForUserToken = await this.getUserToken(logUserResponse.access_token, false)
+      const exchangeRpsTicketForUserToken = await this.getUserToken(logUserResponse.access_token, true)
       const xsts = await this.getXSTSToken(exchangeRpsTicketForUserToken)
       return xsts
     } catch (error) {
@@ -143,6 +143,7 @@ class XboxTokenManager {
     if (deviceToken && titleToken) return this.getXSTSTokenWithTitle(xblUserToken, deviceToken, titleToken)
 
     debug('[xbl] obtaining xsts token with xbox user token (with XboxReplay)', xblUserToken.Token)
+    debug(this.relyingParty)
     const xsts = await XboxLiveAuth.exchangeUserTokenForXSTSIdentity(xblUserToken.Token, { XSTSRelyingParty: this.relyingParty, raw: false })
     this.setCachedXstsToken(xsts)
     debug('[xbl] xsts', xsts)

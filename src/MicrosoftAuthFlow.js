@@ -1,5 +1,4 @@
 const fs = require('fs')
-const assert = require('assert')
 const path = require('path')
 const crypto = require('crypto')
 
@@ -27,8 +26,8 @@ async function retry (methodFn, beforeRetry, times) {
 
 class MicrosoftAuthFlow {
   constructor (username, cacheDir, options = {}, codeCallback) {
-    assert.ok(username, 'username is required')
-    assert.ok(cacheDir, 'cacheDirectory is required')
+    if (!username) throw new Error('username is required')
+    if (!cacheDir) throw new Error('cacheDirectory is required')
 
     this.username = username
     this.options = options
@@ -67,7 +66,7 @@ class MicrosoftAuthFlow {
     }
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
-    this.xbl = new XboxTokenManager(Authentication.XSTSRelyingParty, keyPair, cachePaths.xbl)
+    this.xbl = new XboxTokenManager(Authentication.BedrockXSTSRelyingParty, keyPair, cachePaths.xbl)
     this.mba = new BedrockTokenManager(keyPair.publicKey, cachePaths.mba)
     this.mca = new JavaTokenManager(cachePaths.mca)
   }
@@ -141,6 +140,7 @@ class MicrosoftAuthFlow {
       debug('[mc] Using existing tokens')
       return this.mca.getCachedAccessToken().token
     } else {
+      this.xbl.relyingParty = Authentication.PCXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
       return await retry(async () => {
         const xsts = await this.getXboxToken()
@@ -158,6 +158,7 @@ class MicrosoftAuthFlow {
       return this.mba.getCachedAccessToken().chain
     } else {
       if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
+      this.xbl.relyingParty = Authentication.BedrockXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
       return await retry(async () => {
         const xsts = await this.getXboxToken()

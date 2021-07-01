@@ -4,7 +4,8 @@ module.exports = {
     MinecraftJava: '00000000402b5328'
   },
   Authentication: {
-    XSTSRelyingParty: 'https://multiplayer.minecraft.net/',
+    PCXSTSRelyingParty: 'rp://api.minecraftservices.com/',
+    BedrockXSTSRelyingParty: 'https://multiplayer.minecraft.net/',
     BedrockAuth: 'https://multiplayer.minecraft.net/authentication',
     XboxDeviceAuth: 'https://device.auth.xboxlive.com/device/authenticate',
     XboxTitleAuth: 'https://title.auth.xboxlive.com/title/authenticate',
