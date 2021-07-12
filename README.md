@@ -11,36 +11,65 @@ Quickly and easily obtain an xbox token to authenticate with Minecraft/Mojang
 npm install xboxlive-auth
 ```
 
-## Usage
+## Getting A Minecraft Java Token
 
-Device Code Authentication:
+### Device Code Authentication
 ```js
-/* const crypto = require('crypto')
-const curve = 'secp384r1'
+const { Authflow } = require('xboxlive-auth');
 
-const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve }).toString('base64') */
 const doAuth = async() => {
-    const { Authflow } = require('xboxlive-auth');
     const flow = new Authflow('mineflayer@is.cool', './')
     const XSTSToken = await flow.getMinecraftJavaToken()
-    // const XSTSToken = await flow.getMinecraftBedrockToken(keypair)
     console.log(XSTSToken)
 }
 
 doAuth()
 ```
 
-Password Authentication:
+### Password-based Authentication
 ```js
-/* const crypto = require('crypto')
-const curve = 'secp384r1'
+const { Authflow } = require('xboxlive-auth');
 
-const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve }).toString('base64') */
 const doAuth = async() => {
-    const { Authflow } = require('xboxlive-auth');
     const flow = new Authflow('mineflayer@is.cool', './', { password: 'thisIsAFakePassword123'})
     const XSTSToken = await flow.getMinecraftJavaToken()
-    // const XSTSToken = await flow.getMinecraftBedrockToken(keypair)
+    console.log(XSTSToken)
+}
+
+doAuth()
+```
+
+## Getting A Minecraft Bedrock Token
+When authenticating for minecraft bedrock edition, you have to generate and send a signed certificate to the bedrock server.
+This function handles logging into Xbox Live, posting its public key to the Mojang API, and using the returned certificate signed by Mojang.
+
+### Device Code Authentication
+```js
+const { Authflow } = require('xboxlive-auth');
+const crypto = require('crypto')
+const curve = 'secp384r1'
+
+const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve }).toString('base64') 
+const doAuth = async() => {
+    const flow = new Authflow('mineflayer@is.cool', './')
+    const XSTSToken = await flow.getMinecraftBedrockToken(keypair)
+    console.log(XSTSToken)
+}
+
+doAuth()
+```
+
+### Password Authentication:
+```js
+const { Authflow } = require('xboxlive-auth');
+const crypto = require('crypto')
+const curve = 'secp384r1'
+
+const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve }).toString('base64') 
+
+const doAuth = async() => {
+    const flow = new Authflow('mineflayer@is.cool', './', { password: 'thisIsAFakePassword123'})
+    const XSTSToken = await flow.getMinecraftBedrockToken(keypair)
     console.log(XSTSToken)
 }
 
