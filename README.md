@@ -15,7 +15,7 @@ npm install xboxlive-auth
 
 ### Device Code Authentication
 ```js
-const { Authflow } = require('xboxlive-auth');
+const { Authflow } = require('@prismarinejs/xboxlive-auth');
 
 const doAuth = async() => {
     const flow = new Authflow('mineflayer@is.cool', './')
@@ -28,7 +28,7 @@ doAuth()
 
 ### Password-based Authentication
 ```js
-const { Authflow } = require('xboxlive-auth');
+const { Authflow } = require('@prismarinejs/xboxlive-auth');
 
 const doAuth = async() => {
     const flow = new Authflow('mineflayer@is.cool', './', { password: 'thisIsAFakePassword123'})
@@ -45,7 +45,7 @@ This function handles logging into Xbox Live, posting its public key to the Moja
 
 ### Device Code Authentication
 ```js
-const { Authflow } = require('xboxlive-auth');
+const { Authflow } = require('@prismarinejs/xboxlive-auth');
 const crypto = require('crypto')
 const curve = 'secp384r1'
 
@@ -61,7 +61,7 @@ doAuth()
 
 ### Password Authentication:
 ```js
-const { Authflow } = require('xboxlive-auth');
+const { Authflow } = require('@prismarinejs/xboxlive-auth');
 const crypto = require('crypto')
 const curve = 'secp384r1'
 
