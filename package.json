@@ -38,9 +38,5 @@
     "require-self": "^0.2.3",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2"
-  },
-  "contributors": [
-    "Jordan Jones <jordpjones@gmail.com>",
-    "extremeheat <extreme@protonmail.ch>"
-  ]
+  }
 }
