@@ -92,6 +92,5 @@ Authflow class
 - cacheDirectory {String} - Where we will store your tokens
 - options {Object?}
     - [password] {string} - If passed we will do password based authentication.
-    - cacheDirectory {string} - Where we will store your tokens until you attempt to login next time.
-    - authTitle {string} - Used in authenticating with Switch or Bedrock accounts. See https://github.com/PrismarineJS/xboxlive-auth/src/Constants.js
-- onMsaCode {Function} - 
+    - [authTitle] {string} - Used in authenticating with Switch or Bedrock accounts. See https://github.com/PrismarineJS/xboxlive-auth/src/Constants.js
+- onMsaCode {Function} - What we should do when we get the code. Useful for passing the code to another function.
