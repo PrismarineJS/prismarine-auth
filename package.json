@@ -1,5 +1,5 @@
 {
-  "name": "xboxlive-auth",
+  "name": "@prismarinejs/xboxlive-auth",
   "version": "0.0.1",
   "description": "A prismarine utility to authenticate with xbox live and microsoft.",
   "main": "index.js",
@@ -38,5 +38,9 @@
     "require-self": "^0.2.3",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2"
-  }
+  },
+  "contributors": [
+    "Jordan Jones <jordpjones@gmail.com>",
+    "extremeheat <extreme@protonmail.ch>"
+  ]
 }
