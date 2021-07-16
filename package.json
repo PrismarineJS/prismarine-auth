@@ -1,7 +1,7 @@
 {
   "name": "@prismarinejs/xboxlive-auth",
   "version": "0.0.1",
-  "description": "A prismarine utility to authenticate with xbox live and microsoft.",
+  "description": "A package to authenticate with xbox live and microsoft + cache tokens.",
   "main": "index.js",
   "scripts": {
     "prepare": "npm install require-self && require-self",
