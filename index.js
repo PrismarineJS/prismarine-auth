@@ -5,5 +5,6 @@ if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[
 }
 
 module.exports = {
-  Authflow: require('./src/MicrosoftAuthFlow')
+  Authflow: require('./src/MicrosoftAuthFlow'),
+  Titles: require('./src/common/Titles')
 }

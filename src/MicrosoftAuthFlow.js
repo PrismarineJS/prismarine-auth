@@ -53,7 +53,7 @@ class MicrosoftAuthFlow {
       msa: path.join(cache, `./${hash}_msa-cache.json`),
       xbl: path.join(cache, `./${hash}_xbl-cache.json`),
       mca: path.join(cache, `./${hash}_mca-cache.json`),
-      mba: path.join(cache, `./${hash}_mba-cache.json`)
+      bed: path.join(cache, `./${hash}_bed-cache.json`)
     }
 
     if (this.options.authTitle) { // Login with login.live.com
@@ -66,7 +66,7 @@ class MicrosoftAuthFlow {
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
     this.xbl = new XboxTokenManager(Authentication.BedrockXSTSRelyingParty, keyPair, cachePaths.xbl)
-    this.mba = new BedrockTokenManager(cachePaths.mba)
+    this.mba = new BedrockTokenManager(cachePaths.bed)
     this.mca = new JavaTokenManager(cachePaths.mca)
   }
 

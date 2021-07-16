@@ -76,6 +76,41 @@ const doAuth = async() => {
 doAuth()
 ```
 
+## Live.com Authentication with Titles
+
+### Device Code Authentication
+```js
+const { Authflow, Titles } = require('@prismarinejs/xboxlive-auth');
+const crypto = require('crypto')
+const curve = 'secp384r1'
+
+const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve }).toString('base64') 
+const doAuth = async() => {
+    const flow = new Authflow('mineflayer@is.cool', './', { authTitle: Titles.MinecraftNintendoSwitch })
+    const XSTSToken = await flow.getMinecraftBedrockToken(keypair)
+    console.log(XSTSToken)
+}
+
+doAuth()
+```
+
+### Password Authentication
+```js
+const { Authflow , Titles} = require('@prismarinejs/xboxlive-auth');
+const crypto = require('crypto')
+const curve = 'secp384r1'
+
+const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve }).toString('base64') 
+
+const doAuth = async() => {
+    const flow = new Authflow('mineflayer@is.cool', './', { password: 'thisIsAFakePassword123', authTitle: Titles.MinecraftJava })
+    const XSTSToken = await flow.getMinecraftBedrockToken(keypair)
+    console.log(XSTSToken)
+}
+
+doAuth()
+```
+
 ### Expected Response
 ```php
 {
@@ -92,5 +127,5 @@ Authflow class
 - cacheDirectory {String} - Where we will store your tokens
 - options {Object?}
     - [password] {string} - If passed we will do password based authentication.
-    - [authTitle] {string} - Used in authenticating with Switch or Bedrock accounts. See https://github.com/PrismarineJS/xboxlive-auth/src/Constants.js
+    - [authTitle] {string} - Required to switch to live.com authentication and do title authentication. Needed for accounts with a date of birth under 18 years old.
 - onMsaCode {Function} - What we should do when we get the code. Useful for passing the code to another function.

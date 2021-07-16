@@ -1,8 +1,4 @@
 module.exports = {
-  Titles: {
-    MinecraftNintendoSwitch: '00000000441cc96b',
-    MinecraftJava: '00000000402b5328'
-  },
   Authentication: {
     PCXSTSRelyingParty: 'rp://api.minecraftservices.com/',
     BedrockXSTSRelyingParty: 'https://multiplayer.minecraft.net/',
