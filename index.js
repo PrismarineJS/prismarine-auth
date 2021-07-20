@@ -4,6 +4,7 @@ if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[
   process.exit(1)
 }
 
-module.exports.helloWorld = function () {
-  console.log('Hello world !')
+module.exports = {
+  Authflow: require('./src/MicrosoftAuthFlow'),
+  Titles: require('./src/common/Titles')
 }
