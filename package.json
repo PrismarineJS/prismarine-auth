@@ -4,7 +4,6 @@
   "description": "A package to authenticate with xbox live and microsoft + cache tokens.",
   "main": "index.js",
   "scripts": {
-    "prepare": "npm install require-self && require-self",
     "test": "mocha --recursive --reporter spec --exit",
     "pretest": "npm run lint",
     "lint": "standard",
@@ -35,8 +34,8 @@
     "@xboxreplay/xboxlive-auth": "^3.3.3",
     "jose-node-cjs-runtime": "^3.13.0",
     "node-fetch": "^2.6.1",
-    "require-self": "^0.2.3",
     "smart-buffer": "^4.1.0",
-    "uuid-1345": "^1.0.2"
+    "uuid-1345": "^1.0.2",
+    "@prismarinejs/xboxlive-auth": "file:."
   }
 }
