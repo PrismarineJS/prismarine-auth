@@ -1,5 +1,5 @@
 {
-  "name": "@prismarinejs/xboxlive-auth",
+  "name": "prismarine-auth",
   "version": "1.0.0",
   "description": "A package to authenticate with xbox live and microsoft + cache tokens.",
   "main": "index.js",
@@ -27,8 +27,8 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "mocha": "^9.0.1",
-    "standard": "^16.0.1",
-    "@prismarinejs/xboxlive-auth": "file:."
+    "prismarine-auth": "file:.",
+    "standard": "^16.0.1"
   },
   "dependencies": {
     "@azure/msal-node": "^1.1.0",
