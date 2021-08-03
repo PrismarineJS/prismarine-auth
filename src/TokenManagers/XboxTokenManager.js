@@ -124,8 +124,8 @@ class XboxTokenManager {
 
   async doReplayAuth (email, password) {
     try {
-      const preAuthResponse = await XboxLiveAuth.preAuth()
-      const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password })
+      const preAuthResponse = await XboxLiveAuth.live.preAuth()
+      const logUserResponse = await XboxLiveAuth.live.authenticate(preAuthResponse, { email, password })
       const exchangeRpsTicketForUserToken = await this.getUserToken(logUserResponse.access_token, true)
       const xsts = await this.getXSTSToken(exchangeRpsTicketForUserToken)
       return xsts
