@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-const debug = require('debug')('xboxlive-auth')
+const debug = require('debug')('prismarine-auth')
 const fetch = require('node-fetch')
 
 const { Authentication } = require('../common/Constants')

@@ -1,21 +1,21 @@
-# XboxLive-Auth
-[![NPM version](https://img.shields.io/npm/v/prismarine-template.svg)](http://npmjs.com/package/prismarine-template)
-[![Build Status](https://github.com/PrismarineJS/prismarine-template/workflows/CI/badge.svg)](https://github.com/PrismarineJS/prismarine-template/actions?query=workflow%3A%22CI%22)
+# prismarine-auth
+[![NPM version](https://img.shields.io/npm/v/prismarine-auth.svg)](http://npmjs.com/package/prismarine-auth)
+[![Build Status](https://github.com/PrismarineJS/prismarine-auth/workflows/CI/badge.svg)](https://github.com/PrismarineJS/prismarine-auth/actions?query=workflow%3A%22CI%22)
 [![Discord](https://img.shields.io/badge/chat-on%20discord-brightgreen.svg)](https://discord.gg/GsEFRM8)
-[![Try it on gitpod](https://img.shields.io/badge/try-on%20gitpod-brightgreen.svg)](https://gitpod.io/#https://github.com/PrismarineJS/prismarine-template)
+[![Try it on gitpod](https://img.shields.io/badge/try-on%20gitpod-brightgreen.svg)](https://gitpod.io/#https://github.com/PrismarineJS/prismarine-auth)
 
 Quickly and easily obtain an xbox token to authenticate with Minecraft/Mojang
 
 ## Installation
 ```shell
-npm install xboxlive-auth
+npm install prismarine-auth
 ```
 
 ## Getting A Minecraft Java Token
 
 ### Device Code Authentication
 ```js
-const { Authflow } = require('@prismarinejs/xboxlive-auth');
+const { Authflow } = require('prismarine-auth');
 
 const doAuth = async() => {
     const flow = new Authflow('mineflayer@is.cool', './')
@@ -28,7 +28,7 @@ doAuth()
 
 ### Password-based Authentication
 ```js
-const { Authflow } = require('@prismarinejs/xboxlive-auth');
+const { Authflow } = require('prismarine-auth');
 
 const doAuth = async() => {
     const flow = new Authflow('mineflayer@is.cool', './', { password: 'thisIsAFakePassword123'})
@@ -45,7 +45,7 @@ This function handles logging into Xbox Live, posting its public key to the Moja
 
 ### Device Code Authentication
 ```js
-const { Authflow } = require('@prismarinejs/xboxlive-auth');
+const { Authflow } = require('prismarine-auth');
 const crypto = require('crypto')
 const curve = 'secp384r1'
 
@@ -61,7 +61,7 @@ doAuth()
 
 ### Password Authentication:
 ```js
-const { Authflow } = require('@prismarinejs/xboxlive-auth');
+const { Authflow } = require('prismarine-auth');
 const crypto = require('crypto')
 const curve = 'secp384r1'
 
@@ -80,7 +80,7 @@ doAuth()
 
 ### Device Code Authentication
 ```js
-const { Authflow, Titles } = require('@prismarinejs/xboxlive-auth');
+const { Authflow, Titles } = require('prismarine-auth');
 const crypto = require('crypto')
 const curve = 'secp384r1'
 
@@ -96,7 +96,7 @@ doAuth()
 
 ### Password Authentication
 ```js
-const { Authflow , Titles} = require('@prismarinejs/xboxlive-auth');
+const { Authflow , Titles} = require('prismarine-auth');
 const crypto = require('crypto')
 const curve = 'secp384r1'
 

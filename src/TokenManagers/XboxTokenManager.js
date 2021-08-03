@@ -3,7 +3,7 @@ const path = require('path')
 const crypto = require('crypto')
 
 const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
-const debug = require('debug')('xboxlive-auth')
+const debug = require('debug')('prismarine-auth')
 const { SmartBuffer } = require('smart-buffer')
 const jose = require('jose-node-cjs-runtime/jwk/from_key_like')
 const fetch = require('node-fetch')
@@ -130,7 +130,7 @@ class XboxTokenManager {
       const xsts = await this.getXSTSToken(exchangeRpsTicketForUserToken)
       return xsts
     } catch (error) {
-      debug('[XboxLive-Auth] Authentication using a password has failed.')
+      debug('[prismarine-auth] Authentication using a password has failed.')
       debug(error)
       throw error
     }

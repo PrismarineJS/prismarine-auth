@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const msal = require('@azure/msal-node')
-const debug = require('debug')('xboxlive-auth')
+const debug = require('debug')('prismarine-auth')
 
 class MsaTokenManager {
   constructor (msalConfig, scopes, cacheLocation) {
