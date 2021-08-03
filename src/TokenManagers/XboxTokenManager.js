@@ -130,7 +130,7 @@ class XboxTokenManager {
       const xsts = await this.getXSTSToken(exchangeRpsTicketForUserToken)
       return xsts
     } catch (error) {
-      debug('[prismarine-auth] Authentication using a password has failed.')
+      debug('Authentication using a password has failed.')
       debug(error)
       throw error
     }
