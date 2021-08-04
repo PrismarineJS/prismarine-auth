@@ -8,7 +8,7 @@ const { SmartBuffer } = require('smart-buffer')
 const jose = require('jose-node-cjs-runtime/jwk/from_key_like')
 const fetch = require('node-fetch')
 
-const { Authentication } = require('../common/Constants')
+const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 const UUID = require('uuid-1345')
@@ -168,11 +168,11 @@ class XboxTokenManager {
     }
 
     const body = JSON.stringify(payload)
-    const signature = this.sign(Authentication.XstsAuthorize, '', body).toString('base64')
+    const signature = this.sign(Endpoints.XstsAuthorize, '', body).toString('base64')
 
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Authentication.XstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await fetch(Endpoints.XstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
     const xsts = {
       userXUID: ret.DisplayClaims.xui[0].xid || null,
       userHash: ret.DisplayClaims.xui[0].uhs,
@@ -204,10 +204,10 @@ class XboxTokenManager {
     }
 
     const body = JSON.stringify(payload)
-    const signature = this.sign(Authentication.XboxDeviceAuth, '', body).toString('base64')
+    const signature = this.sign(Endpoints.XboxDeviceAuth, '', body).toString('base64')
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Authentication.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await fetch(Endpoints.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
     debug('Xbox Device Token', ret)
     return ret.Token
   }
@@ -226,11 +226,11 @@ class XboxTokenManager {
       TokenType: 'JWT'
     }
     const body = JSON.stringify(payload)
-    const signature = this.sign(Authentication.XboxTitleAuth, '', body).toString('base64')
+    const signature = this.sign(Endpoints.XboxTitleAuth, '', body).toString('base64')
 
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Authentication.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await fetch(Endpoints.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
     debug('Xbox Title Token', ret)
     return ret.Token
   }

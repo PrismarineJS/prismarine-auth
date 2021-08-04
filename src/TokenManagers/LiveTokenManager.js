@@ -2,7 +2,7 @@ const fs = require('fs')
 const debug = require('debug')('prismarine-auth')
 const fetch = require('node-fetch')
 
-const { Authentication } = require('../common/Constants')
+const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class LiveTokenManager {
@@ -58,7 +58,7 @@ class LiveTokenManager {
       credentials: 'include' // This cookie handler does not work on node-fetch ...
     }
 
-    const token = await fetch(Authentication.LiveTokenRequest, codeRequest).then(checkStatus)
+    const token = await fetch(Endpoints.LiveTokenRequest, codeRequest).then(checkStatus)
     this.updateCache(token)
     return token
   }
@@ -100,7 +100,7 @@ class LiveTokenManager {
 
     const cookies = []
 
-    const res = await fetch(Authentication.LiveDeviceCodeRequest, codeRequest)
+    const res = await fetch(Endpoints.LiveDeviceCodeRequest, codeRequest)
       .then(res => {
         if (res.status !== 200) {
           res.text().then(console.warn)
@@ -136,7 +136,7 @@ class LiveTokenManager {
           }).toString()
         }
 
-        const token = await fetch(Authentication.LiveTokenRequest + '?client_id=' + this.clientId, verifi)
+        const token = await fetch(Endpoints.LiveTokenRequest + '?client_id=' + this.clientId, verifi)
           .then(res => res.json()).then(res => {
             if (res.error) {
               if (res.error === 'authorization_pending') {

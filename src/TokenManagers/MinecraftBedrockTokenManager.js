@@ -3,7 +3,7 @@ const path = require('path')
 const debug = require('debug')('prismarine-auth')
 const fetch = require('node-fetch')
 
-const { Authentication } = require('../common/Constants')
+const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class BedrockTokenManager {
@@ -56,7 +56,7 @@ class BedrockTokenManager {
       'User-Agent': 'node-minecraft-protocol',
       Authorization: `XBL3.0 x=${xsts.userHash};${xsts.XSTSToken}`
     }
-    const MineServicesResponse = await fetch(Authentication.BedrockAuth, {
+    const MineServicesResponse = await fetch(Endpoints.BedrockAuth, {
       method: 'post',
       headers,
       body: JSON.stringify({ identityPublicKey: clientPublicKey })
