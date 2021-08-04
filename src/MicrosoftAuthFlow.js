@@ -33,6 +33,7 @@ class MicrosoftAuthFlow {
     this.options = options
     this.initTokenCaches(username, cache)
     this.codeCallback = codeCallback
+    this.relyingParty = options.relyingParty ?? Endpoints.BedrockXSTSRelyingParty
   }
 
   initTokenCaches (username, cache) {
@@ -65,7 +66,7 @@ class MicrosoftAuthFlow {
     }
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
-    this.xbl = new XboxTokenManager(Endpoints.BedrockXSTSRelyingParty, keyPair, cachePaths.xbl)
+    this.xbl = new XboxTokenManager(keyPair, cachePaths.xbl)
     this.mba = new BedrockTokenManager(cachePaths.bed)
     this.mca = new JavaTokenManager(cachePaths.mca)
   }
