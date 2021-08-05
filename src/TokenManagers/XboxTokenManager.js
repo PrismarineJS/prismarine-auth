@@ -3,12 +3,12 @@ const path = require('path')
 const crypto = require('crypto')
 
 const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
-const debug = require('debug')('xboxlive-auth')
+const debug = require('debug')('prismarine-auth')
 const { SmartBuffer } = require('smart-buffer')
 const jose = require('jose-node-cjs-runtime/jwk/from_key_like')
 const fetch = require('node-fetch')
 
-const { Authentication } = require('../common/Constants')
+const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 const UUID = require('uuid-1345')
@@ -16,8 +16,8 @@ const nextUUID = () => UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c
 
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {
-  constructor (relyingParty, ecKey, cacheLocation) {
-    this.relyingParty = relyingParty
+  constructor (ecKey, cacheLocation) {
+    this.relyingParty = null
     this.key = ecKey
     jose.fromKeyLike(ecKey.publicKey).then(jwk => {
       this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }
@@ -126,11 +126,13 @@ class XboxTokenManager {
     try {
       const preAuthResponse = await XboxLiveAuth.preAuth()
       const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password })
-      const exchangeRpsTicketForUserToken = await this.getUserToken(logUserResponse.access_token, true)
-      const xsts = await this.getXSTSToken(exchangeRpsTicketForUserToken)
+      const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(logUserResponse.access_token)
+      this.setCachedUserToken(xblUserToken)
+      debug('[xbl] user token:', xblUserToken)
+      const xsts = await this.getXSTSToken(xblUserToken)
       return xsts
     } catch (error) {
-      debug('[XboxLive-Auth] Authentication using a password has failed.')
+      debug('Authentication using a password has failed.')
       debug(error)
       throw error
     }
@@ -168,11 +170,11 @@ class XboxTokenManager {
     }
 
     const body = JSON.stringify(payload)
-    const signature = this.sign(Authentication.XstsAuthorize, '', body).toString('base64')
+    const signature = this.sign(Endpoints.XstsAuthorize, '', body).toString('base64')
 
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Authentication.XstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await fetch(Endpoints.XstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
     const xsts = {
       userXUID: ret.DisplayClaims.xui[0].xid || null,
       userHash: ret.DisplayClaims.xui[0].uhs,
@@ -204,10 +206,10 @@ class XboxTokenManager {
     }
 
     const body = JSON.stringify(payload)
-    const signature = this.sign(Authentication.XboxDeviceAuth, '', body).toString('base64')
+    const signature = this.sign(Endpoints.XboxDeviceAuth, '', body).toString('base64')
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Authentication.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await fetch(Endpoints.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
     debug('Xbox Device Token', ret)
     return ret.Token
   }
@@ -226,11 +228,11 @@ class XboxTokenManager {
       TokenType: 'JWT'
     }
     const body = JSON.stringify(payload)
-    const signature = this.sign(Authentication.XboxTitleAuth, '', body).toString('base64')
+    const signature = this.sign(Endpoints.XboxTitleAuth, '', body).toString('base64')
 
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Authentication.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await fetch(Endpoints.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
     debug('Xbox Title Token', ret)
     return ret.Token
   }

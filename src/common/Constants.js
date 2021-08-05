@@ -1,5 +1,5 @@
 module.exports = {
-  Authentication: {
+  Endpoints: {
     PCXSTSRelyingParty: 'rp://api.minecraftservices.com/',
     BedrockXSTSRelyingParty: 'https://multiplayer.minecraft.net/',
     BedrockAuth: 'https://multiplayer.minecraft.net/authentication',

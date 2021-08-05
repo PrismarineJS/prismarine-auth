@@ -1,4 +1,4 @@
-const debug = require('debug')('xboxlive-auth')
+const debug = require('debug')('prismarine-auth')
 
 function checkStatus (res) {
   if (res.ok) { // res.status >= 200 && res.status < 300

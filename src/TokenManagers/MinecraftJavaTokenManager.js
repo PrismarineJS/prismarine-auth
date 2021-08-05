@@ -1,9 +1,9 @@
 const fs = require('fs')
 const path = require('path')
-const debug = require('debug')('xboxlive-auth')
+const debug = require('debug')('prismarine-auth')
 const fetch = require('node-fetch')
 
-const { Authentication } = require('../common/Constants')
+const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class MinecraftJavaTokenManager {
@@ -53,7 +53,7 @@ class MinecraftJavaTokenManager {
       }
     }
 
-    const MineServicesResponse = await fetch(Authentication.MinecraftServicesLogWithXbox, {
+    const MineServicesResponse = await fetch(Endpoints.MinecraftServicesLogWithXbox, {
       method: 'post',
       ...getFetchOptions,
       body: JSON.stringify({ identityToken: `XBL3.0 x=${xsts.userHash};${xsts.XSTSToken}` })

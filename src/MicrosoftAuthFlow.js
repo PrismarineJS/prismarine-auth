@@ -2,9 +2,9 @@ const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
 
-const debug = require('debug')('xboxlive-auth')
+const debug = require('debug')('prismarine-auth')
 
-const { Authentication, msalConfig } = require('./common/Constants')
+const { Endpoints, msalConfig } = require('./common/Constants')
 
 const LiveTokenManager = require('./TokenManagers/LiveTokenManager')
 const JavaTokenManager = require('./TokenManagers/MinecraftJavaTokenManager')
@@ -33,6 +33,7 @@ class MicrosoftAuthFlow {
     this.options = options
     this.initTokenCaches(username, cache)
     this.codeCallback = codeCallback
+    this.relyingParty = options.relyingParty ?? Endpoints.BedrockXSTSRelyingParty
   }
 
   initTokenCaches (username, cache) {
@@ -65,7 +66,7 @@ class MicrosoftAuthFlow {
     }
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
-    this.xbl = new XboxTokenManager(Authentication.BedrockXSTSRelyingParty, keyPair, cachePaths.xbl)
+    this.xbl = new XboxTokenManager(keyPair, cachePaths.xbl)
     this.mba = new BedrockTokenManager(cachePaths.bed)
     this.mca = new JavaTokenManager(cachePaths.mca)
   }
@@ -138,7 +139,7 @@ class MicrosoftAuthFlow {
       debug('[mc] Using existing tokens')
       return this.mca.getCachedAccessToken().token
     } else {
-      this.xbl.relyingParty = Authentication.PCXSTSRelyingParty
+      this.xbl.relyingParty = Endpoints.PCXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
       return await retry(async () => {
         const xsts = await this.getXboxToken()
@@ -156,7 +157,7 @@ class MicrosoftAuthFlow {
       return this.mba.getCachedAccessToken().chain
     } else {
       if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
-      this.xbl.relyingParty = Authentication.BedrockXSTSRelyingParty
+      this.xbl.relyingParty = Endpoints.BedrockXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
       return await retry(async () => {
         const xsts = await this.getXboxToken()
