@@ -143,7 +143,7 @@ class MicrosoftAuthFlow {
     const response = { token: '', entitlements: {}, profile: {} }
     if (await this.mca.verifyTokens()) {
       debug('[mc] Using existing tokens')
-      response.token =  this.mca.getCachedAccessToken().token
+      response.token = this.mca.getCachedAccessToken().token
     } else {
       this.xbl.relyingParty = Endpoints.PCXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
