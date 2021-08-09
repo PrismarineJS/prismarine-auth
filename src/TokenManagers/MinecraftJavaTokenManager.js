@@ -3,7 +3,7 @@ const path = require('path')
 const debug = require('debug')('prismarine-auth')
 const fetch = require('node-fetch')
 
-const { Endpoints } = require('../common/Constants')
+const { Endpoints, fetchOptions } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class MinecraftJavaTokenManager {
@@ -46,22 +46,37 @@ class MinecraftJavaTokenManager {
 
   async getAccessToken (xsts) {
     debug('[mc] authing to minecraft', xsts)
-    const getFetchOptions = {
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'node-minecraft-protocol'
-      }
-    }
-
     const MineServicesResponse = await fetch(Endpoints.MinecraftServicesLogWithXbox, {
       method: 'post',
-      ...getFetchOptions,
+      ...fetchOptions,
       body: JSON.stringify({ identityToken: `XBL3.0 x=${xsts.userHash};${xsts.XSTSToken}` })
     }).then(checkStatus)
 
     debug('[mc] mc auth response', MineServicesResponse)
     this.setCachedAccessToken(MineServicesResponse)
     return MineServicesResponse.access_token
+  }
+
+  async fetchProfile (accessToken) {
+    debug(`[mc] fetching minecraft profile with ${accessToken.slice(0, 16)}`)
+    const headers = { ...fetchOptions.headers, Authorization: `Bearer ${accessToken}` }
+    const profile = await fetch(Endpoints.MinecraftServicesProfile, { headers })
+      .then(checkStatus)
+    debug(`[mc] got profile response: ${profile}`)
+    return profile
+  }
+
+  /**
+ * Fetches any product licenses attached to this accesstoken
+ * @param {string} accessToken
+ * @returns {object}
+ */
+  async fetchEntitlements (accessToken) {
+    debug(`[mc] fetching entitlements with ${accessToken.slice(0, 16)}`)
+    const headers = { ...fetchOptions.headers, Authorization: `Bearer ${accessToken}` }
+    const entitlements = await fetch(Endpoints.MinecraftServicesEntitlement, { headers }).then(checkStatus)
+    debug(`[mc] got entitlement response: ${entitlements}`)
+    return entitlements
   }
 }
 module.exports = MinecraftJavaTokenManager

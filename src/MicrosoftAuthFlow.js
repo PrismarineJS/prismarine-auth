@@ -134,19 +134,34 @@ class MicrosoftAuthFlow {
     }
   }
 
+  /**
+   * Gets either the cached, or fetchs a new minecraft java token.
+   * @returns {object}
+   */
+
   async getMinecraftJavaToken () {
+    const response = { token: '', entitlements: {}, profile: {} }
     if (await this.mca.verifyTokens()) {
       debug('[mc] Using existing tokens')
-      return this.mca.getCachedAccessToken().token
+      response.token =  this.mca.getCachedAccessToken().token
     } else {
       this.xbl.relyingParty = Endpoints.PCXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
-      return await retry(async () => {
+      await retry(async () => {
         const xsts = await this.getXboxToken()
         debug('[xbl] xsts data', xsts)
-        return this.mca.getAccessToken(xsts)
+        response.token = this.mca.getAccessToken(xsts)
       }, () => { this.xbl.forceRefresh = true }, 2)
     }
+
+    if (this.options.fetchEntitlements) {
+      response.entitlements = await this.mca.fetchEntitlements(response.token)
+    }
+    if (this.options.fetchProfile) {
+      response.profile = await this.mca.fetchProfile(response.token)
+    }
+
+    return response
   }
 
   async getMinecraftBedrockToken (publicKey) {

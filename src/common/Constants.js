@@ -21,6 +21,11 @@ module.exports = {
       clientId: '389b1b32-b5d5-43b2-bddc-84ce938d6737', // token from https://github.com/microsoft/Office365APIEditor
       authority: 'https://login.microsoftonline.com/consumers'
     }
+  },
+  fetchOptions: {
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': 'node-minecraft-protocol'
+    }
   }
-
 }
