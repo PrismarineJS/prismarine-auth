@@ -19,8 +19,6 @@ npm install prismarine-auth
 - options {Object?}
     - [password] {string} - If passed we will do password based authentication.
     - [authTitle] {string} - Required to switch to live.com authentication and do title authentication. Needed for accounts with a date of birth under 18 years old.
-    - [fetchEntitlements] {boolean} - Fetches all if any entitlements that might be attached to your minecraft java token.
-    - [fetchProfile] {boolean} - Fetches your minecraft java profile (if any)
 - onMsaCode {Function} - What we should do when we get the code. Useful for passing the code to another function.
 
 [View more examples](https://github.com/PrismarineJS/prismarine-auth/tree/master/examples)
