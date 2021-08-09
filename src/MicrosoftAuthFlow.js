@@ -150,7 +150,7 @@ class MicrosoftAuthFlow {
       await retry(async () => {
         const xsts = await this.getXboxToken()
         debug('[xbl] xsts data', xsts)
-        response.token = this.mca.getAccessToken(xsts)
+        response.token = await this.mca.getAccessToken(xsts)
       }, () => { this.xbl.forceRefresh = true }, 2)
     }
 
