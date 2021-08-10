@@ -17,7 +17,7 @@ const nextUUID = () => UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {
   constructor (ecKey, cacheLocation) {
-    this.relyingParty = null
+    this.relyingParty = Endpoints.XboxXSTSRelyingParty
     this.key = ecKey
     jose.fromKeyLike(ecKey.publicKey).then(jwk => {
       this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }

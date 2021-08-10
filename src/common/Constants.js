@@ -2,6 +2,7 @@ module.exports = {
   Endpoints: {
     PCXSTSRelyingParty: 'rp://api.minecraftservices.com/',
     BedrockXSTSRelyingParty: 'https://multiplayer.minecraft.net/',
+    XboxXSTSRelyingParty: 'http://auth.xboxlive.com/',
     BedrockAuth: 'https://multiplayer.minecraft.net/authentication',
     XboxDeviceAuth: 'https://device.auth.xboxlive.com/device/authenticate',
     XboxTitleAuth: 'https://title.auth.xboxlive.com/title/authenticate',
@@ -21,6 +22,11 @@ module.exports = {
       clientId: '389b1b32-b5d5-43b2-bddc-84ce938d6737', // token from https://github.com/microsoft/Office365APIEditor
       authority: 'https://login.microsoftonline.com/consumers'
     }
+  },
+  fetchOptions: {
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': 'node-minecraft-protocol'
+    }
   }
-
 }
