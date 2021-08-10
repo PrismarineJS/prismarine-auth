@@ -134,18 +134,6 @@ class MicrosoftAuthFlow {
     }
   }
 
-  /**
-   * @typedef {Object} JavaTokenOptions
-   * @property {boolean} [fetchEntitlements=false] Whether we should also fetch and return entitlements for this access token.
-   * @property {boolean} [fetchProfile=false] Whether we should also fetch and return profile for this access token.
-   */
-
-  /**
-   * Gets either the cached, or fetchs a new minecraft java token.
-   * @param {JavaTokenOptions} [options = {}] fetchEntitlements, fetchProfile options
-   * @returns {object}
-   */
-
   async getMinecraftJavaToken (options = {}) {
     const response = { token: '', entitlements: {}, profile: {} }
     if (await this.mca.verifyTokens()) {
