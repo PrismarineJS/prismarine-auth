@@ -1,6 +1,6 @@
 ## History
 
-### 1.0.1
+### 1.1.0
 
 * Added entitlement and profile checks for Minecraft Java Token
 * Fixed bug when fetching only the xbox token
