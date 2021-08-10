@@ -10,13 +10,12 @@ declare module 'prismarine-auth' {
     // Returns an XSTS token -- https://docs.microsoft.com/en-us/gaming/xbox-live/api-ref/xbox-live-rest/additional/edsauthorization
     getXboxToken: () => string
     // Returns a Minecraft Java Edition auth token
-    getMinecraftJavaToken: (MinecraftJavaToken: object) => { token: string, entitlements: object, profile: object }
+    getMinecraftJavaToken: (options: {
+      fetchEntitlements: boolean
+      fetchProfile: boolean
+    }) => { token: string, entitlements: object, profile: object }
     // Returns a Minecraft Bedrock Edition auth token. Public key parameter must be a KeyLike object.
     getMinecraftBedrockToken: (publicKey) => string
-  }
-  export interface MinecraftJavaToken {
-    fetchEntitlements: boolean
-    fetchProfile: boolean
   }
 
   export interface MicrosoftAuthFlowOptions {
