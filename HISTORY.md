@@ -1,5 +1,9 @@
 ## History
 
+### 1.1.1
+
+* fix jose dep
+
 ### 1.1.0
 
 * Added entitlement and profile checks for Minecraft Java Token
