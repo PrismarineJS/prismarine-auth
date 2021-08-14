@@ -1,5 +1,9 @@
 ## History
 
+### 1.1.2
+
+* proper fix
+
 ### 1.1.1
 
 * fix jose dep
