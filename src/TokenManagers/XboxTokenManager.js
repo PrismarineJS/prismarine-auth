@@ -5,7 +5,7 @@ const crypto = require('crypto')
 const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
 const debug = require('debug')('prismarine-auth')
 const { SmartBuffer } = require('smart-buffer')
-const jose = require('jose-node-cjs-runtime/jwk/from_key_like')
+const fromKeyLike = require('@inrupt/jose-legacy-modules').fromKeyLike
 const fetch = require('node-fetch')
 
 const { Endpoints } = require('../common/Constants')
@@ -19,7 +19,7 @@ class XboxTokenManager {
   constructor (ecKey, cacheLocation) {
     this.relyingParty = Endpoints.XboxXSTSRelyingParty
     this.key = ecKey
-    jose.fromKeyLike(ecKey.publicKey).then(jwk => {
+    fromKeyLike(ecKey.publicKey).then(jwk => {
       this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }
     })
     this.cacheLocation = cacheLocation || path.join(__dirname, './xbl-cache.json')
