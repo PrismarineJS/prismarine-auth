@@ -1,22 +1,22 @@
-/* eslint-env mocha */
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-const { Authflow } = require('../')
-chai.use(chaiAsPromised)
-const { expect } = chai
+/* eslint-env jest */
+const { Authflow } = require('..')
 
 const crypto = require('crypto')
 const curve = 'secp384r1'
 
 describe('device code authentication', () => {
-  it('should fail if not given any options', (done) => {
-    expect(() => new Authflow()).to.throw(Error)
-    done()
+  it('should fail if not given any options', () => {
+    expect(() => {
+      // eslint-disable-next-line
+      new Authflow()
+    }).toThrow(Error)
   })
+
   it('should fail if not given a cache directory', (done) => {
-    expect(() => new Authflow('username')).to.throw(Error)
+    expect(() => new Authflow('username')).toThrow(Error)
     done()
   })
+
   it('should give us a token', (done) => {
     const onMsaCode = (code) => {
       if (!code) done(Error('missing user code'))
@@ -25,9 +25,10 @@ describe('device code authentication', () => {
     const flow = new Authflow('emailIdentifier@test.prismarine', './test', { }, onMsaCode)
     flow.getXboxToken()
   })
-  it('should error if no certificate is present for bedrock', async () => {
+
+  it('should error if no certificate is present for bedrock', () => {
     const flow = new Authflow('testauthflow', './test')
-    await expect(flow.getMinecraftBedrockToken()).to.eventually.be.rejectedWith('Need to specifiy a ECDH x509 URL encoded public key')
+    expect(flow.getMinecraftBedrockToken()).rejects.toThrow('Need to specifiy a ECDH x509 URL encoded public key')
   })
   it('should give us a token for bedrock', (done) => {
     const onMsaCode = (code) => {

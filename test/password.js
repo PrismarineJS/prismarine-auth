@@ -1,14 +1,9 @@
-/* eslint-env mocha */
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-chai.use(chaiAsPromised)
-const { expect } = chai
+/* eslint-env jest */
+const { Authflow } = require('..')
 
-const { Authflow } = require('../')
-
-describe('password authentication', async () => {
-  it('should fail if not given a valid password', async () => {
+describe('password authentication', () => {
+  it('should fail if not given a valid password', () => {
     const flow = new Authflow('this.is.not@valid.email.lol', './test', { password: 'sdfasdfas' })
-    await expect(flow.getXboxToken()).to.eventually.be.rejectedWith('Invalid credentials')
+    expect(flow.getXboxToken()).rejects.toThrow('Invalid credentials')
   })
 })
