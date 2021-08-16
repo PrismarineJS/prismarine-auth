@@ -9,14 +9,6 @@ const crypto = require('crypto')
 const curve = 'secp384r1'
 
 describe('device code authentication', () => {
-  it('should fail if not given any options', (done) => {
-    expect(() => new Authflow()).to.throw(Error)
-    done()
-  })
-  it('should fail if not given a cache directory', (done) => {
-    expect(() => new Authflow('username')).to.throw(Error)
-    done()
-  })
   it('should give us a token', (done) => {
     const onMsaCode = (code) => {
       if (!code) done(Error('missing user code'))
@@ -32,7 +24,7 @@ describe('device code authentication', () => {
   it('should give us a token for bedrock', (done) => {
     const onMsaCode = (code) => {
       if (!code) done(Error('missing user code'))
-      if (code.userCode) done()
+      if (code.message) done()
     }
 
     const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve })

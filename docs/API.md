@@ -6,10 +6,10 @@ This is the main exposed class you interact with. Every instance holds its own t
 
 #### constructor (username?: string, cacheDir?: string, options?: MicrosoftAuthFlowOptions, codeCallback?: Function)
 
-* `username` (optional, default '')
+* `username` (optional, default='')
   * When using device code auth - a unique id
   * When using password auth - your microsoft account email
-* `cache` (optional, default node_modules) - Where to store cached tokens. node_modules if not specified.
+* `cache` (optional, default='node_modules') - Where to store cached tokens. node_modules if not specified.
 * `options`
   * `password` (optional) If you specify this option, we use password based auth.
   * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Set to `false` if doing password auth.
@@ -22,7 +22,7 @@ This is the main exposed class you interact with. Every instance holds its own t
 
 #### getXboxToken () : Promise<{ userXUID: string, userHash: string, XSTSToken: string, expiresOn: number }>
 
-[Returns XSTS token data](Returns an XSTS token -- https://docs.microsoft.com/en-us/gaming/xbox-live/api-ref/xbox-live-rest/additional/edsauthorization).
+[Returns XSTS token data](https://docs.microsoft.com/en-us/gaming/xbox-live/api-ref/xbox-live-rest/additional/edsauthorization).
 
 Example usage :
 ```js
