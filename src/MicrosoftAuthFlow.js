@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
-
+const assert = require('assert')
 const debug = require('debug')('prismarine-auth')
 
 const { Endpoints, msalConfig } = require('./common/Constants')
@@ -25,10 +25,7 @@ async function retry (methodFn, beforeRetry, times) {
 }
 
 class MicrosoftAuthFlow {
-  constructor (username, cache, options = {}, codeCallback) {
-    if (!username) throw new Error('username is required')
-    if (!cache) throw new Error('cacheDirectory is required')
-
+  constructor (username = '', cache = __dirname, options = {}, codeCallback) {
     this.username = username
     this.options = options
     this.initTokenCaches(username, cache)
@@ -135,6 +132,7 @@ class MicrosoftAuthFlow {
   }
 
   async getMinecraftJavaToken (options = {}) {
+    assert(this.options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor')
     const response = { token: '', entitlements: {}, profile: {} }
     if (await this.mca.verifyTokens()) {
       debug('[mc] Using existing tokens')
@@ -160,6 +158,7 @@ class MicrosoftAuthFlow {
   }
 
   async getMinecraftBedrockToken (publicKey) {
+    assert(this.options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor')
     // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
     // is this even a good idea to cache?
     if (await this.mba.verifyTokens() && false) { // eslint-disable-line

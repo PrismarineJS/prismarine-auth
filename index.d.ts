@@ -1,21 +1,37 @@
 /// <reference types="node" />
+import { KeyObject } from 'crypto'
 
 declare module 'prismarine-auth' {
-  export class AuthFlow {
-    constructor(username: string, cache: string, options?: MicrosoftAuthFlowOptions, codeCallback?: Function)
-    initTokenCaches: (username: string, cache: string) => void
-    resetTokenCaches: (cache: string) => boolean
+  export class Authflow {
+    /**
+     * Creates a new Authflow instance, which holds its own token cache
+     * @param username A unique identifier. If using password auth, this should be an email.
+     * @param cache Where to place token cache
+     * @param options Options
+     * @param codeCallback Optional callback to recieve token information using device code auth
+     */
+    constructor(username?: string, cache?: string, options?: MicrosoftAuthFlowOptions, codeCallback?: Function)
+    /**
+     * Deletes the caches in the specified cache directory.
+     */
+    static resetTokenCaches(cache: string): boolean
+
     // Returns a Microsoft Oauth access token -- https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens
-    getMsaToken: () => string
+    getMsaToken(): Promise<string>
     // Returns an XSTS token -- https://docs.microsoft.com/en-us/gaming/xbox-live/api-ref/xbox-live-rest/additional/edsauthorization
-    getXboxToken: () => string
+    getXboxToken(): Promise<{
+      userXUID: string,
+      userHash: string,
+      XSTSToken: string,
+      expiresOn: number
+    }>
     // Returns a Minecraft Java Edition auth token
-    getMinecraftJavaToken: (options: {
-      fetchEntitlements: boolean
-      fetchProfile: boolean
-    }) => { token: string, entitlements: object, profile: object }
+    getMinecraftJavaToken(options?: {
+      fetchEntitlements?: boolean
+      fetchProfile?: boolean
+    }): Promise<{ token: string, entitlements: object, profile: object }>
     // Returns a Minecraft Bedrock Edition auth token. Public key parameter must be a KeyLike object.
-    getMinecraftBedrockToken: (publicKey) => string
+    getMinecraftBedrockToken(publicKey: KeyObject): Promise<string>
   }
 
   export interface MicrosoftAuthFlowOptions {

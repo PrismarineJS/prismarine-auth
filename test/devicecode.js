@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
-const { Authflow } = require('../')
+const { Authflow, Titles } = require('../')
 chai.use(chaiAsPromised)
 const { expect } = chai
 
@@ -26,7 +26,7 @@ describe('device code authentication', () => {
     flow.getXboxToken()
   })
   it('should error if no certificate is present for bedrock', async () => {
-    const flow = new Authflow('testauthflow', './test')
+    const flow = new Authflow('testauthflow', './test', { authTitle: Titles.MinecraftNintendoSwitch })
     await expect(flow.getMinecraftBedrockToken()).to.eventually.be.rejectedWith('Need to specifiy a ECDH x509 URL encoded public key')
   })
   it('should give us a token for bedrock', (done) => {
@@ -37,7 +37,7 @@ describe('device code authentication', () => {
 
     const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve })
     const clientX509 = keypair.toString('base64')
-    const flow = new Authflow('username', './test', { }, onMsaCode)
+    const flow = new Authflow('username', './test', { authTitle: Titles.MinecraftNintendoSwitch }, onMsaCode)
     flow.getMinecraftBedrockToken(clientX509)
   })
 })
