@@ -30,13 +30,14 @@ describe('device code authentication', () => {
     const flow = new Authflow('testauthflow', './test')
     expect(flow.getMinecraftBedrockToken()).rejects.toThrow('Need to specifiy a ECDH x509 URL encoded public key')
   })
-  it('should give us a token for bedrock',  (done) => {
+
+  it('should give us a token for bedrock', (done) => {
     const onMsaCode = (code) => {
       if (!code) done(Error('missing user code'))
       if (code.userCode) done()
     }
 
-    const keypair = ec.generateKey(curve).then(keypair => {
+    ec.generateKey(curve).then(keypair => {
       const clientX509 = keypair.toString('base64')
       console.log(clientX509)
       const flow = new Authflow('username', './test', { }, onMsaCode)
