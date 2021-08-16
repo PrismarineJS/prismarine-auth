@@ -1,11 +1,9 @@
 const fs = require('fs')
 const path = require('path')
-const crypto = require('crypto')
-
+const ec = require('js-crypto-ec')
 const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
 const debug = require('debug')('prismarine-auth')
 const { SmartBuffer } = require('smart-buffer')
-const fromKeyLike = require('@inrupt/jose-legacy-modules').fromKeyLike
 const fetch = require('node-fetch')
 
 const { Endpoints } = require('../common/Constants')
@@ -19,9 +17,7 @@ class XboxTokenManager {
   constructor (ecKey, cacheLocation) {
     this.relyingParty = Endpoints.XboxXSTSRelyingParty
     this.key = ecKey
-    fromKeyLike(ecKey.publicKey).then(jwk => {
-      this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }
-    })
+    this.jwk = { ...ecKey.publicKey, alg: 'ES256', use: 'sig' }
     this.cacheLocation = cacheLocation || path.join(__dirname, './xbl-cache.json')
     try {
       this.cache = require(this.cacheLocation)
@@ -92,7 +88,7 @@ class XboxTokenManager {
   }
 
   // Make signature for the data being sent to server with our private key; server is sent our public key in plaintext
-  sign (url, authorizationToken, payload) {
+  async sign (url, authorizationToken, payload) {
     // Their backend servers use Windows epoch timestamps, account for that. The server is very picky,
     // bad percision or wrong epoch may fail the request.
     const windowsTimestamp = (BigInt((Date.now() / 1000) | 0) + 11644473600n) * 10000000n
@@ -112,7 +108,12 @@ class XboxTokenManager {
     buf.writeStringNT(payload)
 
     // Get the signature from the payload
-    const signature = crypto.sign('SHA256', buf.toBuffer(), { key: this.key.privateKey, dsaEncoding: 'ieee-p1363' })
+    const signature = await ec.sign(
+      buf.toBuffer(),
+      this.key.privateKey,
+      'SHA-256',
+      'der'
+    )
 
     const header = SmartBuffer.fromSize(signature.length + 12)
     header.writeInt32BE(1) // Policy Version
@@ -170,7 +171,7 @@ class XboxTokenManager {
     }
 
     const body = JSON.stringify(payload)
-    const signature = this.sign(Endpoints.XstsAuthorize, '', body).toString('base64')
+    const signature = await this.sign(Endpoints.XstsAuthorize, '', body).toString('base64')
 
     const headers = { ...this.headers, Signature: signature }
 
@@ -206,7 +207,7 @@ class XboxTokenManager {
     }
 
     const body = JSON.stringify(payload)
-    const signature = this.sign(Endpoints.XboxDeviceAuth, '', body).toString('base64')
+    const signature = await this.sign(Endpoints.XboxDeviceAuth, '', body).toString('base64')
     const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(Endpoints.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
@@ -228,7 +229,7 @@ class XboxTokenManager {
       TokenType: 'JWT'
     }
     const body = JSON.stringify(payload)
-    const signature = this.sign(Endpoints.XboxTitleAuth, '', body).toString('base64')
+    const signature = await this.sign(Endpoints.XboxTitleAuth, '', body).toString('base64')
 
     const headers = { ...this.headers, Signature: signature }
 

@@ -11,6 +11,7 @@ const JavaTokenManager = require('./TokenManagers/MinecraftJavaTokenManager')
 const XboxTokenManager = require('./TokenManagers/XboxTokenManager')
 const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
 const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManager')
+const ec = require('js-crypto-ec')
 
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
@@ -29,6 +30,7 @@ class MicrosoftAuthFlow {
     if (!username) throw new Error('username is required')
     if (!cache) throw new Error('cacheDirectory is required')
 
+    this.generateKeyPairPromise = null
     this.username = username
     this.options = options
     this.initTokenCaches(username, cache)
@@ -65,8 +67,17 @@ class MicrosoftAuthFlow {
       this.msa = new MsaTokenManager(msalConfig, scopes, cachePaths.msa)
     }
 
-    const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
-    this.xbl = new XboxTokenManager(keyPair, cachePaths.xbl)
+    // eslint-disable-next-line
+    this.generateKeyPairPromise = new Promise(async (resolve, reject) => {
+      try {
+        const keyPair = await ec.generateKey('P-256')
+        this.xbl = new XboxTokenManager(keyPair, cachePaths.xbl)
+        resolve()
+      } catch (error) {
+        reject(error)
+      }
+    })
+
     this.mba = new BedrockTokenManager(cachePaths.bed)
     this.mca = new JavaTokenManager(cachePaths.mca)
   }
@@ -108,6 +119,8 @@ class MicrosoftAuthFlow {
   }
 
   async getXboxToken () {
+    await this.generateKeyPairPromise
+
     if (await this.xbl.verifyTokens()) {
       debug('[xbl] Using existing XSTS token')
       return this.xbl.getCachedXstsToken().data
@@ -135,6 +148,8 @@ class MicrosoftAuthFlow {
   }
 
   async getMinecraftJavaToken (options = {}) {
+    await this.generateKeyPairPromise
+
     const response = { token: '', entitlements: {}, profile: {} }
     if (await this.mca.verifyTokens()) {
       debug('[mc] Using existing tokens')
@@ -160,6 +175,8 @@ class MicrosoftAuthFlow {
   }
 
   async getMinecraftBedrockToken (publicKey) {
+    await this.generateKeyPairPromise
+
     // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
     // is this even a good idea to cache?
     if (await this.mba.verifyTokens() && false) { // eslint-disable-line
