@@ -32,7 +32,6 @@ class MicrosoftAuthFlow {
     this.options = options
     this.initTokenCaches(username, cache)
     this.codeCallback = codeCallback
-    this.xbl.relyingParty = options.relyingParty ?? Endpoints.BedrockXSTSRelyingParty
   }
 
   initTokenCaches (username, cache) {
@@ -69,6 +68,7 @@ class MicrosoftAuthFlow {
       try {
         const keyPair = await ec.generateKey('P-256')
         this.xbl = new XboxTokenManager(keyPair, cachePaths.xbl)
+        this.xbl.relyingParty = this.options.relyingParty ?? Endpoints.BedrockXSTSRelyingParty
         resolve()
       } catch (error) {
         reject(error)
