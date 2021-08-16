@@ -101,27 +101,23 @@ class LiveTokenManager {
     const cookies = []
 
     const res = await fetch(Endpoints.LiveDeviceCodeRequest, codeRequest)
-      .then(res => {
-        if (res.status !== 200) {
-          res.text().then(console.warn)
-          throw Error('Failed to request live.com device code')
-        }
-        for (const cookie of Object.values(res.headers.raw()['set-cookie'])) {
-          const [keyval] = cookie.split(';')
-          cookies.push(keyval)
-        }
-        return res
-      })
-      .then(checkStatus).then(resp => {
-        resp.message = `To sign in, use a web browser to open the page ${resp.verification_uri} and enter the code ${resp.user_code} to authenticate.`
-        deviceCodeCallback(resp)
-        return resp
-      })
-    const expireTime = acquireTime + (res.expires_in * 1000) - 100 /* for safety */
+    if (res.status !== 200) {
+      res.text().then(console.warn)
+      throw Error('Failed to request live.com device code')
+    }
+    for (const cookie of Object.values(res.headers.raw()['set-cookie'])) {
+      const [keyval] = cookie.split(';')
+      cookies.push(keyval)
+    }
+    const resp = await checkStatus(res)
+    resp.message = `To sign in, use a web browser to open the page ${resp.verification_uri} and enter the code ${resp.user_code} to authenticate.`
+    deviceCodeCallback(resp)
+
+    const expireTime = acquireTime + (resp.expires_in * 1000) - 100 /* for safety */
 
     this.polling = true
     while (this.polling && expireTime > Date.now()) {
-      await new Promise(resolve => setTimeout(resolve, res.interval * 1000))
+      await new Promise(resolve => setTimeout(resolve, resp.interval * 1000))
       try {
         const verifi = {
           method: 'post',
@@ -131,7 +127,7 @@ class LiveTokenManager {
           },
           body: new URLSearchParams({
             client_id: this.clientId,
-            device_code: res.device_code,
+            device_code: resp.device_code,
             grant_type: 'urn:ietf:params:oauth:grant-type:device_code'
           }).toString()
         }

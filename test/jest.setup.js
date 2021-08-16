@@ -25,6 +25,6 @@ afterEach(async () => {
   await removeCacheFiles()
 })
 
-afterAll(async () => {
+afterAll(() => {
   server.close()
 })
