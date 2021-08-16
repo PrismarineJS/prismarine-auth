@@ -10,7 +10,7 @@ class MinecraftJavaTokenManager {
   constructor (cacheLocation) {
     this.cacheLocation = cacheLocation || path.join(__dirname, './mca-cache.json')
     try {
-      this.cache = require(this.cacheLocation)
+      this.cache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
     } catch (e) {
       this.cache = {}
     }
