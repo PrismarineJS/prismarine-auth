@@ -1,23 +1,11 @@
 /* eslint-env jest */
-
-const { Authflow } = require('..')
+const { Authflow, Titles } = require('..')
 const ec = require('js-crypto-ec')
 
 describe('device code authentication', () => {
-  it('should fail if not given any options', () => {
-    expect(() => {
-      // eslint-disable-next-line
-      new Authflow()
-    }).toThrow(Error)
-  })
-
-  it('should fail if not given a cache directory', () => {
-    expect(() => new Authflow('username')).toThrow(Error)
-  })
-
   it('should give us a token', async () => {
     const onMsaCode = jest.fn()
-    const flow = new Authflow('emailIdentifier@test.prismarine', './test', { }, onMsaCode)
+    const flow = new Authflow('emailIdentifier@test.prismarine', './test', { authTitle: Titles.MinecraftNintendoSwitch }, onMsaCode)
     await flow.getXboxToken()
     expect(onMsaCode).toHaveBeenCalledWith(expect.stringMatching(/dummy token/))
   })
@@ -31,7 +19,7 @@ describe('device code authentication', () => {
     const onMsaCode = jest.fn()
     const keypair = ec.generateKey('P-384')
     const clientX509 = keypair.toString('base64')
-    const flow = new Authflow('username', './test', { }, onMsaCode)
+    const flow = new Authflow('username', './test', { authTitle: Titles.MinecraftNintendoSwitch }, onMsaCode)
     await flow.getMinecraftBedrockToken(clientX509)
     expect(onMsaCode).toHaveBeenCalledWith(expect.stringMatching(/dummy token/))
   })

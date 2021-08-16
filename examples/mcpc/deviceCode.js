@@ -1,4 +1,4 @@
-const { Authflow } = require('../index')
+const { Authflow, Titles } = require('../index')
 
 if (process.argv.length !== 4) {
   console.log('Usage: node deviceCode.js <username> <cacheDirectory>')
@@ -6,7 +6,7 @@ if (process.argv.length !== 4) {
 }
 
 const doAuth = async () => {
-  const flow = new Authflow(process.argv[2], process.argv[3], { fetchProfile: true, fetchEntitlements: true })
+  const flow = new Authflow(process.argv[2], process.argv[3], { authTitle: Titles.MinecraftJava })
   const response = await flow.getMinecraftJavaToken({ fetchEntitlements: true, fetchProfile: true })
   console.log(response)
 }

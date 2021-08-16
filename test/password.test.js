@@ -8,7 +8,7 @@ describe('password authentication', () => {
       throw new Error('Invalid credentials.')
     })
 
-    const flow = new Authflow('this.is.not@valid.email.lol', './test', { password: 'sdfasdfas' })
+    const flow = new Authflow('this.is.not@valid.email.lol', './test', { password: 'sdfasdfas', authTitle: false })
     await expect(async () => {
       return flow.getXboxToken()
     }).rejects.toThrow('Invalid credentials')
