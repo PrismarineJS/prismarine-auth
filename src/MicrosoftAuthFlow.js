@@ -30,7 +30,7 @@ class MicrosoftAuthFlow {
     this.options = options
     this.initTokenCaches(username, cache)
     this.codeCallback = codeCallback
-    this.relyingParty = options.relyingParty ?? Endpoints.BedrockXSTSRelyingParty
+    this.xbl.relyingParty = options.relyingParty ?? Endpoints.BedrockXSTSRelyingParty
   }
 
   initTokenCaches (username, cache) {

@@ -15,7 +15,7 @@ class LiveTokenManager {
 
   reloadCache () {
     try {
-      this.cache = require(this.cacheLocation)
+      this.cache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
     } catch (e) {
       this.cache = {}
       fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))

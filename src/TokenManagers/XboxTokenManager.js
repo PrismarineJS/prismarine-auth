@@ -24,7 +24,7 @@ class XboxTokenManager {
     })
     this.cacheLocation = cacheLocation || path.join(__dirname, './xbl-cache.json')
     try {
-      this.cache = require(this.cacheLocation)
+      this.cache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
     } catch (e) {
       this.cache = {}
     }
