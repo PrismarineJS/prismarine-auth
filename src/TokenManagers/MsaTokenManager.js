@@ -35,7 +35,7 @@ class MsaTokenManager {
 
   reloadCache () {
     try {
-      this.msaCache = require(this.cacheLocation)
+      this.msaCache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
     } catch (e) {
       this.msaCache = {}
       fs.writeFileSync(this.cacheLocation, JSON.stringify(this.msaCache))
