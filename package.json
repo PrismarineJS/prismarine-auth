@@ -25,6 +25,7 @@
   "homepage": "https://github.com/PrismarineJS/prismarine-auth#readme",
   "devDependencies": {
     "jest": "^27.0.6",
+    "msw": "^0.34.0",
     "prismarine-auth": "file:.",
     "standard": "^16.0.1"
   },
@@ -35,5 +36,8 @@
     "node-fetch": "^2.6.1",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2"
+  },
+  "jest": {
+    "setupFilesAfterEnv": ["./test/jest.setup.js"]
   }
 }

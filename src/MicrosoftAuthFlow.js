@@ -30,7 +30,7 @@ class MicrosoftAuthFlow {
     if (!username) throw new Error('username is required')
     if (!cache) throw new Error('cacheDirectory is required')
 
-    this.generateKeyPairPromise = null
+    this.generateKeyPairPromise = Promise.resolve()
     this.username = username
     this.options = options
     this.initTokenCaches(username, cache)
@@ -130,7 +130,7 @@ class MicrosoftAuthFlow {
       return xsts
     } else {
       debug('[xbl] Need to obtain tokens')
-      return await retry(async () => {
+      return retry(async () => {
         const msaToken = await this.getMsaToken()
         const ut = await this.xbl.getUserToken(msaToken, !this.options.authTitle)
 
@@ -186,7 +186,7 @@ class MicrosoftAuthFlow {
       if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
       this.xbl.relyingParty = Endpoints.BedrockXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
-      return await retry(async () => {
+      return retry(async () => {
         const xsts = await this.getXboxToken()
         debug('[xbl] xsts data', xsts)
         const token = await this.mba.getAccessToken(publicKey, xsts)

@@ -1,8 +1,7 @@
 /* eslint-env jest */
+
 const { Authflow } = require('..')
 const ec = require('js-crypto-ec')
-
-const curve = 'P-384'
 
 describe('device code authentication', () => {
   it('should fail if not given any options', () => {
@@ -12,18 +11,15 @@ describe('device code authentication', () => {
     }).toThrow(Error)
   })
 
-  it('should fail if not given a cache directory', (done) => {
+  it('should fail if not given a cache directory', () => {
     expect(() => new Authflow('username')).toThrow(Error)
-    done()
   })
 
-  it('should give us a token', (done) => {
-    const onMsaCode = (code) => {
-      if (!code) done(Error('missing user code'))
-      if (code.userCode) done()
-    }
+  it('should give us a token', async () => {
+    const onMsaCode = jest.fn()
     const flow = new Authflow('emailIdentifier@test.prismarine', './test', { }, onMsaCode)
-    flow.getXboxToken()
+    await flow.getXboxToken()
+    expect(onMsaCode).toHaveBeenCalledWith(expect.stringMatching(/dummy token/))
   })
 
   it('should error if no certificate is present for bedrock', () => {
@@ -31,17 +27,12 @@ describe('device code authentication', () => {
     expect(flow.getMinecraftBedrockToken()).rejects.toThrow('Need to specifiy a ECDH x509 URL encoded public key')
   })
 
-  it('should give us a token for bedrock', (done) => {
-    const onMsaCode = (code) => {
-      if (!code) done(Error('missing user code'))
-      if (code.userCode) done()
-    }
-
-    ec.generateKey(curve).then(keypair => {
-      const clientX509 = keypair.toString('base64')
-      console.log(clientX509)
-      const flow = new Authflow('username', './test', { }, onMsaCode)
-      flow.getMinecraftBedrockToken(clientX509)
-    })
+  it('should give us a token for bedrock', async () => {
+    const onMsaCode = jest.fn()
+    const keypair = ec.generateKey('P-384')
+    const clientX509 = keypair.toString('base64')
+    const flow = new Authflow('username', './test', { }, onMsaCode)
+    await flow.getMinecraftBedrockToken(clientX509)
+    expect(onMsaCode).toHaveBeenCalledWith(expect.stringMatching(/dummy token/))
   })
 })
