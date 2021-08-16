@@ -20,7 +20,7 @@ class XboxTokenManager {
     this.jwk = { ...ecKey.publicKey, alg: 'ES256', use: 'sig' }
     this.cacheLocation = cacheLocation || path.join(__dirname, './xbl-cache.json')
     try {
-      this.cache = require(this.cacheLocation)
+      this.cache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
     } catch (e) {
       this.cache = {}
     }
