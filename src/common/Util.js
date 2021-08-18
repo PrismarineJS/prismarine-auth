@@ -1,11 +1,12 @@
 const debug = require('debug')('prismarine-auth')
 
-function checkStatus (res) {
+async function checkStatus (res) {
   if (res.ok) { // res.status >= 200 && res.status < 300
     return res.json()
   } else {
-    debug('Request fail', res)
-    throw Error(res.statusText)
+    const resp = await res.json()
+    debug('Request fail', resp)
+    throw Error(`${res.statusText}: ${resp}`)
   }
 }
 
