@@ -174,7 +174,20 @@ class XboxTokenManager {
 
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Endpoints.XstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
+    const req = await fetch(Endpoints.XstsAuthorize, { method: 'post', headers, body })
+    const ret = await req.json()
+    if (!req.ok) {
+      // { Identity: '0', XErr: 2148916233, Message: '', Redirect: 'https://start.ui.xboxlive.com/CreateAccount' }
+      // https://wiki.vg/Microsoft_Authentication_Scheme#Authenticate_with_XSTS
+      // Because we do the full auth sequence like the official XAL, the issue with accounts under 18 (2148916238)
+      // should not happen through title auth. But the user must always have an xbox.com profile before being able
+      // to obtain a Minecraft or Xbox token.
+      switch (ret.XErr) {
+        case 2148916233: throw new URIError(`Failed to obtain XSTS token: ${ret.Message} ${ret.Redirect} - The user does not currently have an Xbox profile`)
+        case 2148916238: throw new URIError(`Failed to obtain XSTS token: ${ret.Message} ${ret.Redirect} - The account date of birth is under 18 years and cannot proceed unless the account is added to a Family by an adult`)
+        default: throw new Error(`Failed to obtain XSTS token: ${JSON.stringify(ret)}`)
+      }
+    }
     const xsts = {
       userXUID: ret.DisplayClaims.xui[0].xid || null,
       userHash: ret.DisplayClaims.xui[0].uhs,
@@ -188,9 +201,9 @@ class XboxTokenManager {
   }
 
   /**
-       * Requests an Xbox Live-related device token that uniquely links the XToken (aka xsts token)
-       * @param {{ DeviceType, Version }} asDevice The hardware type and version to auth as, for example Android or Nintendo
-       */
+   * Requests an Xbox Live-related device token that uniquely links the XToken (aka xsts token)
+   * @param {{ DeviceType, Version }} asDevice The hardware type and version to auth as, for example Android or Nintendo
+   */
   async getDeviceToken (asDevice) {
     const payload = {
       Properties: {

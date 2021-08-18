@@ -15,7 +15,7 @@ const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManage
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
     if (times !== 0) {
-      try { return await methodFn() } catch (e) { debug(e) }
+      try { return await methodFn() } catch (e) { if (e instanceof URIError) { throw e } else { debug(e) } }
       await new Promise(resolve => setTimeout(resolve, 2000))
       await beforeRetry()
     } else {
