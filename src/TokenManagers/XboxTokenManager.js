@@ -9,6 +9,7 @@ const fromKeyLike = require('@inrupt/jose-legacy-modules').fromKeyLike
 const fetch = require('node-fetch')
 
 const { Endpoints } = require('../common/Constants')
+const { XboxAppiOS } = require('../common/Titles')
 const { checkStatus } = require('../common/Util')
 
 const UUID = require('uuid-1345')
@@ -137,6 +138,31 @@ class XboxTokenManager {
       throw error
     }
   }
+
+  async doSisuAuth(accessToken, deviceToken) {
+		const payload = {
+			AccessToken: 't=' + accessToken,
+			AppId: XboxAppiOS,
+			DeviceToken: deviceToken,
+			Sandbox: 'RETAIL',
+			UseModernGamertag: true,
+			SiteName: 'user.auth.xboxlive.com',
+			RelyingParty: 'http://xboxlive.com',
+			ProofKey: this.jwk,
+		};
+
+    const body = JSON.stringify(payload)
+    
+    const signature = this.sign(Endpoints.SisuAuthorize, '', body).toString('base64')
+
+    const headers = { Signature: signature }
+
+    // 'User-Agent': 'XAL iOS 2021.05.20210602.001' Unsure if needed or not
+
+    const ret = await fetch(Endpoints.SisuAuthorize, { method: 'post', headers, body }).then(checkStatus)
+    debug('Sisu Auth Response', ret)
+    return ret
+	}
 
   // If we don't need Xbox Title Authentication, we can have xboxreplay lib
   // handle the auth, otherwise we need to build the request ourselves with
