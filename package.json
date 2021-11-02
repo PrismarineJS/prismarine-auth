@@ -32,8 +32,8 @@
   },
   "dependencies": {
     "@azure/msal-node": "^1.1.0",
-    "@inrupt/jose-legacy-modules": "0.0.3-3.14.3",
     "@xboxreplay/xboxlive-auth": "^3.3.3",
+    "jose": "^4.1.4",
     "node-fetch": "^2.6.1",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2"
