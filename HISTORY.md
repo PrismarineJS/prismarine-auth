@@ -1,5 +1,9 @@
 ## History
 
+### 1.2.1
+
+* bump jose dep
+
 ### 1.2.0
 * Improve error handling (#15)
 * Fix caching, relyingParty issue (#13)
