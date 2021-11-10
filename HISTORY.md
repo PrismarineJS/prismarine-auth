@@ -1,5 +1,14 @@
 ## History
 
+### 1.2.1
+
+* bump jose dep
+
+### 1.2.0
+* Improve error handling (#15)
+* Fix caching, relyingParty issue (#13)
+* Documentation updates, see [API usage](https://github.com/PrismarineJS/prismarine-auth/blob/master/docs/API.md).
+
 ### 1.1.2
 
 * proper fix
