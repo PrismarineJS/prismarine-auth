@@ -13,6 +13,7 @@ This is the main exposed class you interact with. Every instance holds its own t
 * `options`
   * `password` (optional) If you specify this option, we use password based auth.
   * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Set to `false` if doing password auth.
+  * `deviceType` (optional) if specifying an authTitle, the device type to auth as. For example, `Win32`, `iOS`, `Android`, `Nintendo`
   * `relyingParty` (optional) "relying party", apart of xbox auth api
 * `codeCallback` (optional) The callback to call when doing device code auth. Otherwise, the code will be logged to the console.
 
@@ -45,12 +46,12 @@ The return object are multiple JWTs returned from the auth server, from both the
 
 ### Titles
 
-* A list of known client IDs for convenience. Currently exposes `MinecraftNintendoSwitch` and `MinecraftJava`. These should be passed to `Authflow` options constructor.
+* A list of known client IDs for convenience. Currently exposes `MinecraftNintendoSwitch` and `MinecraftJava`. These should be passed to `Authflow` options constructor (make sure to set appropriate `deviceType`).
 
 Example usage :
 ```js
 const { Authflow, Titles } = require('prismarine-auth')
-const flow = new Authflow('', './', { authTitle: TitlesMinecraftJava })
+const flow = new Authflow('', './', { authTitle: TitlesMinecraftJava, deviceType: 'Nintendo' })
 flow.getMinecraftJavaToken().then(console.log)
 ```
 
@@ -65,3 +66,4 @@ flow.getMinecraftJavaToken().then(console.log)
   * You will get an error if you don't specify it when calling `getMinecraftJavaToken` or `getMinecraftBedrockToken` when doing device code auth. You can set it to `false` to skip signing.
 * If you just want an Microsoft/Xbox token, you do not need to specify a authTitle.
 * If doing password auth, set this option to false.
+* If specifying this, you also should provide a `deviceType`, see the doc above

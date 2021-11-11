@@ -20,6 +20,7 @@ npm install prismarine-auth
 - options {Object?}
     - [password] {string} - If passed we will do password based authentication.
     - [authTitle] {string} - See the [API.md](docs/API.md)
+    - [deviceType] {string} - See the [API.md](docs/API.md)
 - onMsaCode {Function} - (For device code auth) What we should do when we get the code. Useful for passing the code to another function.
 
 [View more examples](https://github.com/PrismarineJS/prismarine-auth/tree/master/examples) 
@@ -48,7 +49,7 @@ const { Authflow, Titles } = require('prismarine-auth')
 
 const userIdentifier = 'any unique identifier'
 const cacheDir = './' // You can leave this as undefined unless you want to specify a caching directory
-const options = { authTitle: Titles.MinecraftJava }
+const options = { authTitle: Titles.MinecraftJava, deviceType: 'Win32' }
 const flow = new Authflow(userIdentifier, cacheDir, options)
 // Get a Minecraft Java Edition auth token, then log it
 flow.getMinecraftJavaToken().then(console.log)
