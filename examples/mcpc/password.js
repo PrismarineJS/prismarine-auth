@@ -1,4 +1,4 @@
-const { Authflow } = require('../index')
+const { Authflow } = require('prismarine-auth')
 
 if (process.argv.length !== 5) {
   console.log('Usage: node password.js <username> <password> <cacheDirectory>')
@@ -11,4 +11,4 @@ const doAuth = async () => {
   console.log(response)
 }
 
-doAuth()
+module.exports = doAuth()

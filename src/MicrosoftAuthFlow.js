@@ -119,7 +119,7 @@ class MicrosoftAuthFlow {
         const ut = await this.xbl.getUserToken(msaToken, !this.options.authTitle)
 
         if (this.options.authTitle) {
-          const deviceToken = await this.xbl.getDeviceToken({ DeviceType: 'Nintendo', Version: '0.0.0' })
+          const deviceToken = await this.xbl.getDeviceToken(this.options)
           const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
           const xsts = await this.xbl.getXSTSToken(ut, deviceToken, titleToken)
           return xsts
