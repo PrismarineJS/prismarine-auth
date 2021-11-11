@@ -6,7 +6,7 @@ async function checkStatus (res) {
   } else {
     const resp = await res.json()
     debug('Request fail', resp)
-    throw Error(`${res.statusText}: ${resp}`)
+    throw Error(`${res.statusText}: ${JSON.stringify(resp)}`)
   }
 }
 
