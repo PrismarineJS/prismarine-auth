@@ -209,9 +209,9 @@ class XboxTokenManager {
       Properties: {
         AuthMethod: 'ProofOfPossession',
         Id: `{${nextUUID()}}`,
-        DeviceType: asDevice.DeviceType || 'Android',
+        DeviceType: asDevice.deviceType || 'Nintendo',
         SerialNumber: `{${nextUUID()}}`,
-        Version: asDevice.Version || '10',
+        Version: asDevice.deviceVersion || '0.0.0',
         ProofKey: this.jwk
       },
       RelyingParty: 'http://auth.xboxlive.com',
