@@ -1,5 +1,8 @@
 ## History
 
+### 1.3.0
+* Add `deviceType` and `deviceVersion` options to Authflow options [#21](https://github.com/PrismarineJS/prismarine-auth/pull/21)
+
 ### 1.2.1
 
 * bump jose dep
