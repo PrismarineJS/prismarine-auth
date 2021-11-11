@@ -1,14 +1,16 @@
-const { Authflow, Titles } = require('../index')
+const { Authflow, Titles } = require('prismarine-auth')
 
-if (process.argv.length !== 4) {
-  console.log('Usage: node deviceCode.js <username> <cacheDirectory>')
+const [, , username, cacheDir] = process.argv
+
+if (!username) {
+  console.log('Usage: node deviceCode.js <username> [cacheDirectory]')
   process.exit(1)
 }
 
-const doAuth = async () => {
-  const flow = new Authflow(process.argv[2], process.argv[3], { authTitle: Titles.MinecraftJava })
+async function doAuth () {
+  const flow = new Authflow(username, cacheDir, { authTitle: Titles.MinecraftJava, deviceType: 'Win32' })
   const response = await flow.getMinecraftJavaToken({ fetchEntitlements: true, fetchProfile: true })
   console.log(response)
 }
 
-doAuth()
+module.exports = doAuth()

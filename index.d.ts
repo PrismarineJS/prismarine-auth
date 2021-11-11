@@ -37,6 +37,8 @@ declare module 'prismarine-auth' {
   export interface MicrosoftAuthFlowOptions {
     relyingParty?: RelyingParty
     authTitle?: Titles
+    deviceType?: String
+    deviceVersion?: String
     password?: String
   }
 
