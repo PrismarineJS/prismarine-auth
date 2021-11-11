@@ -51,7 +51,7 @@ The return object are multiple JWTs returned from the auth server, from both the
 Example usage :
 ```js
 const { Authflow, Titles } = require('prismarine-auth')
-const flow = new Authflow('', './', { authTitle: TitlesMinecraftJava, deviceType: 'Nintendo' })
+const flow = new Authflow('', './', { authTitle: Titles.MinecraftJava, deviceType: 'Win32' })
 flow.getMinecraftJavaToken().then(console.log)
 ```
 
