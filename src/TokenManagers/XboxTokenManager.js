@@ -9,7 +9,6 @@ const { exportJWK } = require('jose')
 const fetch = require('node-fetch')
 
 const { Endpoints } = require('../common/Constants')
-const { XboxAppiOS } = require('../common/Titles')
 const { checkStatus } = require('../common/Util')
 
 const UUID = require('uuid-1345')
@@ -139,20 +138,20 @@ class XboxTokenManager {
     }
   }
 
-  async doSisuAuth(accessToken, deviceToken, options) {
-		const payload = {
-			AccessToken: 't=' + accessToken,
-			AppId: options.authTitle,
-			DeviceToken: deviceToken,
-			Sandbox: 'RETAIL',
-			UseModernGamertag: true,
-			SiteName: 'user.auth.xboxlive.com',
-			RelyingParty: options.relyingParty || 'http://xboxlive.com/',
-			ProofKey: this.jwk,
-		};
+  async doSisuAuth (accessToken, deviceToken, options) {
+    const payload = {
+      AccessToken: 't=' + accessToken,
+      AppId: options.authTitle,
+      DeviceToken: deviceToken,
+      Sandbox: 'RETAIL',
+      UseModernGamertag: true,
+      SiteName: 'user.auth.xboxlive.com',
+      RelyingParty: options.relyingParty || 'http://xboxlive.com/',
+      ProofKey: this.jwk
+    }
 
     const body = JSON.stringify(payload)
-    
+
     const signature = this.sign(Endpoints.SisuAuthorize, '', body).toString('base64')
 
     const headers = { Signature: signature }
