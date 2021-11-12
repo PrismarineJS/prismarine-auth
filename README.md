@@ -49,8 +49,7 @@ const { Authflow, Titles } = require('prismarine-auth')
 
 const userIdentifier = 'any unique identifier'
 const cacheDir = './' // You can leave this as undefined unless you want to specify a caching directory
-const options = { authTitle: Titles.MinecraftJava, deviceType: 'Win32' }
-const flow = new Authflow(userIdentifier, cacheDir, options)
+const flow = new Authflow(userIdentifier, cacheDir, { authTitle: false })
 // Get a Minecraft Java Edition auth token, then log it
 flow.getMinecraftJavaToken().then(console.log)
 ```

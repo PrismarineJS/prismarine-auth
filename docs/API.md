@@ -35,8 +35,8 @@ flow.getXboxToken().then(console.log)
 #### getMinecraftJavaToken (options?: { fetchEntitlements?: boolean fetchProfile?: boolean }) : Promise<{ token: string, entitlements: object, profile: object }>
 
 Returns a Minecraft Java Edition auth token. 
-* If you specify `fetchEntitlements` optional option, we will check if the account owns Minecraft and return the results of the API call.
-* If you specify `fetchProfile`, we will do a call to `https://api.minecraftservices.com/minecraft/profile` for the currently signed in user and returns the results.
+* If you specify `fetchEntitlements` optional option, we will check if the account owns Minecraft and return the results of the API call. Undefined if request fails.
+* If you specify `fetchProfile`, we will do a call to `https://api.minecraftservices.com/minecraft/profile` for the currently signed in user and returns the results. Undefined if request fails.
 
 ### getMinecraftBedrockToken (publicKey: KeyObject): Promise<string[]>
 
@@ -51,7 +51,7 @@ The return object are multiple JWTs returned from the auth server, from both the
 Example usage :
 ```js
 const { Authflow, Titles } = require('prismarine-auth')
-const flow = new Authflow('', './', { authTitle: Titles.MinecraftJava, deviceType: 'Win32' })
+const flow = new Authflow('', './', { authTitle: Titles.MinecraftNintendoSwitch, deviceType: 'Nintendo' })
 flow.getMinecraftJavaToken().then(console.log)
 ```
 

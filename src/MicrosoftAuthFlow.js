@@ -148,10 +148,10 @@ class MicrosoftAuthFlow {
     }
 
     if (options.fetchEntitlements) {
-      response.entitlements = await this.mca.fetchEntitlements(response.token)
+      response.entitlements = await this.mca.fetchEntitlements(response.token).catch(e => debug('Failed to obtain entitlement data', e))
     }
     if (options.fetchProfile) {
-      response.profile = await this.mca.fetchProfile(response.token)
+      response.profile = await this.mca.fetchProfile(response.token).catch(e => debug('Failed to obtain profile data', e))
     }
 
     return response
