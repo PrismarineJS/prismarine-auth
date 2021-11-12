@@ -116,6 +116,15 @@ class MicrosoftAuthFlow {
       debug('[xbl] Need to obtain tokens')
       return await retry(async () => {
         const msaToken = await this.getMsaToken()
+
+        if (this.options.doSisuAuth) {
+          assert(this.options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor when using sisu authentication')
+          debug(`[xbl] Sisu flow selected, trying to authenticate with authTitle ID ${this.options.authTitle}`)
+          const deviceToken = await this.xbl.getDeviceToken(this.options)
+          const sisu = await this.xbl.doSisuAuth(msaToken, deviceToken, this.options)
+          return sisu
+        }
+
         const ut = await this.xbl.getUserToken(msaToken, !this.options.authTitle)
 
         if (this.options.authTitle) {

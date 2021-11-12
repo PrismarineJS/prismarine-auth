@@ -139,15 +139,15 @@ class XboxTokenManager {
     }
   }
 
-  async doSisuAuth(accessToken, deviceToken) {
+  async doSisuAuth(accessToken, deviceToken, options) {
 		const payload = {
 			AccessToken: 't=' + accessToken,
-			AppId: XboxAppiOS,
+			AppId: options.authTitle,
 			DeviceToken: deviceToken,
 			Sandbox: 'RETAIL',
 			UseModernGamertag: true,
 			SiteName: 'user.auth.xboxlive.com',
-			RelyingParty: 'http://xboxlive.com',
+			RelyingParty: options.relyingParty || 'http://xboxlive.com/',
 			ProofKey: this.jwk,
 		};
 
@@ -157,12 +157,20 @@ class XboxTokenManager {
 
     const headers = { Signature: signature }
 
-    // 'User-Agent': 'XAL iOS 2021.05.20210602.001' Unsure if needed or not
-
     const ret = await fetch(Endpoints.SisuAuthorize, { method: 'post', headers, body }).then(checkStatus)
     debug('Sisu Auth Response', ret)
-    return ret
-	}
+
+    const xsts = {
+      userXUID: ret.AuthorizationToken.DisplayClaims.xui[0].xid || null,
+      userHash: ret.AuthorizationToken.DisplayClaims.xui[0].uhs,
+      XSTSToken: ret.AuthorizationToken.Token,
+      expiresOn: ret.AuthorizationToken.NotAfter
+    }
+
+    this.setCachedXstsToken(xsts)
+    debug('[xbl] xsts', xsts)
+    return xsts
+  }
 
   // If we don't need Xbox Title Authentication, we can have xboxreplay lib
   // handle the auth, otherwise we need to build the request ourselves with
