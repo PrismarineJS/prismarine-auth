@@ -19,8 +19,10 @@ npm install prismarine-auth
 - cacheDirectory? {String} - Where we will store your tokens (optional)
 - options {Object?}
     - [password] {string} - If passed we will do password based authentication.
+    - [doSisuAuth] {boolean} - See the [API.md](docs/API.md)
     - [authTitle] {string} - See the [API.md](docs/API.md)
     - [deviceType] {string} - See the [API.md](docs/API.md)
+
 - onMsaCode {Function} - (For device code auth) What we should do when we get the code. Useful for passing the code to another function.
 
 [View more examples](https://github.com/PrismarineJS/prismarine-auth/tree/master/examples) 

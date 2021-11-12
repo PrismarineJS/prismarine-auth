@@ -39,6 +39,7 @@ declare module 'prismarine-auth' {
     authTitle?: Titles
     deviceType?: String
     deviceVersion?: String
+    doSisuAuth?: Boolean
     password?: String
   }
 
