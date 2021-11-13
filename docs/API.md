@@ -76,4 +76,4 @@ flow.getMinecraftJavaToken().then(console.log)
 * When `doSisuAuth` is defined as true, we will generate an xsts token using the sisu flow which is utilised in some Xbox mobile apps. 
 * This flow allows generation of tokens for authTitles that normally wouldn't work using the normal flow, such as XboxAppIOS, XboxGamepassIOS and MinecraftJava. 
 * This flow will not currently work for custom Azure apps
-* When specifying this, you should also provide an `authTitle` and a corresponding `deviceType`. For example `{ authTitle: Titles.MinecraftJava, asDevice: 'Win32' }` failing this will cause a Forbidden HTTP error.
+* When specifying this, you should also provide an `authTitle` and a corresponding `deviceType`. For example `{ authTitle: Titles.MinecraftJava, deviceType: 'Win32' }` failing this will cause a Forbidden HTTP error.
