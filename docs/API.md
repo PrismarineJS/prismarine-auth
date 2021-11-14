@@ -12,8 +12,9 @@ This is the main exposed class you interact with. Every instance holds its own t
 * `cache` (optional, default='node_modules') - Where to store cached tokens. node_modules if not specified.
 * `options`
   * `password` (optional) If you specify this option, we use password based auth.
-  * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Set to `false` if doing password auth.
+  * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Set to `false` if doing password auth. Required if doing sisu auth
   * `deviceType` (optional) if specifying an authTitle, the device type to auth as. For example, `Win32`, `iOS`, `Android`, `Nintendo`
+  * `doSisuAuth` (optional) If you specify this option, we use sisu based auth.
   * `relyingParty` (optional) "relying party", apart of xbox auth api
 * `codeCallback` (optional) The callback to call when doing device code auth. Otherwise, the code will be logged to the console.
 
@@ -24,6 +25,8 @@ This is the main exposed class you interact with. Every instance holds its own t
 #### getXboxToken () : Promise<{ userXUID: string, userHash: string, XSTSToken: string, expiresOn: number }>
 
 [Returns XSTS token data](https://docs.microsoft.com/en-us/gaming/xbox-live/api-ref/xbox-live-rest/additional/edsauthorization).
+
+* Define `doSisuAuth` as true if you're trying to generate an xsts token using an authTitle such as XboxAppIOS, XboxGamepassIOS or MinecraftJava
 
 Example usage :
 ```js
@@ -67,3 +70,10 @@ flow.getMinecraftJavaToken().then(console.log)
 * If you just want an Microsoft/Xbox token, you do not need to specify a authTitle.
 * If doing password auth, set this option to false.
 * If specifying this, you also should provide a `deviceType`, see the doc above
+
+### What does "doSisuAuth" do ?
+
+* When `doSisuAuth` is defined as true, we will generate an xsts token using the sisu flow which is utilised in some Xbox mobile apps. 
+* This flow allows generation of tokens for authTitles that normally wouldn't work using the normal flow, such as XboxAppIOS, XboxGamepassIOS and MinecraftJava. 
+* This flow will not currently work for custom Azure apps
+* When specifying this, you should also provide an `authTitle` and a corresponding `deviceType`. For example `{ authTitle: Titles.MinecraftJava, deviceType: 'Win32' }` failing this will cause a Forbidden HTTP error.

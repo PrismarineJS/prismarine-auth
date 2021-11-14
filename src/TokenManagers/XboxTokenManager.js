@@ -62,6 +62,19 @@ class XboxTokenManager {
     fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
   }
 
+  checkTokenError (errorCode, response) {
+    // { Identity: '0', XErr: 2148916233, Message: '', Redirect: 'https://start.ui.xboxlive.com/CreateAccount' }
+    // https://wiki.vg/Microsoft_Authentication_Scheme#Authenticate_with_XSTS
+    // Because we do the full auth sequence like the official XAL, the issue with accounts under 18 (2148916238)
+    // should not happen through title auth. But the user must always have an xbox.com profile before being able
+    // to obtain a Minecraft or Xbox token.
+    switch (errorCode) {
+      case 2148916233: throw new URIError('Failed to obtain XSTS token: The user does not currently have an Xbox profile - https://signup.live.com/signup')
+      case 2148916238: throw new URIError('Failed to obtain XSTS token: The account date of birth is under 18 years and cannot proceed unless the account is added to a Family by an adult - https://account.microsoft.com/family')
+      default: throw new Error(`Failed to obtain XSTS token: ${JSON.stringify(response)}`)
+    }
+  }
+
   async verifyTokens () {
     const ut = this.getCachedUserToken()
     const xt = this.getCachedXstsToken()
@@ -138,6 +151,41 @@ class XboxTokenManager {
     }
   }
 
+  async doSisuAuth (accessToken, deviceToken, options) {
+    const payload = {
+      AccessToken: 't=' + accessToken,
+      AppId: options.authTitle,
+      DeviceToken: deviceToken,
+      Sandbox: 'RETAIL',
+      UseModernGamertag: true,
+      SiteName: 'user.auth.xboxlive.com',
+      RelyingParty: options.relyingParty || 'http://xboxlive.com',
+      ProofKey: this.jwk
+    }
+
+    const body = JSON.stringify(payload)
+
+    const signature = this.sign(Endpoints.SisuAuthorize, '', body).toString('base64')
+
+    const headers = { Signature: signature }
+
+    const req = await fetch(Endpoints.SisuAuthorize, { method: 'post', headers, body })
+    const ret = await req.json()
+    if (!req.ok) this.checkTokenError(parseInt(req.headers.get('x-err')), ret)
+
+    debug('Sisu Auth Response', ret)
+    const xsts = {
+      userXUID: ret.AuthorizationToken.DisplayClaims.xui[0].xid || null,
+      userHash: ret.AuthorizationToken.DisplayClaims.xui[0].uhs,
+      XSTSToken: ret.AuthorizationToken.Token,
+      expiresOn: ret.AuthorizationToken.NotAfter
+    }
+
+    this.setCachedXstsToken(xsts)
+    debug('[xbl] xsts', xsts)
+    return xsts
+  }
+
   // If we don't need Xbox Title Authentication, we can have xboxreplay lib
   // handle the auth, otherwise we need to build the request ourselves with
   // the extra token data.
@@ -176,18 +224,8 @@ class XboxTokenManager {
 
     const req = await fetch(Endpoints.XstsAuthorize, { method: 'post', headers, body })
     const ret = await req.json()
-    if (!req.ok) {
-      // { Identity: '0', XErr: 2148916233, Message: '', Redirect: 'https://start.ui.xboxlive.com/CreateAccount' }
-      // https://wiki.vg/Microsoft_Authentication_Scheme#Authenticate_with_XSTS
-      // Because we do the full auth sequence like the official XAL, the issue with accounts under 18 (2148916238)
-      // should not happen through title auth. But the user must always have an xbox.com profile before being able
-      // to obtain a Minecraft or Xbox token.
-      switch (ret.XErr) {
-        case 2148916233: throw new URIError(`Failed to obtain XSTS token: ${ret.Message} ${ret.Redirect} - The user does not currently have an Xbox profile`)
-        case 2148916238: throw new URIError(`Failed to obtain XSTS token: ${ret.Message} ${ret.Redirect} - The account date of birth is under 18 years and cannot proceed unless the account is added to a Family by an adult`)
-        default: throw new Error(`Failed to obtain XSTS token: ${JSON.stringify(ret)}`)
-      }
-    }
+    if (!req.ok) this.checkTokenError(ret.XErr, ret)
+
     const xsts = {
       userXUID: ret.DisplayClaims.xui[0].xid || null,
       userHash: ret.DisplayClaims.xui[0].uhs,
