@@ -72,7 +72,7 @@ class MicrosoftAuthFlow {
     if (!cache) throw new Error('You must provide a cache directory to reset.')
     try {
       if (fs.existsSync(cache)) {
-        fs.rmdirSync(cache, { recursive: true })
+        fs.rmSync(cache, { recursive: true })
         return true
       }
     } catch (e) {
