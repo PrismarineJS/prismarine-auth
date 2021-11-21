@@ -1,23 +1,21 @@
-const fs = require('fs')
-const path = require('path')
 const msal = require('@azure/msal-node')
 const debug = require('debug')('prismarine-auth')
 
 class MsaTokenManager {
-  constructor (msalConfig, scopes, cacheLocation) {
+  constructor (msalConfig, scopes, cache) {
     this.msaClientId = msalConfig.auth.clientId
     this.scopes = scopes
-    this.cacheLocation = cacheLocation || path.join(__dirname, './msa-cache.json')
+    this.cache = cache
 
-    this.reloadCache()
+    // this.reloadCache()
 
     const beforeCacheAccess = async (cacheContext) => {
-      cacheContext.tokenCache.deserialize(await fs.promises.readFile(this.cacheLocation, 'utf-8'))
+      cacheContext.tokenCache.deserialize(JSON.stringify(await this.cache.getCached()))
     }
 
     const afterCacheAccess = async (cacheContext) => {
       if (cacheContext.cacheHasChanged) {
-        await fs.promises.writeFile(this.cacheLocation, cacheContext.tokenCache.serialize())
+        await this.cache.setCachedPartial(JSON.parse(cacheContext.tokenCache.serialize()))
       }
     }
 
@@ -33,15 +31,6 @@ class MsaTokenManager {
     this.msalConfig = msalConfig
   }
 
-  reloadCache () {
-    try {
-      this.msaCache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
-    } catch (e) {
-      this.msaCache = {}
-      fs.writeFileSync(this.cacheLocation, JSON.stringify(this.msaCache))
-    }
-  }
-
   getUsers () {
     const accounts = this.msaCache.Account
     const users = []
@@ -52,8 +41,8 @@ class MsaTokenManager {
     return users
   }
 
-  getAccessToken () {
-    const tokens = this.msaCache.AccessToken
+  async getAccessToken () {
+    const { AccessToken: tokens } = await this.cache.getCached()
     if (!tokens) return
     const account = Object.values(tokens).filter(t => t.client_id === this.msaClientId)[0]
     if (!account) {
@@ -65,8 +54,8 @@ class MsaTokenManager {
     return { valid, until, token: account.secret }
   }
 
-  getRefreshToken () {
-    const tokens = this.msaCache.RefreshToken
+  async getRefreshToken () {
+    const { RefreshToken: tokens } = await this.cache.getCached()
     if (!tokens) return
     const account = Object.values(tokens).filter(t => t.client_id === this.msaClientId)[0]
     if (!account) {
@@ -77,7 +66,7 @@ class MsaTokenManager {
   }
 
   async refreshTokens () {
-    const rtoken = this.getRefreshToken()
+    const rtoken = await this.getRefreshToken()
     if (!rtoken) {
       throw new Error('Cannot refresh without refresh token')
     }
@@ -100,8 +89,8 @@ class MsaTokenManager {
 
   async verifyTokens () {
     if (this.forceRefresh) try { await this.refreshTokens() } catch { }
-    const at = this.getAccessToken()
-    const rt = this.getRefreshToken()
+    const at = await this.getAccessToken()
+    const rt = await this.getRefreshToken()
     if (!at || !rt) {
       return false
     }
@@ -132,8 +121,14 @@ class MsaTokenManager {
     return new Promise((resolve, reject) => {
       this.msalApp.acquireTokenByDeviceCode(deviceCodeRequest).then((response) => {
         debug('[msa] device_code resp', JSON.stringify(response))
-        if (!this.msaCache.Account) this.msaCache.Account = { '': response.account }
-        resolve(response)
+        this.cache.getCached()
+          .then(cached => {
+            if (!cached.Account) {
+              cached.Account = { '': response.account }
+              this.cache.setCachedPartial(cached)
+            }
+            resolve(response)
+          })
       }).catch((error) => {
         console.warn('[msa] Error getting device code')
         console.debug(JSON.stringify(error))

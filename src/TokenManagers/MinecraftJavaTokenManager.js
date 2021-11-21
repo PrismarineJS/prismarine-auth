@@ -1,5 +1,3 @@
-const fs = require('fs')
-const path = require('path')
 const debug = require('debug')('prismarine-auth')
 const fetch = require('node-fetch')
 
@@ -7,18 +5,13 @@ const { Endpoints, fetchOptions } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class MinecraftJavaTokenManager {
-  constructor (cacheLocation) {
-    this.cacheLocation = cacheLocation || path.join(__dirname, './mca-cache.json')
-    try {
-      this.cache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
-    } catch (e) {
-      this.cache = {}
-    }
+  constructor (cache) {
+    this.cache = cache
   }
 
-  getCachedAccessToken () {
-    const token = this.cache.mca
-    debug('[mc] token cache', this.cache)
+  async getCachedAccessToken () {
+    const { mca: token } = await this.cache.getCached()
+    debug('[mc] token cache', token)
     if (!token) return
     const expires = token.obtainedOn + (token.expires_in * 1000)
     const remaining = expires - Date.now()
@@ -26,14 +19,17 @@ class MinecraftJavaTokenManager {
     return { valid, until: expires, token: token.access_token, data: token }
   }
 
-  setCachedAccessToken (data) {
-    data.obtainedOn = Date.now()
-    this.cache.mca = data
-    fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
+  async setCachedAccessToken (data) {
+    await this.cache.setCachedPartial({
+      mca: {
+        ...data,
+        obtainedOn: Date.now()
+      }
+    })
   }
 
   async verifyTokens () {
-    const at = this.getCachedAccessToken()
+    const at = await this.getCachedAccessToken()
     if (!at || this.forceRefresh) {
       return false
     }
@@ -53,7 +49,7 @@ class MinecraftJavaTokenManager {
     }).then(checkStatus)
 
     debug('[mc] mc auth response', MineServicesResponse)
-    this.setCachedAccessToken(MineServicesResponse)
+    await this.setCachedAccessToken(MineServicesResponse)
     return MineServicesResponse.access_token
   }
 

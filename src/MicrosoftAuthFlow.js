@@ -5,6 +5,7 @@ const assert = require('assert')
 const debug = require('debug')('prismarine-auth')
 
 const { Endpoints, msalConfig } = require('./common/Constants')
+const { FileCache } = require('./common/cache/FileCache')
 
 const LiveTokenManager = require('./TokenManagers/LiveTokenManager')
 const JavaTokenManager = require('./TokenManagers/MinecraftJavaTokenManager')
@@ -28,44 +29,44 @@ class MicrosoftAuthFlow {
   constructor (username = '', cache = __dirname, options = {}, codeCallback) {
     this.username = username
     this.options = options
-    this.initTokenCaches(username, cache)
+    this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
     this.xbl.relyingParty = options.relyingParty ?? Endpoints.BedrockXSTSRelyingParty
   }
 
-  initTokenCaches (username, cache) {
-    const hash = sha1(username).substr(0, 6)
+  initTokenManagers (username, cache) {
+    if (typeof cache !== 'function') {
+      let cachePath = cache
 
-    debug(`Using cache path: ${cache}`)
-    try {
-      if (!fs.existsSync(cache)) {
-        fs.mkdirSync(cache, { recursive: true })
+      debug(`Using cache path: ${cachePath}`)
+
+      try {
+        if (!fs.existsSync(cachePath)) {
+          fs.mkdirSync(cachePath, { recursive: true })
+        }
+      } catch (e) {
+        console.log('Failed to open cache dir', e)
+        cachePath = __dirname
       }
-    } catch (e) {
-      console.log('Failed to open cache dir', e)
-      cache = __dirname
-    }
 
-    const cachePaths = {
-      live: path.join(cache, `./${hash}_live-cache.json`),
-      msa: path.join(cache, `./${hash}_msa-cache.json`),
-      xbl: path.join(cache, `./${hash}_xbl-cache.json`),
-      mca: path.join(cache, `./${hash}_mca-cache.json`),
-      bed: path.join(cache, `./${hash}_bed-cache.json`)
+      cache = ({ cacheName, username }) => {
+        const hash = sha1(username).substr(0, 6)
+        return new FileCache(path.join(cachePath, `./${hash}_${cacheName}-cache.json`))
+      }
     }
 
     if (this.options.authTitle) { // Login with login.live.com
       const scopes = ['service::user.auth.xboxlive.com::MBI_SSL']
-      this.msa = new LiveTokenManager(this.options.authTitle, scopes, cachePaths.live)
+      this.msa = new LiveTokenManager(this.options.authTitle, scopes, cache({ cacheName: 'live', username }))
     } else { // Login with microsoftonline.com
       const scopes = ['XboxLive.signin', 'offline_access']
-      this.msa = new MsaTokenManager(msalConfig, scopes, cachePaths.msa)
+      this.msa = new MsaTokenManager(msalConfig, scopes, cache({ cacheName: 'msa', username }))
     }
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
-    this.xbl = new XboxTokenManager(keyPair, cachePaths.xbl)
-    this.mba = new BedrockTokenManager(cachePaths.bed)
-    this.mca = new JavaTokenManager(cachePaths.mca)
+    this.xbl = new XboxTokenManager(keyPair, cache({ cacheName: 'xbl', username }))
+    this.mba = new BedrockTokenManager(cache({ cacheName: 'bed', username }))
+    this.mca = new JavaTokenManager(cache({ cacheName: 'mca', username }))
   }
 
   static resetTokenCaches (cache) {
@@ -84,7 +85,8 @@ class MicrosoftAuthFlow {
   async getMsaToken () {
     if (await this.msa.verifyTokens()) {
       debug('[msa] Using existing tokens')
-      return this.msa.getAccessToken().token
+      const { token } = await this.msa.getAccessToken()
+      return token
     } else {
       debug('[msa] No valid cached tokens, need to sign in')
       const ret = await this.msa.authDeviceCode((response) => {
@@ -107,7 +109,8 @@ class MicrosoftAuthFlow {
   async getXboxToken () {
     if (await this.xbl.verifyTokens()) {
       debug('[xbl] Using existing XSTS token')
-      return this.xbl.getCachedXstsToken().data
+      const { data } = await this.xbl.getCachedXstsToken()
+      return data
     } else if (this.options.password) {
       debug('[xbl] password is present, trying to authenticate using xboxreplay/xboxlive-auth')
       const xsts = await this.xbl.doReplayAuth(this.username, this.options.password)
@@ -145,7 +148,8 @@ class MicrosoftAuthFlow {
     const response = { token: '', entitlements: {}, profile: {} }
     if (await this.mca.verifyTokens()) {
       debug('[mc] Using existing tokens')
-      response.token = this.mca.getCachedAccessToken().token
+      const { token } = await this.mca.getCachedAccessToken()
+      response.token = token
     } else {
       this.xbl.relyingParty = Endpoints.PCXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
@@ -172,7 +176,8 @@ class MicrosoftAuthFlow {
     // is this even a good idea to cache?
     if (await this.mba.verifyTokens() && false) { // eslint-disable-line
       debug('[mc] Using existing tokens')
-      return this.mba.getCachedAccessToken().chain
+      const { chain } = this.mba.getCachedAccessToken()
+      return chain
     } else {
       if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
       this.xbl.relyingParty = Endpoints.BedrockXSTSRelyingParty
