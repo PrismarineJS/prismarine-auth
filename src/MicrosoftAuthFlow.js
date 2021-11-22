@@ -5,7 +5,7 @@ const assert = require('assert')
 const debug = require('debug')('prismarine-auth')
 
 const { Endpoints, msalConfig } = require('./common/Constants')
-const { FileCache } = require('./common/cache/FileCache')
+const FileCache = require('./common/cache/FileCache')
 
 const LiveTokenManager = require('./TokenManagers/LiveTokenManager')
 const JavaTokenManager = require('./TokenManagers/MinecraftJavaTokenManager')

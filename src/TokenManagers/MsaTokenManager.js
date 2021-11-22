@@ -7,8 +7,6 @@ class MsaTokenManager {
     this.scopes = scopes
     this.cache = cache
 
-    // this.reloadCache()
-
     const beforeCacheAccess = async (cacheContext) => {
       cacheContext.tokenCache.deserialize(JSON.stringify(await this.cache.getCached()))
     }
