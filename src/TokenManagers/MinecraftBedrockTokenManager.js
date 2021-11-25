@@ -1,5 +1,3 @@
-const fs = require('fs')
-const path = require('path')
 const debug = require('debug')('prismarine-auth')
 const fetch = require('node-fetch')
 
@@ -7,22 +5,17 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class BedrockTokenManager {
-  constructor (cacheLocation) {
-    this.cacheLocation = cacheLocation || path.join(__dirname, './bed-cache.json')
-    try {
-      this.cache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
-    } catch (e) {
-      this.cache = {}
-    }
+  constructor (cache) {
+    this.cache = cache
   }
 
-  getCachedAccessToken () {
-    const token = this.cache.mca
-    debug('[mc] token cache', this.cache)
+  async getCachedAccessToken () {
+    const { mca: token } = await this.cache.getCached()
+    debug('[mc] token cache', token)
     if (!token) return
     debug('Auth token', token)
     const jwt = token.chain[0]
-      const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
+    const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
 
     const body = JSON.parse(String(payload))
     const expires = new Date(body.exp * 1000)
@@ -31,14 +24,17 @@ class BedrockTokenManager {
     return { valid, until: expires, chain: token.chain }
   }
 
-  setCachedAccessToken (data) {
-    data.obtainedOn = Date.now()
-    this.cache.mca = data
-    fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
+  async setCachedAccessToken (data) {
+    await this.cache.setCachedPartial({
+      mca: {
+        ...data,
+        obtainedOn: Date.now()
+      }
+    })
   }
 
   async verifyTokens () {
-    const at = this.getCachedAccessToken()
+    const at = await this.getCachedAccessToken()
     if (!at || this.forceRefresh) {
       return false
     }
@@ -63,7 +59,7 @@ class BedrockTokenManager {
     }).then(checkStatus)
 
     debug('[mc] mc auth response', MineServicesResponse)
-    this.setCachedAccessToken(MineServicesResponse)
+    await this.setCachedAccessToken(MineServicesResponse)
     return MineServicesResponse
   }
 }

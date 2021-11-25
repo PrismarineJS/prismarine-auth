@@ -1,4 +1,3 @@
-const fs = require('fs')
 const debug = require('debug')('prismarine-auth')
 const fetch = require('node-fetch')
 
@@ -6,26 +5,16 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class LiveTokenManager {
-  constructor (clientId, scopes, cacheLocation) {
+  constructor (clientId, scopes, cache) {
     this.clientId = clientId
     this.scopes = scopes
-    this.cacheLocation = cacheLocation
-    this.reloadCache()
-  }
-
-  reloadCache () {
-    try {
-      this.cache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
-    } catch (e) {
-      this.cache = {}
-      fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
-    }
+    this.cache = cache
   }
 
   async verifyTokens () {
     if (this.forceRefresh) try { await this.refreshTokens() } catch { }
-    const at = this.getAccessToken()
-    const rt = this.getRefreshToken()
+    const at = await this.getAccessToken()
+    const rt = await this.getRefreshToken()
     if (!at || !rt) {
       return false
     }
@@ -63,26 +52,29 @@ class LiveTokenManager {
     return token
   }
 
-  getAccessToken () {
-    const token = this.cache.token
+  async getAccessToken () {
+    const { token } = await this.cache.getCached()
     if (!token) return
     const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
     const valid = until > 1000
     return { valid, until, token: token.access_token }
   }
 
-  getRefreshToken () {
-    const token = this.cache.token
+  async getRefreshToken () {
+    const { token } = await this.cache.getCached()
     if (!token) return
     const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
     const valid = until > 1000
     return { valid, until, token: token.refresh_token }
   }
 
-  updateCache (data) {
-    data.obtainedOn = Date.now()
-    this.cache.token = data
-    fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
+  async updateCache (data) {
+    await this.cache.setCachedPartial({
+      token: {
+        ...data,
+        obtainedOn: Date.now()
+      }
+    })
   }
 
   async authDeviceCode (deviceCodeCallback) {
