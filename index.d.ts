@@ -6,11 +6,11 @@ declare module 'prismarine-auth' {
     /**
      * Creates a new Authflow instance, which holds its own token cache
      * @param username A unique identifier. If using password auth, this should be an email.
-     * @param cache Where to place token cache
+     * @param cache Where to place token cache or a cache factory function.
      * @param options Options
      * @param codeCallback Optional callback to recieve token information using device code auth
      */
-    constructor(username?: string, cache?: string, options?: MicrosoftAuthFlowOptions, codeCallback?: Function)
+    constructor(username?: string, cache?: string | CacheFactory, options?: MicrosoftAuthFlowOptions, codeCallback?: Function)
     /**
      * Deletes the caches in the specified cache directory.
      */
@@ -53,4 +53,12 @@ declare module 'prismarine-auth' {
     BedrockXSTSRelyingParty = 'https://multiplayer.minecraft.net/',
     XboxXSTSRelyingParty = 'http://auth.xboxlive.com/'
   }
+
+  export interface Cache {
+    getCached(): Promise<any>
+    setCached(value: any): Promise<void>
+    setCachedPartial(value: any): Promise<void>
+  }
+
+  export type CacheFactory = (options: { username: string, cacheName: string }) => Cache
 }

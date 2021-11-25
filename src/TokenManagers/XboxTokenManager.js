@@ -1,5 +1,3 @@
-const fs = require('fs')
-const path = require('path')
 const crypto = require('crypto')
 
 const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
@@ -16,24 +14,19 @@ const nextUUID = () => UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c
 
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {
-  constructor (ecKey, cacheLocation) {
+  constructor (ecKey, cache) {
     this.relyingParty = Endpoints.XboxXSTSRelyingParty
     this.key = ecKey
     exportJWK(ecKey.publicKey).then(jwk => {
       this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }
     })
-    this.cacheLocation = cacheLocation || path.join(__dirname, './xbl-cache.json')
-    try {
-      this.cache = JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
-    } catch (e) {
-      this.cache = {}
-    }
+    this.cache = cache
 
     this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
   }
 
-  getCachedUserToken () {
-    const token = this.cache.userToken
+  async getCachedUserToken () {
+    const { userToken: token } = await this.cache.getCached()
     if (!token) return
     const until = new Date(token.NotAfter)
     const dn = Date.now()
@@ -42,8 +35,8 @@ class XboxTokenManager {
     return { valid, token: token.Token, data: token }
   }
 
-  getCachedXstsToken () {
-    const token = this.cache.xstsToken
+  async getCachedXstsToken () {
+    const { xstsToken: token } = await this.cache.getCached()
     if (!token) return
     const until = new Date(token.expiresOn)
     const dn = Date.now()
@@ -52,14 +45,12 @@ class XboxTokenManager {
     return { valid, token: token.XSTSToken, data: token }
   }
 
-  setCachedUserToken (data) {
-    this.cache.userToken = data
-    fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
+  async setCachedUserToken (data) {
+    await this.cache.setCachedPartial({ userToken: data })
   }
 
-  setCachedXstsToken (data) {
-    this.cache.xstsToken = data
-    fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
+  async setCachedXstsToken (data) {
+    await this.cache.setCachedPartial({ xstsToken: data })
   }
 
   checkTokenError (errorCode, response) {
@@ -76,8 +67,8 @@ class XboxTokenManager {
   }
 
   async verifyTokens () {
-    const ut = this.getCachedUserToken()
-    const xt = this.getCachedXstsToken()
+    const ut = await this.getCachedUserToken()
+    const xt = await this.getCachedXstsToken()
     if (!ut || !xt || this.forceRefresh) {
       return false
     }
@@ -99,7 +90,7 @@ class XboxTokenManager {
     debug('[xbl] obtaining xbox token with ms token', msaAccessToken)
     msaAccessToken = (azure ? 'd=' : 't=') + msaAccessToken
     const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(msaAccessToken)
-    this.setCachedUserToken(xblUserToken)
+    await this.setCachedUserToken(xblUserToken)
     debug('[xbl] user token:', xblUserToken)
     return xblUserToken
   }
@@ -140,7 +131,7 @@ class XboxTokenManager {
       const preAuthResponse = await XboxLiveAuth.preAuth()
       const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password })
       const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(logUserResponse.access_token)
-      this.setCachedUserToken(xblUserToken)
+      await this.setCachedUserToken(xblUserToken)
       debug('[xbl] user token:', xblUserToken)
       const xsts = await this.getXSTSToken(xblUserToken)
       return xsts
@@ -181,7 +172,7 @@ class XboxTokenManager {
       expiresOn: ret.AuthorizationToken.NotAfter
     }
 
-    this.setCachedXstsToken(xsts)
+    await this.setCachedXstsToken(xsts)
     debug('[xbl] xsts', xsts)
     return xsts
   }
@@ -195,7 +186,7 @@ class XboxTokenManager {
     debug('[xbl] obtaining xsts token with xbox user token (with XboxReplay)', xblUserToken.Token)
     debug(this.relyingParty)
     const xsts = await XboxLiveAuth.exchangeUserTokenForXSTSIdentity(xblUserToken.Token, { XSTSRelyingParty: this.relyingParty, raw: false })
-    this.setCachedXstsToken(xsts)
+    await this.setCachedXstsToken(xsts)
     debug('[xbl] xsts', xsts)
     return xsts
   }
@@ -233,7 +224,7 @@ class XboxTokenManager {
       expiresOn: ret.NotAfter
     }
 
-    this.setCachedXstsToken(xsts)
+    await this.setCachedXstsToken(xsts)
     debug('[xbl] xsts', xsts)
     return xsts
   }

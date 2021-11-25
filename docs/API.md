@@ -4,12 +4,12 @@
 
 This is the main exposed class you interact with. Every instance holds its own token cache.
 
-#### constructor (username?: string, cacheDir?: string, options?: MicrosoftAuthFlowOptions, codeCallback?: Function)
+#### constructor (username?: string, cacheDir?: string | CacheFactory, options?: MicrosoftAuthFlowOptions, codeCallback?: Function)
 
 * `username` (optional, default='')
   * When using device code auth - a unique id
   * When using password auth - your microsoft account email
-* `cache` (optional, default='node_modules') - Where to store cached tokens. node_modules if not specified.
+* `cache` (optional, default='node_modules') - Where to store cached tokens or a cache factory function. node_modules if not specified.
 * `options`
   * `password` (optional) If you specify this option, we use password based auth.
   * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Set to `false` if doing password auth. Required if doing sisu auth
@@ -37,7 +37,7 @@ flow.getXboxToken().then(console.log)
 
 #### getMinecraftJavaToken (options?: { fetchEntitlements?: boolean fetchProfile?: boolean }) : Promise<{ token: string, entitlements: object, profile: object }>
 
-Returns a Minecraft Java Edition auth token. 
+Returns a Minecraft Java Edition auth token.
 * If you specify `fetchEntitlements` optional option, we will check if the account owns Minecraft and return the results of the API call. Undefined if request fails.
 * If you specify `fetchProfile`, we will do a call to `https://api.minecraftservices.com/minecraft/profile` for the currently signed in user and returns the results. Undefined if request fails.
 
@@ -58,6 +58,56 @@ const flow = new Authflow('', './', { authTitle: Titles.MinecraftNintendoSwitch,
 flow.getMinecraftJavaToken().then(console.log)
 ```
 
+### Cache
+
+A cache can be used to alter the cache location. Instead of using the filesystem you can implement the cache your self.
+
+This is done by creating a class that supports three methods:
+
+```typescript
+// Return the stored value, this can be called multiple times
+getCached(): Promise<any>
+// Replace the stored value
+setCached(value: any): Promise<void>
+// Replace an part of the stored value. Implement this using the spread operator
+setCachedPartial(value: any): Promise<void>
+```
+
+### CacheFactory
+
+The cache factory is used to create new instances of the cache. This libary will call your factory function for each cache instance it needs to create.
+
+Your function will be passed an object with the following properties:
+
+```js
+{
+  username: string, // Name of the user we're trying to get a token for
+  cacheName: string, // Depends on the cache usage, each cache has a unique name
+}
+```
+
+You could create a minimal in memory cache like this:
+
+```js
+class InMemoryCache {
+  private cache = {}
+  async getCached () {
+    return this.cache
+  }
+  async setCached (value) {
+    this.cache = value
+  }
+  async setCachedPartial (value) {
+    this.cache = {
+      ...this.cache,
+      ...value
+    }
+  }
+}
+
+const cacheFactory = ({ username, cacheName }) => new InMemoryCache()
+```
+
 ## FAQ
 
 ### What does "authTitle" do ?
@@ -73,7 +123,7 @@ flow.getMinecraftJavaToken().then(console.log)
 
 ### What does "doSisuAuth" do ?
 
-* When `doSisuAuth` is defined as true, we will generate an xsts token using the sisu flow which is utilised in some Xbox mobile apps. 
-* This flow allows generation of tokens for authTitles that normally wouldn't work using the normal flow, such as XboxAppIOS, XboxGamepassIOS and MinecraftJava. 
+* When `doSisuAuth` is defined as true, we will generate an xsts token using the sisu flow which is utilised in some Xbox mobile apps.
+* This flow allows generation of tokens for authTitles that normally wouldn't work using the normal flow, such as XboxAppIOS, XboxGamepassIOS and MinecraftJava.
 * This flow will not currently work for custom Azure apps
 * When specifying this, you should also provide an `authTitle` and a corresponding `deviceType`. For example `{ authTitle: Titles.MinecraftJava, deviceType: 'Win32' }` failing this will cause a Forbidden HTTP error.
