@@ -1,5 +1,11 @@
 ## History
 
+### 1.4.0
+
+* Allow to use a custom cache instead of using the filesystem only (#26)
+* Replace `fs.rmdirSync` with `fs.rmSync` (#25)
+* Add `doSisuAuth` option (#24)
+
 ### 1.3.0
 * Add `deviceType` and `deviceVersion` options to Authflow options [#21](https://github.com/PrismarineJS/prismarine-auth/pull/21)
 
