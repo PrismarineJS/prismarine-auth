@@ -33,7 +33,7 @@ class LiveTokenManager {
   }
 
   async refreshTokens () {
-    const rtoken = this.getRefreshToken()
+    const rtoken = await this.getRefreshToken()
     if (!rtoken) {
       throw new Error('Cannot refresh without refresh token')
     }
