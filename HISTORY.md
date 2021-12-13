@@ -1,8 +1,11 @@
 ## History
 
+### 1.4.1
+* Correct missing await statement in live token refreshing (#29) - @dustinrue
+
 ### 1.4.0
 
-* Allow to use a custom cache instead of using the filesystem only (#26)
+* Allow to use a custom cache instead of using the filesystem only (#26) - @Paulomart
 * Replace `fs.rmdirSync` with `fs.rmSync` (#25)
 * Add `doSisuAuth` option (#24)
 
