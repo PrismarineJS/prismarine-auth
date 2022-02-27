@@ -1,5 +1,8 @@
 ## History
 
+### 1.4.2
+* add debug dependency (#31) - @safazi
+
 ### 1.4.1
 * Correct missing await statement in live token refreshing (#29) - @dustinrue
 
