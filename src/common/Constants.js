@@ -3,6 +3,7 @@ module.exports = {
     PCXSTSRelyingParty: 'rp://api.minecraftservices.com/',
     BedrockXSTSRelyingParty: 'https://multiplayer.minecraft.net/',
     XboxXSTSRelyingParty: 'http://auth.xboxlive.com/',
+    RealmsRelyingParty: 'https://pocket.realms.minecraft.net/',
     BedrockAuth: 'https://multiplayer.minecraft.net/authentication',
     XboxDeviceAuth: 'https://device.auth.xboxlive.com/device/authenticate',
     XboxTitleAuth: 'https://title.auth.xboxlive.com/title/authenticate',
@@ -12,7 +13,8 @@ module.exports = {
     MinecraftServicesEntitlement: 'https://api.minecraftservices.com/entitlements/mcstore',
     MinecraftServicesProfile: 'https://api.minecraftservices.com/minecraft/profile',
     LiveDeviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
-    LiveTokenRequest: 'https://login.live.com/oauth20_token.srf'
+    LiveTokenRequest: 'https://login.live.com/oauth20_token.srf',
+    RealmsAPIHost: 'https://pocket.realms.minecraft.net'
   },
   msalConfig: {
     // Initialize msal
