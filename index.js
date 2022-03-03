@@ -5,7 +5,6 @@ if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[
 }
 
 module.exports = {
-  RealmAPI: require('./src/api/index'),
   Authflow: require('./src/MicrosoftAuthFlow'),
   Titles: require('./src/common/Titles')
 }
