@@ -12,6 +12,7 @@ const JavaTokenManager = require('./TokenManagers/MinecraftJavaTokenManager')
 const XboxTokenManager = require('./TokenManagers/XboxTokenManager')
 const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
 const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManager')
+const RealmAPI = require('../minecraftrealms/index')
 
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
@@ -67,6 +68,7 @@ class MicrosoftAuthFlow {
     this.xbl = new XboxTokenManager(keyPair, cache({ cacheName: 'xbl', username }))
     this.mba = new BedrockTokenManager(cache({ cacheName: 'bed', username }))
     this.mca = new JavaTokenManager(cache({ cacheName: 'mca', username }))
+    this.realm = new RealmAPI(this)
   }
 
   static resetTokenCaches (cache) {
@@ -193,6 +195,17 @@ class MicrosoftAuthFlow {
         }
         return token.chain
       }, () => { this.xbl.forceRefresh = true }, 2)
+    }
+  }
+
+  async getMinecraftRealmConnection (options) {
+    const api = (options.realm.type === 'bedrock') ? this.realm.bedrock : this.realm.java
+    if (options.realm.pickRealm) {
+      assert(typeof options.realm.pickRealm === 'function', 'pickRealm option needs to be a function')
+      const realms = await api.getRealms()
+      const realm = options.realm.pickRealm(realms)
+      assert(realm, 'Invalid pickRealm function, no Realm was returned')
+      return await retry(async () => await api.getRealmConnection(realm.id), function(){}, 3) 
     }
   }
 }
