@@ -12,7 +12,7 @@ module.exports = {
     MinecraftServicesEntitlement: 'https://api.minecraftservices.com/entitlements/mcstore',
     MinecraftServicesProfile: 'https://api.minecraftservices.com/minecraft/profile',
     LiveDeviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
-    LiveTokenRequest: 'https://login.live.com/oauth20_token.srf',
+    LiveTokenRequest: 'https://login.live.com/oauth20_token.srf'
   },
   msalConfig: {
     // Initialize msal

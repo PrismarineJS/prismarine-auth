@@ -205,7 +205,7 @@ class MicrosoftAuthFlow {
       const realms = await api.getRealms()
       const realm = options.realm.pickRealm(realms)
       assert(realm, 'Invalid pickRealm function, no Realm was returned')
-      return await retry(async () => await api.getRealmConnection(realm.id), function(){}, 3) 
+      return await retry(async () => await api.getRealmConnection(realm.id), function () {}, 3)
     }
   }
 }

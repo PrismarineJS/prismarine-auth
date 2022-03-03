@@ -8,7 +8,7 @@ class RealmAPI {
       getRealms: () => _BedrockGetRealms(Authflow)
     }
     this.java = {
-      
+
     }
   }
 }
