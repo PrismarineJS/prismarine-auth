@@ -152,10 +152,9 @@ class MicrosoftAuthFlow {
       const { token } = await this.mca.getCachedAccessToken()
       response.token = token
     } else {
-      this.xbl.relyingParty = Endpoints.PCXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
       await retry(async () => {
-        const xsts = await this.getXboxToken()
+        const xsts = await this.getXboxToken(Endpoints.PCXSTSRelyingParty)
         debug('[xbl] xsts data', xsts)
         response.token = await this.mca.getAccessToken(xsts)
       }, () => { this.xbl.forceRefresh = true }, 2)
@@ -181,10 +180,9 @@ class MicrosoftAuthFlow {
       return chain
     } else {
       if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
-      this.xbl.relyingParty = Endpoints.BedrockXSTSRelyingParty
       debug('[mc] Need to obtain tokens')
       return await retry(async () => {
-        const xsts = await this.getXboxToken()
+        const xsts = await this.getXboxToken(Endpoints.BedrockXSTSRelyingParty)
         debug('[xbl] xsts data', xsts)
         const token = await this.mba.getAccessToken(publicKey, xsts)
         // If we want to auth with a title ID, make sure there's a TitleID in the response
