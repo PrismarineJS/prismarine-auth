@@ -4,6 +4,7 @@ const crypto = require('crypto')
 const assert = require('assert')
 const debug = require('debug')('prismarine-auth')
 
+const { createHash } = require('./common/Util')
 const { Endpoints, msalConfig } = require('./common/Constants')
 const FileCache = require('./common/cache/FileCache')
 
@@ -31,7 +32,6 @@ class MicrosoftAuthFlow {
     this.options = options
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
-    this.xbl.relyingParty = options.relyingParty ?? Endpoints.BedrockXSTSRelyingParty
   }
 
   initTokenManagers (username, cache) {
@@ -50,7 +50,7 @@ class MicrosoftAuthFlow {
       }
 
       cache = ({ cacheName, username }) => {
-        const hash = sha1(username).substr(0, 6)
+        const hash = createHash(username)
         return new FileCache(path.join(cachePath, `./${hash}_${cacheName}-cache.json`))
       }
     }
@@ -106,14 +106,15 @@ class MicrosoftAuthFlow {
     }
   }
 
-  async getXboxToken () {
-    if (await this.xbl.verifyTokens()) {
+  async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.XboxRelyingParty) {
+    this.options.relyingParty = relyingParty
+    if (await this.xbl.verifyTokens(relyingParty)) {
       debug('[xbl] Using existing XSTS token')
-      const { data } = await this.xbl.getCachedXstsToken()
+      const { data } = await this.xbl.getCachedXstsToken(relyingParty)
       return data
     } else if (this.options.password) {
       debug('[xbl] password is present, trying to authenticate using xboxreplay/xboxlive-auth')
-      const xsts = await this.xbl.doReplayAuth(this.username, this.options.password)
+      const xsts = await this.xbl.doReplayAuth(this.username, this.options.password, this.options)
       return xsts
     } else {
       debug('[xbl] Need to obtain tokens')
@@ -133,10 +134,10 @@ class MicrosoftAuthFlow {
         if (this.options.authTitle) {
           const deviceToken = await this.xbl.getDeviceToken(this.options)
           const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
-          const xsts = await this.xbl.getXSTSToken(ut, deviceToken, titleToken)
+          const xsts = await this.xbl.getXSTSToken(ut, deviceToken, titleToken, this.options)
           return xsts
         } else {
-          const xsts = await this.xbl.getXSTSToken(ut)
+          const xsts = await this.xbl.getXSTSToken(ut, null, null, this.options)
           return xsts
         }
       }, () => { this.msa.forceRefresh = true }, 2)
@@ -195,10 +196,6 @@ class MicrosoftAuthFlow {
       }, () => { this.xbl.forceRefresh = true }, 2)
     }
   }
-}
-
-function sha1 (data) {
-  return crypto.createHash('sha1').update(data ?? '', 'binary').digest('hex')
 }
 
 module.exports = MicrosoftAuthFlow
