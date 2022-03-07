@@ -182,7 +182,7 @@ class XboxTokenManager {
   // handle the auth, otherwise we need to build the request ourselves with
   // the extra token data.
   async getXSTSToken (xblUserToken, deviceToken, titleToken, options = {}) {
-    if (deviceToken && titleToken) return this.getXSTSTokenWithTitle(xblUserToken, deviceToken, titleToken)
+    if (deviceToken && titleToken) return this.getXSTSTokenWithTitle(xblUserToken, deviceToken, titleToken, options)
 
     debug('[xbl] obtaining xsts token with xbox user token (with XboxReplay)', xblUserToken.Token)
     debug(options.relyingParty)
