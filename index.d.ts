@@ -19,7 +19,7 @@ declare module 'prismarine-auth' {
     // Returns a Microsoft Oauth access token -- https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens
     getMsaToken(): Promise<string>
     // Returns an XSTS token -- https://docs.microsoft.com/en-us/gaming/xbox-live/api-ref/xbox-live-rest/additional/edsauthorization
-    getXboxToken(): Promise<{
+    getXboxToken(relyingParty?: string): Promise<{
       userXUID: string,
       userHash: string,
       XSTSToken: string,
@@ -35,7 +35,6 @@ declare module 'prismarine-auth' {
   }
 
   export interface MicrosoftAuthFlowOptions {
-    relyingParty?: RelyingParty
     authTitle?: Titles
     deviceType?: String
     deviceVersion?: String
@@ -51,7 +50,8 @@ declare module 'prismarine-auth' {
   export enum RelyingParty {
     PCXSTSRelyingParty = 'rp://api.minecraftservices.com/',
     BedrockXSTSRelyingParty = 'https://multiplayer.minecraft.net/',
-    XboxXSTSRelyingParty = 'http://auth.xboxlive.com/'
+    XboxAuthRelyingParty = 'http://auth.xboxlive.com/',
+    XboxRelyingParty = 'http://xboxlive.com'
   }
 
   export interface Cache {
