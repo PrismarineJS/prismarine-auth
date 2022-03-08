@@ -1,5 +1,9 @@
 ## History
 
+### 1.5.0
+* Move relyingParty option from constructor to `getXboxToken(relyingParty?: string)` ([#34](https://github.com/PrismarineJS/prismarine-auth/pull/34))
+* Fixed a bug that would cause refreshing the MSA token to error due to an undefined function 
+
 ### 1.4.2
 * add debug dependency (#31) - @safazi
 
