@@ -107,37 +107,37 @@ class MicrosoftAuthFlow {
   }
 
   async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.XboxRelyingParty) {
-    this.options.relyingParty = relyingParty
+    const options = { ...this.options, relyingParty }
     if (await this.xbl.verifyTokens(relyingParty)) {
       debug('[xbl] Using existing XSTS token')
       const { data } = await this.xbl.getCachedXstsToken(relyingParty)
       return data
-    } else if (this.options.password) {
+    } else if (options.password) {
       debug('[xbl] password is present, trying to authenticate using xboxreplay/xboxlive-auth')
-      const xsts = await this.xbl.doReplayAuth(this.username, this.options.password, this.options)
+      const xsts = await this.xbl.doReplayAuth(this.username, options.password, options)
       return xsts
     } else {
       debug('[xbl] Need to obtain tokens')
       return await retry(async () => {
         const msaToken = await this.getMsaToken()
 
-        if (this.options.doSisuAuth) {
-          assert(this.options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor when using sisu authentication')
-          debug(`[xbl] Sisu flow selected, trying to authenticate with authTitle ID ${this.options.authTitle}`)
-          const deviceToken = await this.xbl.getDeviceToken(this.options)
-          const sisu = await this.xbl.doSisuAuth(msaToken, deviceToken, this.options)
+        if (options.doSisuAuth) {
+          assert(options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor when using sisu authentication')
+          debug(`[xbl] Sisu flow selected, trying to authenticate with authTitle ID ${options.authTitle}`)
+          const deviceToken = await this.xbl.getDeviceToken(options)
+          const sisu = await this.xbl.doSisuAuth(msaToken, deviceToken, options)
           return sisu
         }
 
-        const ut = await this.xbl.getUserToken(msaToken, !this.options.authTitle)
+        const ut = await this.xbl.getUserToken(msaToken, !options.authTitle)
 
-        if (this.options.authTitle) {
-          const deviceToken = await this.xbl.getDeviceToken(this.options)
+        if (options.authTitle) {
+          const deviceToken = await this.xbl.getDeviceToken(options)
           const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
-          const xsts = await this.xbl.getXSTSToken(ut, deviceToken, titleToken, this.options)
+          const xsts = await this.xbl.getXSTSToken(ut, deviceToken, titleToken, options)
           return xsts
         } else {
-          const xsts = await this.xbl.getXSTSToken(ut, null, null, this.options)
+          const xsts = await this.xbl.getXSTSToken(ut, null, null, options)
           return xsts
         }
       }, () => { this.msa.forceRefresh = true }, 2)
