@@ -28,7 +28,7 @@ module.exports = {
   fetchOptions: {
     headers: {
       'Content-Type': 'application/json',
-      'User-Agent': 'node-minecraft-protocol'
+      'User-Agent': 'MinecraftLauncher/2.2.10675'
     }
   }
 }
