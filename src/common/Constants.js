@@ -5,6 +5,7 @@ module.exports = {
     XboxAuthRelyingParty: 'http://auth.xboxlive.com/',
     XboxRelyingParty: 'http://xboxlive.com',
     BedrockAuth: 'https://multiplayer.minecraft.net/authentication',
+    XboxUserAuth: 'https://user.auth.xboxlive.com/user/authenticate',
     XboxDeviceAuth: 'https://device.auth.xboxlive.com/device/authenticate',
     XboxTitleAuth: 'https://title.auth.xboxlive.com/title/authenticate',
     SisuAuthorize: 'https://sisu.xboxlive.com/authorize',
