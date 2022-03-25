@@ -82,13 +82,28 @@ class XboxTokenManager {
     }
   }
 
-  async getUserToken (msaAccessToken, azure) {
-    debug('[xbl] obtaining xbox token with ms token', msaAccessToken)
-    msaAccessToken = (azure ? 'd=' : 't=') + msaAccessToken
-    const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(msaAccessToken)
-    await this.setCachedUserToken(xblUserToken)
-    debug('[xbl] user token:', xblUserToken)
-    return xblUserToken
+  async getUserToken (accessToken, azure) {
+    debug('[xbl] obtaining xbox token with ms token', accessToken)
+    const preamble = azure ? 'd=' : 't='
+
+    const payload = {
+      RelyingParty: 'http://auth.xboxlive.com',
+      TokenType: 'JWT',
+      Properties: {
+        AuthMethod: 'RPS',
+        SiteName: 'user.auth.xboxlive.com',
+        RpsTicket: `${preamble}${accessToken}`
+      }
+    }
+
+    const body = JSON.stringify(payload)
+    const signature = this.sign(Endpoints.XboxUserAuth, '', body).toString('base64')
+    const headers = { ...this.headers, signature, 'Content-Type': 'application/json', accept: 'application/json', 'x-xbl-contract-version': '2' }
+
+    const ret = await fetch(Endpoints.XboxUserAuth, { method: 'post', headers, body }).then(checkStatus)
+    await this.setCachedUserToken(ret)
+    debug('[xbl] user token:', ret)
+    return ret.Token
   }
 
   // Make signature for the data being sent to server with our private key; server is sent our public key in plaintext
@@ -126,10 +141,11 @@ class XboxTokenManager {
     try {
       const preAuthResponse = await XboxLiveAuth.preAuth()
       const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password })
-      const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(logUserResponse.access_token)
-      await this.setCachedUserToken(xblUserToken)
-      debug('[xbl] user token:', xblUserToken)
-      const xsts = await this.getXSTSToken(xblUserToken, null, null, options)
+      const userToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(logUserResponse.access_token)
+      const deviceToken = await this.getDeviceToken(options)
+      await this.setCachedUserToken(userToken)
+      debug('[xbl] user token:', userToken)
+      const xsts = await this.getXSTSToken({ userToken: userToken.Token, deviceToken }, options)
       return xsts
     } catch (error) {
       debug('Authentication using a password has failed.')
