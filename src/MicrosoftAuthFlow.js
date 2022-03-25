@@ -129,15 +129,15 @@ class MicrosoftAuthFlow {
           return sisu
         }
 
-        const ut = await this.xbl.getUserToken(msaToken, !options.authTitle)
+        const userToken = await this.xbl.getUserToken(msaToken, !options.authTitle)
 
         if (options.authTitle) {
           const deviceToken = await this.xbl.getDeviceToken(options)
           const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
-          const xsts = await this.xbl.getXSTSToken(ut, deviceToken, titleToken, options)
+          const xsts = await this.xbl.getXSTSToken({ userToken, deviceToken, titleToken }, options)
           return xsts
         } else {
-          const xsts = await this.xbl.getXSTSToken(ut, null, null, options)
+          const xsts = await this.xbl.getXSTSToken({ userToken }, options)
           return xsts
         }
       }, () => { this.msa.forceRefresh = true }, 2)

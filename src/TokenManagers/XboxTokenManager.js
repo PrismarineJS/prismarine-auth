@@ -173,31 +173,16 @@ class XboxTokenManager {
     return xsts
   }
 
-  // If we don't need Xbox Title Authentication, we can have xboxreplay lib
-  // handle the auth, otherwise we need to build the request ourselves with
-  // the extra token data.
-  async getXSTSToken (xblUserToken, deviceToken, titleToken, options = {}) {
-    if (deviceToken && titleToken) return this.getXSTSTokenWithTitle(xblUserToken, deviceToken, titleToken, options)
-
-    debug('[xbl] obtaining xsts token with xbox user token (with XboxReplay)', xblUserToken.Token)
-    debug(options.relyingParty)
-    const xsts = await XboxLiveAuth.exchangeUserTokenForXSTSIdentity(xblUserToken.Token, { XSTSRelyingParty: options.relyingParty, raw: false })
-    await this.setCachedXstsToken(xsts, options.relyingParty)
-    debug('[xbl] xsts', xsts)
-    return xsts
-  }
-
-  async getXSTSTokenWithTitle (xblUserToken, deviceToken, titleToken, options = {}) {
-    const userToken = xblUserToken.Token
-    debug('[xbl] obtaining xsts token with xbox user token', userToken)
+  async getXSTSToken (tokens, options = {}) {
+    debug('[xbl] obtaining xsts token', tokens)
 
     const payload = {
       RelyingParty: options.relyingParty,
       TokenType: 'JWT',
       Properties: {
-        UserTokens: [userToken],
-        DeviceToken: deviceToken,
-        TitleToken: titleToken,
+        UserTokens: [tokens.userToken],
+        DeviceToken: tokens.deviceToken,
+        TitleToken: tokens.titleToken,
         OptionalDisplayClaims: options.optionalDisplayClaims,
         ProofKey: this.jwk,
         SandboxId: 'RETAIL'
