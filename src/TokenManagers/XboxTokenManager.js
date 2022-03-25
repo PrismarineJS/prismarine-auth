@@ -168,6 +168,7 @@ class XboxTokenManager {
       expiresOn: ret.AuthorizationToken.NotAfter
     }
 
+    await this.setCachedUserToken(ret.UserToken)
     await this.setCachedXstsToken(xsts, options.relyingParty)
     debug('[xbl] xsts', xsts)
     return xsts
