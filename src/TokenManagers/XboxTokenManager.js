@@ -26,7 +26,7 @@ class XboxTokenManager {
 
   async getCachedUserToken () {
     const { userToken: token } = await this.cache.getCached()
-    if (!token) return
+    if (!token) return { valid: false }
     const until = new Date(token.NotAfter)
     const dn = Date.now()
     const remainingMs = until - dn
@@ -37,7 +37,7 @@ class XboxTokenManager {
   async getCachedXstsToken (relyingParty) {
     const key = createHash(relyingParty)
     const { [key]: token } = await this.cache.getCached()
-    if (!token) return
+    if (!token) return { valid: false }
     const until = new Date(token.expiresOn)
     const dn = Date.now()
     const remainingMs = until - dn
@@ -68,23 +68,18 @@ class XboxTokenManager {
   }
 
   async verifyTokens (relyingParty) {
+    if (this.forceRefresh) return false
     const ut = await this.getCachedUserToken()
     const xt = await this.getCachedXstsToken(relyingParty)
-    if (!ut || !xt || this.forceRefresh) {
+    debug('[xbl] have user, xsts', ut, xt)
+    if ((ut.valid && xt.valid) || xt.valid) return true
+    if (!ut.valid) return false
+    try {
+      await this.getXSTSToken({ userToken: ut.token }, { relyingParty })
+      return true
+    } catch (e) {
       return false
     }
-    debug('[xbl] have user, xsts', ut, xt)
-    if (ut.valid && xt.valid) {
-      return true
-    } else if (ut.valid && !xt.valid) {
-      try {
-        await this.getXSTSToken(ut.data, null, null, { relyingParty })
-        return true
-      } catch (e) {
-        return false
-      }
-    }
-    return false
   }
 
   async getUserToken (msaAccessToken, azure) {
