@@ -75,7 +75,8 @@ class XboxTokenManager {
     if ((ut.valid && xt.valid) || xt.valid) return true
     if (!ut.valid) return false
     try {
-      await this.getXSTSToken({ userToken: ut.token }, { relyingParty })
+      const deviceToken = await this.getDeviceToken({})
+      await this.getXSTSToken({ userToken: ut.token, deviceToken }, { relyingParty })
       return true
     } catch (e) {
       return false
