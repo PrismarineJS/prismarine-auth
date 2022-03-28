@@ -72,7 +72,7 @@ class XboxTokenManager {
     const ut = await this.getCachedUserToken()
     const xt = await this.getCachedXstsToken(relyingParty)
     debug('[xbl] have user, xsts', ut, xt)
-    if ((ut.valid && xt.valid) || xt.valid) return true
+    if (xt.valid) return true
     if (!ut.valid) return false
     try {
       const deviceToken = await this.getDeviceToken({})
