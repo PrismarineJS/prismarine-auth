@@ -135,7 +135,6 @@ class MicrosoftAuthFlow {
 
         const xsts = await this.xbl.getXSTSToken({ userToken, deviceToken, titleToken }, options)
         return xsts
-      
       }, () => { this.msa.forceRefresh = true }, 2)
     }
   }
