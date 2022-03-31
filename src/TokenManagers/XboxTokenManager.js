@@ -34,6 +34,26 @@ class XboxTokenManager {
     return { valid, token: token.Token, data: token }
   }
 
+  async getCachedTitleToken () {
+    const { titleToken: token } = await this.cache.getCached()
+    if (!token) return { valid: false, exists: false }
+    const until = new Date(token.NotAfter)
+    const dn = Date.now()
+    const remainingMs = until - dn
+    const valid = remainingMs > 1000
+    return { valid, exists: true, token: token.Token, data: token }
+  }
+
+  async getCachedDeviceToken () {
+    const { deviceToken: token } = await this.cache.getCached()
+    if (!token) return { valid: false, exists: false }
+    const until = new Date(token.NotAfter)
+    const dn = Date.now()
+    const remainingMs = until - dn
+    const valid = remainingMs > 1000
+    return { valid, exists: true, token: token.Token, data: token }
+  }
+
   async getCachedXstsToken (relyingParty) {
     const key = createHash(relyingParty)
     const { [key]: token } = await this.cache.getCached()
@@ -47,6 +67,14 @@ class XboxTokenManager {
 
   async setCachedUserToken (data) {
     await this.cache.setCachedPartial({ userToken: data })
+  }
+
+  async setCachedTitleToken (data) {
+    await this.cache.setCachedPartial({ titleToken: data })
+  }
+
+  async setCachedDeviceToken (data) {
+    await this.cache.setCachedPartial({ deviceToken: data })
   }
 
   async setCachedXstsToken (data, relyingParty) {
@@ -70,13 +98,16 @@ class XboxTokenManager {
   async verifyTokens (relyingParty) {
     if (this.forceRefresh) return false
     const ut = await this.getCachedUserToken()
+    const tt = await this.getCachedTitleToken()
+    const dt = await this.getCachedDeviceToken()
     const xt = await this.getCachedXstsToken(relyingParty)
     debug('[xbl] have user, xsts', ut, xt)
-    if (xt.valid) return true
-    if (!ut.valid) return false
+
+    if (!ut.valid || (dt.exists && !dt.valid) || (tt.exists && !tt.valid)) return false
+    else if (xt.valid) return true
+
     try {
-      const deviceToken = await this.getDeviceToken({})
-      await this.getXSTSToken({ userToken: ut.token, deviceToken }, { relyingParty })
+      await this.getXSTSToken({ userToken: ut.token, deviceToken: dt.token, titleToken: tt.token }, { relyingParty })
       return true
     } catch (e) {
       return false
@@ -186,13 +217,14 @@ class XboxTokenManager {
     }
 
     await this.setCachedUserToken(ret.UserToken)
+    await this.setCachedTitleToken(ret.TitleToken)
     await this.setCachedXstsToken(xsts, options.relyingParty)
     debug('[xbl] xsts', xsts)
     return xsts
   }
 
   async getXSTSToken (tokens, options = {}) {
-    debug('[xbl] obtaining xsts token', tokens)
+    debug('[xbl] obtaining xsts token', { userToken: tokens.userToken, deviceToken: tokens.deviceToken, titleToken: tokens.titleToken })
 
     const payload = {
       RelyingParty: options.relyingParty,
@@ -251,6 +283,7 @@ class XboxTokenManager {
     const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(Endpoints.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
+    await this.setCachedDeviceToken(ret)
     debug('Xbox Device Token', ret)
     return ret.Token
   }
@@ -274,6 +307,7 @@ class XboxTokenManager {
     const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(Endpoints.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
+    await this.setCachedTitleToken(ret)
     debug('Xbox Title Token', ret)
     return ret.Token
   }
