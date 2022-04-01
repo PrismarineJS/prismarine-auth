@@ -64,7 +64,7 @@ class MicrosoftAuthFlow {
     }
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
-    this.xbl = new XboxTokenManager(keyPair, cache({ cacheName: 'xbl', username }))
+    this.xbl = new XboxTokenManager(keyPair, cache({ cacheName: 'xbl', username }), this.options)
     this.mba = new BedrockTokenManager(cache({ cacheName: 'bed', username }))
     this.mca = new JavaTokenManager(cache({ cacheName: 'mca', username }))
   }

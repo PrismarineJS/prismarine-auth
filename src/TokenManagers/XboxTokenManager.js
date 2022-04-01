@@ -14,7 +14,8 @@ const nextUUID = () => UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c
 
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {
-  constructor (ecKey, cache) {
+  constructor (ecKey, cache, options) {
+    this.options = options
     this.key = ecKey
     exportJWK(ecKey.publicKey).then(jwk => {
       this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }
@@ -98,7 +99,7 @@ class XboxTokenManager {
   async verifyTokens (relyingParty) {
     if (this.forceRefresh) return false
     const ut = await this.getCachedUserToken()
-    const tt = await this.getCachedTitleToken()
+    const tt = this.options.authTitle ? await this.getCachedTitleToken() : { valid: false, exists: false }
     const dt = await this.getCachedDeviceToken()
     const xt = await this.getCachedXstsToken(relyingParty)
     debug('[xbl] have user, xsts', ut, xt)
