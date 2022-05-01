@@ -10,7 +10,7 @@ declare module 'prismarine-auth' {
      * @param options Options
      * @param codeCallback Optional callback to recieve token information using device code auth
      */
-    constructor(username?: string, cache?: string | CacheFactory, options?: MicrosoftAuthFlowOptions, codeCallback?: Function)
+    constructor(username?: string, cache?: string | CacheFactory, options?: MicrosoftAuthFlowOptions, codeCallback?: (res: { userCode: string, deviceCode: string, verificationUri:  string, expiresIn: number, interval: number, message: string }) => void, authCallback?: Function)
     /**
      * Deletes the caches in the specified cache directory.
      */

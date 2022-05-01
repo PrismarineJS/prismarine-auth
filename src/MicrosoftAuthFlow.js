@@ -27,11 +27,12 @@ async function retry (methodFn, beforeRetry, times) {
 }
 
 class MicrosoftAuthFlow {
-  constructor (username = '', cache = __dirname, options = {}, codeCallback) {
+  constructor (username = '', cache = __dirname, options = {}, codeCallback, authCallback) {
     this.username = username
     this.options = options
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
+    this.authCallback = authCallback
   }
 
   initTokenManagers (username, cache) {
@@ -90,9 +91,9 @@ class MicrosoftAuthFlow {
     } else {
       debug('[msa] No valid cached tokens, need to sign in')
       const ret = await this.msa.authDeviceCode((response) => {
+        if (this.codeCallback) return this.codeCallback(response)
         console.info('[msa] First time signing in. Please authenticate now:')
         console.info(response.message)
-        if (this.codeCallback) this.codeCallback(response)
       })
 
       if (ret.account) {
@@ -101,6 +102,7 @@ class MicrosoftAuthFlow {
         console.info('[msa] Signed in with Microsoft')
       }
 
+      this.authCallback(ret)
       debug('[msa] got auth result', ret)
       return ret.accessToken
     }
