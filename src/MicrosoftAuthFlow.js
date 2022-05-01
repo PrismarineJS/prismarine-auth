@@ -27,12 +27,11 @@ async function retry (methodFn, beforeRetry, times) {
 }
 
 class MicrosoftAuthFlow {
-  constructor (username = '', cache = __dirname, options = {}, codeCallback, authCallback) {
+  constructor (username = '', cache = __dirname, options = {}, codeCallback) {
     this.username = username
     this.options = options
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
-    this.authCallback = authCallback
   }
 
   initTokenManagers (username, cache) {
@@ -102,7 +101,6 @@ class MicrosoftAuthFlow {
         console.info('[msa] Signed in with Microsoft')
       }
 
-      this.authCallback(ret)
       debug('[msa] got auth result', ret)
       return ret.accessToken
     }
