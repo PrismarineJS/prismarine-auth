@@ -1,5 +1,8 @@
 ## History
 
+### 1.5.2
+* Don't log authentication prompt if codeCallback is specified. ([#40](https://github.com/PrismarineJS/prismarine-auth/pull/40)) - @ATXLtheAxolotl
+
 ### 1.5.1
 * Update User-Agent header @LucienHH
 
