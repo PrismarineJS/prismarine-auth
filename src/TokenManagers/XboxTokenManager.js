@@ -60,7 +60,7 @@ class XboxTokenManager {
     // Because we do the full auth sequence like the official XAL, the issue with accounts under 18 (2148916238)
     // should not happen through title auth. But the user must always have an xbox.com profile before being able
     // to obtain a Minecraft or Xbox token.
-    if (Object.prototype.hasOwnProperty.call(xboxLiveErrors, errorCode)) throw new Error(xboxLiveErrors[errorCode])
+    if (errorCode in xboxLiveErrors) throw new Error(xboxLiveErrors[errorCode])
     else throw new Error(`Xbox Live authentication failed to obtain a XSTS token. XErr: ${errorCode}\n${JSON.stringify(response)}`)
   }
 
