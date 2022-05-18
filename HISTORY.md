@@ -1,5 +1,11 @@
 ## History
 
+### 1.5.2
+* Don't log authentication prompt if codeCallback is specified. ([#40](https://github.com/PrismarineJS/prismarine-auth/pull/40)) - @ATXLtheAxolotl
+
+### 1.5.1
+* Update User-Agent header @LucienHH
+
 ### 1.5.0
 * Move relyingParty option from constructor to `getXboxToken(relyingParty?: string)` ([#34](https://github.com/PrismarineJS/prismarine-auth/pull/34))
 * Fixed a bug that would cause refreshing the MSA token to error due to an undefined function 

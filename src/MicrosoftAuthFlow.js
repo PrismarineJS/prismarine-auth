@@ -90,9 +90,9 @@ class MicrosoftAuthFlow {
     } else {
       debug('[msa] No valid cached tokens, need to sign in')
       const ret = await this.msa.authDeviceCode((response) => {
+        if (this.codeCallback) return this.codeCallback(response)
         console.info('[msa] First time signing in. Please authenticate now:')
         console.info(response.message)
-        if (this.codeCallback) this.codeCallback(response)
       })
 
       if (ret.account) {

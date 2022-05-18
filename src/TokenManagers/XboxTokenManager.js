@@ -6,7 +6,7 @@ const { SmartBuffer } = require('smart-buffer')
 const { exportJWK } = require('jose')
 const fetch = require('node-fetch')
 
-const { Endpoints } = require('../common/Constants')
+const { Endpoints, xboxLiveErrors } = require('../common/Constants')
 const { checkStatus, createHash } = require('../common/Util')
 
 const UUID = require('uuid-1345')
@@ -60,11 +60,8 @@ class XboxTokenManager {
     // Because we do the full auth sequence like the official XAL, the issue with accounts under 18 (2148916238)
     // should not happen through title auth. But the user must always have an xbox.com profile before being able
     // to obtain a Minecraft or Xbox token.
-    switch (errorCode) {
-      case 2148916233: throw new URIError('Failed to obtain XSTS token: The user does not currently have an Xbox profile - https://signup.live.com/signup')
-      case 2148916238: throw new URIError('Failed to obtain XSTS token: The account date of birth is under 18 years and cannot proceed unless the account is added to a Family by an adult - https://account.microsoft.com/family')
-      default: throw new Error(`Failed to obtain XSTS token: ${JSON.stringify(response)}`)
-    }
+    if (errorCode in xboxLiveErrors) throw new Error(xboxLiveErrors[errorCode])
+    else throw new Error(`Xbox Live authentication failed to obtain a XSTS token. XErr: ${errorCode}\n${JSON.stringify(response)}`)
   }
 
   async verifyTokens (relyingParty) {
