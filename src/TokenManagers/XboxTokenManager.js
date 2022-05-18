@@ -25,34 +25,22 @@ class XboxTokenManager {
     this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
   }
 
-  async getCachedUserToken () {
-    const { userToken: token } = await this.cache.getCached()
-    if (!token) return { valid: false }
-    const until = new Date(token.NotAfter)
-    const dn = Date.now()
-    const remainingMs = until - dn
-    const valid = remainingMs > 1000
-    return { valid, token: token.Token, data: token }
-  }
-
-  async getCachedTitleToken () {
-    const { titleToken: token } = await this.cache.getCached()
-    if (!token) return { valid: false, exists: false }
-    const until = new Date(token.NotAfter)
-    const dn = Date.now()
-    const remainingMs = until - dn
-    const valid = remainingMs > 1000
-    return { valid, exists: true, token: token.Token, data: token }
-  }
-
-  async getCachedDeviceToken () {
-    const { deviceToken: token } = await this.cache.getCached()
-    if (!token) return { valid: false, exists: false }
-    const until = new Date(token.NotAfter)
-    const dn = Date.now()
-    const remainingMs = until - dn
-    const valid = remainingMs > 1000
-    return { valid, exists: true, token: token.Token, data: token }
+  async getCachedTokens () {
+    const cache = await this.cache.getCached()
+    const tokens = {}
+    for (const key of ['userToken', 'titleToken', 'deviceToken']) {
+      const tokenData = cache[key]
+      if (!tokenData) {
+        tokens[key] = { valid: false }
+        continue
+      }
+      const until = new Date(tokenData.NotAfter)
+      const dn = new Date()
+      const remainingMs = until - dn
+      const valid = remainingMs > 1000
+      tokens[key] = { valid, token: tokenData.Token, data: tokenData }
+    }
+    return tokens
   }
 
   async getCachedXstsToken (relyingParty) {
@@ -93,23 +81,17 @@ class XboxTokenManager {
     else throw new Error(`Xbox Live authentication failed to obtain a XSTS token. XErr: ${errorCode}\n${JSON.stringify(response)}`)
   }
 
-  async verifyTokens (relyingParty) {
+  async retrieveTokens (relyingParty) {
     if (this.forceRefresh) return false
-    const ut = await this.getCachedUserToken()
-    const tt = this.options.authTitle ? await this.getCachedTitleToken() : { valid: false, exists: false }
-    const dt = await this.getCachedDeviceToken()
     const xt = await this.getCachedXstsToken(relyingParty)
-    debug('[xbl] have user, xsts', ut, xt)
-
-    if (!ut.valid || (dt.exists && !dt.valid) || (tt.exists && !tt.valid)) return false
-    else if (xt.valid) return true
-
-    try {
-      await this.getXSTSToken({ userToken: ut.token, deviceToken: dt.token, titleToken: tt.token }, { relyingParty })
-      return true
-    } catch (e) {
-      return false
-    }
+    if (xt.valid) return { xstsToken: xt.data }
+    const { userToken, titleToken, deviceToken } = await this.getCachedTokens()
+    debug('[xbl] have userToken titleToken deviceToken', userToken, titleToken, deviceToken)
+    const tokens = {}
+    if (userToken.valid) tokens.userToken = userToken.token
+    if (deviceToken.valid) tokens.deviceToken = deviceToken.token
+    if (titleToken.valid) tokens.titleToken = titleToken.token
+    return tokens
   }
 
   async getUserToken (accessToken, azure) {
@@ -171,11 +153,10 @@ class XboxTokenManager {
     try {
       const preAuthResponse = await XboxLiveAuth.preAuth()
       const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password })
-      const userToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(logUserResponse.access_token)
+      const userToken = await this.getUserToken(logUserResponse.access_token, false)
       const deviceToken = await this.getDeviceToken(options)
-      await this.setCachedUserToken(userToken)
       debug('[xbl] user token:', userToken)
-      const xsts = await this.getXSTSToken({ userToken: userToken.Token, deviceToken }, options)
+      const xsts = await this.getXSTSToken({ userToken, deviceToken }, options)
       return xsts
     } catch (error) {
       debug('Authentication using a password has failed.')
@@ -203,8 +184,8 @@ class XboxTokenManager {
     const headers = { Signature: signature }
 
     const req = await fetch(Endpoints.SisuAuthorize, { method: 'post', headers, body })
+    if (!req.ok) this.checkTokenError(parseInt(req.headers.get('x-err')), { status: req.status, statusText: req.statusText })
     const ret = await req.json()
-    if (!req.ok) this.checkTokenError(parseInt(req.headers.get('x-err')), ret)
 
     debug('Sisu Auth Response', ret)
     const xsts = {
