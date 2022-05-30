@@ -1,5 +1,9 @@
 ## History
 
+### 1.5.3
+* Fix web request error logging expecting JSON response @LucienHH
+* Add exception messages for more Xbox API errors @Kashalls
+
 ### 1.5.2
 * Don't log authentication prompt if codeCallback is specified. ([#40](https://github.com/PrismarineJS/prismarine-auth/pull/40)) - @ATXLtheAxolotl
 
