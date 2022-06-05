@@ -80,24 +80,17 @@ class XboxTokenManager {
     else throw new Error(`Xbox Live authentication failed to obtain a XSTS token. XErr: ${errorCode}\n${JSON.stringify(response)}`)
   }
 
-  async verifyTokens (relyingParty) {
-    const ut = await this.getCachedUserToken()
+  async retrieveTokens (relyingParty) {
+    if (this.forceRefresh) return {}
     const xt = await this.getCachedXstsToken(relyingParty)
-    if (!ut || !xt || this.forceRefresh) {
-      return false
-    }
-    debug('[xbl] have user, xsts', ut, xt)
-    if (ut.valid && xt.valid) {
-      return true
-    } else if (ut.valid && !xt.valid) {
-      try {
-        await this.getXSTSToken({ userToken: ut.token }, { relyingParty })
-        return true
-      } catch (e) {
-        return false
-      }
-    }
-    return false
+    if (xt.valid) return { xstsToken: xt.data }
+    const { userToken, titleToken, deviceToken } = await this.getCachedTokens()
+    debug('[xbl] have userToken titleToken deviceToken', userToken, titleToken, deviceToken)
+    const tokens = {}
+    if (userToken.valid) tokens.userToken = userToken.token
+    if (deviceToken.valid) tokens.deviceToken = deviceToken.token
+    if (titleToken.valid) tokens.titleToken = titleToken.token
+    return tokens
   }
 
   async getUserToken (accessToken, azure) {
