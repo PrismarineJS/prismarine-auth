@@ -24,14 +24,22 @@ class XboxTokenManager {
     this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
   }
 
-  async getCachedUserToken () {
-    const { userToken: token } = await this.cache.getCached()
-    if (!token) return
-    const until = new Date(token.NotAfter)
-    const dn = Date.now()
-    const remainingMs = until - dn
-    const valid = remainingMs > 1000
-    return { valid, token: token.Token, data: token }
+  async getCachedTokens () {
+    const cache = await this.cache.getCached()
+    const tokens = {}
+    for (const type of ['userToken', 'titleToken', 'deviceToken']) {
+      const tokenData = cache[type]
+      if (!tokenData) {
+        tokens[type] = { valid: false }
+        continue
+      }
+      const until = new Date(tokenData.NotAfter)
+      const dn = new Date()
+      const remainingMs = until - dn
+      const valid = remainingMs > 1000
+      tokens[type] = { valid, token: tokenData.Token, data: tokenData }
+    }
+    return tokens
   }
 
   async getCachedXstsToken (relyingParty) {
