@@ -37,7 +37,7 @@ class XboxTokenManager {
   async getCachedXstsToken (relyingParty) {
     const key = createHash(relyingParty)
     const { [key]: token } = await this.cache.getCached()
-    if (!token) return
+    if (!token) return { valid: false }
     const until = new Date(token.expiresOn)
     const dn = Date.now()
     const remainingMs = until - dn
@@ -47,6 +47,14 @@ class XboxTokenManager {
 
   async setCachedUserToken (data) {
     await this.cache.setCachedPartial({ userToken: data })
+  }
+
+  async setCachedDeviceToken (data) {
+    await this.cache.setCachedPartial({ deviceToken: data })
+  }
+
+  async setCachedTitleToken (data) {
+    await this.cache.setCachedPartial({ titleToken: data })
   }
 
   async setCachedXstsToken (data, relyingParty) {
@@ -174,8 +182,8 @@ class XboxTokenManager {
     const headers = { Signature: signature }
 
     const req = await fetch(Endpoints.SisuAuthorize, { method: 'post', headers, body })
+    if (!req.ok) this.checkTokenError(parseInt(req.headers.get('x-err')), { status: req.status, statusText: req.statusText })
     const ret = await req.json()
-    if (!req.ok) this.checkTokenError(parseInt(req.headers.get('x-err')), ret)
 
     debug('Sisu Auth Response', ret)
     const xsts = {
@@ -185,6 +193,8 @@ class XboxTokenManager {
       expiresOn: ret.AuthorizationToken.NotAfter
     }
 
+    await this.setCachedUserToken(ret.UserToken)
+    await this.setCachedTitleToken(ret.TitleToken)
     await this.setCachedXstsToken(xsts, options.relyingParty)
     debug('[xbl] xsts', xsts)
     return xsts
@@ -250,6 +260,7 @@ class XboxTokenManager {
     const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(Endpoints.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
+    await this.setCachedDeviceToken(ret)
     debug('Xbox Device Token', ret)
     return ret.Token
   }
@@ -273,6 +284,7 @@ class XboxTokenManager {
     const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(Endpoints.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
+    await this.setCachedTitleToken(ret)
     debug('Xbox Title Token', ret)
     return ret.Token
   }
