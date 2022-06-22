@@ -75,7 +75,7 @@ class XboxTokenManager {
       return true
     } else if (ut.valid && !xt.valid) {
       try {
-        await this.getXSTSToken(ut.data, null, null, { relyingParty })
+        await this.getXSTSToken({ userToken: ut.token }, { relyingParty })
         return true
       } catch (e) {
         return false
@@ -84,13 +84,28 @@ class XboxTokenManager {
     return false
   }
 
-  async getUserToken (msaAccessToken, azure) {
-    debug('[xbl] obtaining xbox token with ms token', msaAccessToken)
-    msaAccessToken = (azure ? 'd=' : 't=') + msaAccessToken
-    const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(msaAccessToken)
-    await this.setCachedUserToken(xblUserToken)
-    debug('[xbl] user token:', xblUserToken)
-    return xblUserToken
+  async getUserToken (accessToken, azure) {
+    debug('[xbl] obtaining xbox token with ms token', accessToken)
+    const preamble = azure ? 'd=' : 't='
+
+    const payload = {
+      RelyingParty: 'http://auth.xboxlive.com',
+      TokenType: 'JWT',
+      Properties: {
+        AuthMethod: 'RPS',
+        SiteName: 'user.auth.xboxlive.com',
+        RpsTicket: `${preamble}${accessToken}`
+      }
+    }
+
+    const body = JSON.stringify(payload)
+    const signature = this.sign(Endpoints.XboxUserAuth, '', body).toString('base64')
+    const headers = { ...this.headers, signature, 'Content-Type': 'application/json', accept: 'application/json', 'x-xbl-contract-version': '2' }
+
+    const ret = await fetch(Endpoints.XboxUserAuth, { method: 'post', headers, body }).then(checkStatus)
+    await this.setCachedUserToken(ret)
+    debug('[xbl] user token:', ret)
+    return ret.Token
   }
 
   // Make signature for the data being sent to server with our private key; server is sent our public key in plaintext
@@ -131,7 +146,7 @@ class XboxTokenManager {
       const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(logUserResponse.access_token)
       await this.setCachedUserToken(xblUserToken)
       debug('[xbl] user token:', xblUserToken)
-      const xsts = await this.getXSTSToken(xblUserToken, null, null, options)
+      const xsts = await this.getXSTSToken({ userToken: xblUserToken.Token }, options)
       return xsts
     } catch (error) {
       debug('Authentication using a password has failed.')
@@ -175,31 +190,16 @@ class XboxTokenManager {
     return xsts
   }
 
-  // If we don't need Xbox Title Authentication, we can have xboxreplay lib
-  // handle the auth, otherwise we need to build the request ourselves with
-  // the extra token data.
-  async getXSTSToken (xblUserToken, deviceToken, titleToken, options = {}) {
-    if (deviceToken && titleToken) return this.getXSTSTokenWithTitle(xblUserToken, deviceToken, titleToken, options)
-
-    debug('[xbl] obtaining xsts token with xbox user token (with XboxReplay)', xblUserToken.Token)
-    debug(options.relyingParty)
-    const xsts = await XboxLiveAuth.exchangeUserTokenForXSTSIdentity(xblUserToken.Token, { XSTSRelyingParty: options.relyingParty, raw: false })
-    await this.setCachedXstsToken(xsts, options.relyingParty)
-    debug('[xbl] xsts', xsts)
-    return xsts
-  }
-
-  async getXSTSTokenWithTitle (xblUserToken, deviceToken, titleToken, options = {}) {
-    const userToken = xblUserToken.Token
-    debug('[xbl] obtaining xsts token with xbox user token', userToken)
+  async getXSTSToken (tokens, options = {}) {
+    debug('[xbl] obtaining xsts token', { userToken: tokens.userToken, deviceToken: tokens.deviceToken, titleToken: tokens.titleToken })
 
     const payload = {
       RelyingParty: options.relyingParty,
       TokenType: 'JWT',
       Properties: {
-        UserTokens: [userToken],
-        DeviceToken: deviceToken,
-        TitleToken: titleToken,
+        UserTokens: [tokens.userToken],
+        DeviceToken: tokens.deviceToken,
+        TitleToken: tokens.titleToken,
         OptionalDisplayClaims: options.optionalDisplayClaims,
         ProofKey: this.jwk,
         SandboxId: 'RETAIL'
