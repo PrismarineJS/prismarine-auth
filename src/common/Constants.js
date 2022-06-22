@@ -7,6 +7,7 @@ module.exports = {
     BedrockAuth: 'https://multiplayer.minecraft.net/authentication',
     XboxDeviceAuth: 'https://device.auth.xboxlive.com/device/authenticate',
     XboxTitleAuth: 'https://title.auth.xboxlive.com/title/authenticate',
+    XboxUserAuth: 'https://user.auth.xboxlive.com/user/authenticate',
     SisuAuthorize: 'https://sisu.xboxlive.com/authorize',
     XstsAuthorize: 'https://xsts.auth.xboxlive.com/xsts/authorize',
     MinecraftServicesLogWithXbox: 'https://api.minecraftservices.com/authentication/login_with_xbox',
