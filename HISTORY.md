@@ -1,5 +1,10 @@
 ## History
 
+### 1.5.4
+
+* Combine getXSTSToken and getXSTSTokenWithTitle
+* Build own request for getUserToken
+
 ### 1.5.3
 * Fix web request error logging expecting JSON response @LucienHH
 * Add exception messages for more Xbox API errors @Kashalls
