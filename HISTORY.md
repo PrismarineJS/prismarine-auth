@@ -2,7 +2,7 @@
 
 ### 1.5.4
 
-* Combine `getXSTSToken` & `getXSTSTokenWithTitle` and implement own `getUserToken`  ([#47](https://github.com/PrismarineJS/prismarine-auth/pull/47https://github.com/PrismarineJS/prismarine-auth/pull/47))
+* XboxTokenManager: Combine `getXSTSToken` & `getXSTSTokenWithTitle` and implement own `getUserToken` ([#47](https://github.com/PrismarineJS/prismarine-auth/pull/47))
 
 ### 1.5.3
 * Fix web request error logging expecting JSON response @LucienHH
