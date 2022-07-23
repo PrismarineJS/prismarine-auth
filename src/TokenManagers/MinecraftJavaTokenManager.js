@@ -75,7 +75,7 @@ class MinecraftJavaTokenManager {
     return entitlements
   }
 
-  async fetchCertificate (accessToken) {
+  async fetchCertificates (accessToken) {
     debug(`[mc] fetching key-pair with ${accessToken.slice(0, 16)}`)
     const headers = { ...fetchOptions.headers, Authorization: `Bearer ${accessToken}` }
     const certificate = await fetch(Endpoints.MinecraftServicesCertificate, { method: 'post', headers }).then(checkStatus)

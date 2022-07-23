@@ -27,7 +27,7 @@ declare module 'prismarine-auth' {
     }>
     // Returns a Minecraft Java Edition auth token
     getMinecraftJavaToken(options?: {
-      fetchCertificate?: boolean,
+      fetchCertificates?: boolean,
       fetchEntitlements?: boolean
       fetchProfile?: boolean
     }): Promise<{ token: string, entitlements: MinecraftJavaEntitlements, profile: MinecraftJavaProfile, certificates: MinecraftJavaCertificates }>
