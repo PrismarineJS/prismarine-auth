@@ -11,6 +11,7 @@ module.exports = {
     SisuAuthorize: 'https://sisu.xboxlive.com/authorize',
     XstsAuthorize: 'https://xsts.auth.xboxlive.com/xsts/authorize',
     MinecraftServicesLogWithXbox: 'https://api.minecraftservices.com/authentication/login_with_xbox',
+    MinecraftServicesCertificate: 'https://api.minecraftservices.com/player/certificates',
     MinecraftServicesEntitlement: 'https://api.minecraftservices.com/entitlements/mcstore',
     MinecraftServicesProfile: 'https://api.minecraftservices.com/minecraft/profile',
     LiveDeviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
