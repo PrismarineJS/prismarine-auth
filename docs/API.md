@@ -39,6 +39,7 @@ flow.getXboxToken().then(console.log)
 Returns a Minecraft Java Edition auth token.
 * If you specify `fetchEntitlements` optional option, we will check if the account owns Minecraft and return the results of the API call. Undefined if request fails.
 * If you specify `fetchProfile`, we will do a call to `https://api.minecraftservices.com/minecraft/profile` for the currently signed in user and returns the results. Undefined if request fails.
+* If you specify `fetchCertificate` we will return the Mojang provided key-pair for a player, which are used for cryptographically signing chat messages 
 
 ### getMinecraftBedrockToken (publicKey: KeyObject): Promise<string[]>
 
