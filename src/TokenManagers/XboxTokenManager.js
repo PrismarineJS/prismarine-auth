@@ -24,50 +24,26 @@ class XboxTokenManager {
     this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
   }
 
-  async getCachedTokens () {
+  async getCachedTokens (relyingParty) {
     const cache = await this.cache.getCached()
     const tokens = {}
-    for (const type of ['userToken', 'titleToken', 'deviceToken']) {
+    for (const type of ['userToken', 'titleToken', 'deviceToken', createHash(relyingParty)]) {
       const tokenData = cache[type]
       if (!tokenData) {
         tokens[type] = { valid: false }
         continue
       }
-      const until = new Date(tokenData.NotAfter)
+      const until = new Date(tokenData.NotAfter ?? tokenData.expiresOn)
       const dn = new Date()
       const remainingMs = until - dn
       const valid = remainingMs > 1000
-      tokens[type] = { valid, token: tokenData.Token, data: tokenData }
+      tokens[type] = { valid, token: tokenData.Token ?? tokenData.XSTSToken, data: tokenData }
     }
     return tokens
   }
 
-  async getCachedXstsToken (relyingParty) {
-    const key = createHash(relyingParty)
-    const { [key]: token } = await this.cache.getCached()
-    if (!token) return { valid: false }
-    const until = new Date(token.expiresOn)
-    const dn = Date.now()
-    const remainingMs = until - dn
-    const valid = remainingMs > 1000
-    return { valid, token: token.XSTSToken, data: token }
-  }
-
-  async setCachedUserToken (data) {
-    await this.cache.setCachedPartial({ userToken: data })
-  }
-
-  async setCachedDeviceToken (data) {
-    await this.cache.setCachedPartial({ deviceToken: data })
-  }
-
-  async setCachedTitleToken (data) {
-    await this.cache.setCachedPartial({ titleToken: data })
-  }
-
-  async setCachedXstsToken (data, relyingParty) {
-    const key = createHash(relyingParty)
-    await this.cache.setCachedPartial({ [key]: data })
+  async setCachedToken (type, data) {
+    await this.cache.setCachedPartial({ [type]: data })
   }
 
   checkTokenError (errorCode, response) {
@@ -82,14 +58,13 @@ class XboxTokenManager {
 
   async retrieveTokens (relyingParty) {
     if (this.forceRefresh) return {}
-    const xt = await this.getCachedXstsToken(relyingParty)
-    if (xt.valid) return { xstsToken: xt.data }
-    const { userToken, titleToken, deviceToken } = await this.getCachedTokens()
+    const { userToken, titleToken, deviceToken, [createHash(relyingParty)]: xstsToken } = await this.getCachedTokens(relyingParty)
     debug('[xbl] have userToken titleToken deviceToken', userToken, titleToken, deviceToken)
     const tokens = {}
     if (userToken.valid) tokens.userToken = userToken.token
     if (deviceToken.valid) tokens.deviceToken = deviceToken.token
     if (titleToken.valid) tokens.titleToken = titleToken.token
+    if (xstsToken.valid) tokens.xstsToken = xstsToken.data
     return tokens
   }
 
@@ -112,7 +87,7 @@ class XboxTokenManager {
     const headers = { ...this.headers, signature, 'Content-Type': 'application/json', accept: 'application/json', 'x-xbl-contract-version': '2' }
 
     const ret = await fetch(Endpoints.XboxUserAuth, { method: 'post', headers, body }).then(checkStatus)
-    await this.setCachedUserToken(ret)
+    await this.setCachedToken('userToken', ret)
     debug('[xbl] user token:', ret)
     return ret.Token
   }
@@ -153,7 +128,7 @@ class XboxTokenManager {
       const preAuthResponse = await XboxLiveAuth.preAuth()
       const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password })
       const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(logUserResponse.access_token)
-      await this.setCachedUserToken(xblUserToken)
+      await this.setCachedToken('userToken', xblUserToken)
       debug('[xbl] user token:', xblUserToken)
       const xsts = await this.getXSTSToken({ userToken: xblUserToken.Token }, options)
       return xsts
@@ -194,9 +169,9 @@ class XboxTokenManager {
       expiresOn: ret.AuthorizationToken.NotAfter
     }
 
-    await this.setCachedUserToken(ret.UserToken)
-    await this.setCachedTitleToken(ret.TitleToken)
-    await this.setCachedXstsToken(xsts, options.relyingParty)
+    await this.setCachedToken('userToken', ret.UserToken)
+    await this.setCachedToken('titleToken', ret.TitleToken)
+    await this.setCachedToken(createHash(options.relyingParty), xsts)
     debug('[xbl] xsts', xsts)
     return xsts
   }
@@ -233,7 +208,7 @@ class XboxTokenManager {
       expiresOn: ret.NotAfter
     }
 
-    await this.setCachedXstsToken(xsts, options.relyingParty)
+    await this.setCachedToken(createHash(options.relyingParty), xsts)
     debug('[xbl] xsts', xsts)
     return xsts
   }
@@ -261,7 +236,7 @@ class XboxTokenManager {
     const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(Endpoints.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
-    await this.setCachedDeviceToken(ret)
+    await this.setCachedToken('deviceToken', ret)
     debug('Xbox Device Token', ret)
     return ret.Token
   }
@@ -285,7 +260,7 @@ class XboxTokenManager {
     const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(Endpoints.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
-    await this.setCachedTitleToken(ret)
+    await this.setCachedToken('titleToken', ret)
     debug('Xbox Title Token', ret)
     return ret.Token
   }
