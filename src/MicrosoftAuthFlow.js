@@ -108,40 +108,39 @@ class MicrosoftAuthFlow {
 
   async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.XboxRelyingParty) {
     const options = { ...this.options, relyingParty }
-    if (await this.xbl.verifyTokens(relyingParty)) {
+
+    const { userToken, deviceToken, titleToken, xstsToken } = await this.xbl.retrieveTokens(relyingParty)
+
+    if (xstsToken) {
       debug('[xbl] Using existing XSTS token')
-      const { data } = await this.xbl.getCachedXstsToken(relyingParty)
-      return data
-    } else if (options.password) {
+      return xstsToken
+    }
+
+    if (options.password) {
       debug('[xbl] password is present, trying to authenticate using xboxreplay/xboxlive-auth')
       const xsts = await this.xbl.doReplayAuth(this.username, options.password, options)
       return xsts
-    } else {
-      debug('[xbl] Need to obtain tokens')
-      return await retry(async () => {
-        const msaToken = await this.getMsaToken()
-
-        if (options.doSisuAuth) {
-          assert(options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor when using sisu authentication')
-          debug(`[xbl] Sisu flow selected, trying to authenticate with authTitle ID ${options.authTitle}`)
-          const deviceToken = await this.xbl.getDeviceToken(options)
-          const sisu = await this.xbl.doSisuAuth(msaToken, deviceToken, options)
-          return sisu
-        }
-
-        const userToken = await this.xbl.getUserToken(msaToken, !options.authTitle)
-
-        if (options.authTitle) {
-          const deviceToken = await this.xbl.getDeviceToken(options)
-          const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
-          const xsts = await this.xbl.getXSTSToken({ userToken, deviceToken, titleToken }, options)
-          return xsts
-        } else {
-          const xsts = await this.xbl.getXSTSToken({ userToken }, options)
-          return xsts
-        }
-      }, () => { this.msa.forceRefresh = true }, 2)
     }
+
+    debug('[xbl] Need to obtain tokens')
+    return await retry(async () => {
+      const msaToken = await this.getMsaToken()
+
+      if (options.doSisuAuth && (!userToken || !deviceToken || !titleToken)) {
+        assert(options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor when using sisu authentication')
+        debug(`[xbl] Sisu flow selected, trying to authenticate with authTitle ID ${options.authTitle}`)
+        const dt = await this.xbl.getDeviceToken(options)
+        const sisu = await this.xbl.doSisuAuth(msaToken, dt, options)
+        return sisu
+      }
+
+      const ut = userToken ?? await this.xbl.getUserToken(msaToken, !options.authTitle)
+      const dt = deviceToken ?? await this.xbl.getDeviceToken(options)
+      const tt = titleToken ?? (options.authTitle ? await this.xbl.getTitleToken(msaToken, dt) : undefined)
+
+      const xsts = await this.xbl.getXSTSToken({ userToken: ut, deviceToken: dt, titleToken: tt }, options)
+      return xsts
+    }, () => { this.msa.forceRefresh = true }, 2)
   }
 
   async getMinecraftJavaToken (options = {}) {
