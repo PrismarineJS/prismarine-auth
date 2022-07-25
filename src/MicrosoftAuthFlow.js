@@ -166,6 +166,9 @@ class MicrosoftAuthFlow {
     if (options.fetchProfile) {
       response.profile = await this.mca.fetchProfile(response.token).catch(e => debug('Failed to obtain profile data', e))
     }
+    if (options.fetchCertificates) {
+      response.certificates = await this.mca.fetchCertificates(response.token).catch(e => debug('Failed to obtain keypair data', e))
+    }
 
     return response
   }
