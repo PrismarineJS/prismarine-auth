@@ -1,5 +1,9 @@
 ## History
 
+### 1.6.0
+
+* Add fetchCertificates option to getMinecraftJavaToken
+
 ### 1.5.4
 
 * XboxTokenManager: Combine `getXSTSToken` & `getXSTSTokenWithTitle` and implement own `getUserToken` ([#47](https://github.com/PrismarineJS/prismarine-auth/pull/47))
