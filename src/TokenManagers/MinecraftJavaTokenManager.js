@@ -92,7 +92,7 @@ class MinecraftJavaTokenManager {
       expiresOn: new Date(cert.expiresAt),
       refreshAfter: new Date(cert.refreshAfter)
     }
-    profileKeys.public = crypto.createPrivateKey({ key: profileKeys.publicDER, format: 'der', type: 'spki' })
+    profileKeys.public = crypto.createPublicKey({ key: profileKeys.publicDER, format: 'der', type: 'spki' })
     profileKeys.private = crypto.createPrivateKey({ key: profileKeys.privateDER, format: 'der', type: 'pkcs8' })
     return { profileKeys }
   }
