@@ -82,8 +82,8 @@ declare module 'prismarine-auth' {
       publicDER: String,
       privateDER: String
     },
-    expiresAt: String
-    refreshedAfter: String
+    expiresOn: String
+    refreshAfter: String
   }
 
   export interface MicrosoftAuthFlowOptions {
