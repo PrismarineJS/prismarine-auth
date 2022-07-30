@@ -60,7 +60,7 @@ declare module 'prismarine-auth' {
     variant: 'CLASSIC'|'SLIM'
   }
 
-  export interface MinecraftJavaCertificates {
+  export interface MinecraftJavaCertificatesRaw {
     keyPair: {
       privateKey: String
       publicKey: String
@@ -69,6 +69,21 @@ declare module 'prismarine-auth' {
     publicKeySignatureV2: String
     expiresAt: String
     refreshedAfter: String
+  }
+
+  export interface MinecraftJavaCertificates {
+    profileKeys: {
+      public: KeyObject
+      private: KeyObject
+      // PEM encoded keys from server
+      publicPEM: String
+      privatePEM: String
+      // DER transformed keys
+      publicDER: String,
+      privateDER: String
+    },
+    expiresOn: String
+    refreshAfter: String
   }
 
   export interface MicrosoftAuthFlowOptions {
