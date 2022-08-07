@@ -1,5 +1,8 @@
 ## History
 
+### 1.7.0
+* Breaking: Abstract fetchCertificates in MinecraftJavaTokenManager (#52) 
+
 ### 1.6.0
 
 * Add fetchCertificates option to getMinecraftJavaToken
