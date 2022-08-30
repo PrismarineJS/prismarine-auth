@@ -15,6 +15,7 @@ This is the main exposed class you interact with. Every instance holds its own t
   * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Set to `false` if doing password auth. Required if doing sisu auth
   * `deviceType` (optional) if specifying an authTitle, the device type to auth as. For example, `Win32`, `iOS`, `Android`, `Nintendo`
   * `doSisuAuth` (optional) If you specify this option, we use sisu based auth.
+  * `skipTitleAuth` (optional) This is required if using a client that isn't authorized to do title auth (e.g. A custom Azure application).
 * `codeCallback` (optional) The callback to call when doing device code auth. Otherwise, the code will be logged to the console.
 
 #### getMsaToken () : Promise<string>
