@@ -32,6 +32,7 @@ class MicrosoftAuthFlow {
     this.options = options
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
+    this.options.skipTitleAuth = options.skipTitleAuth || !options.authTitle
   }
 
   initTokenManagers (username, cache) {
@@ -56,7 +57,7 @@ class MicrosoftAuthFlow {
     }
 
     if (this.options.authTitle) { // Login with login.live.com
-      const scopes = ['service::user.auth.xboxlive.com::MBI_SSL']
+      const scopes = (this.options.skipTitleAuth) ? ['XboxLive.signin', 'offline_access'] : ['service::user.auth.xboxlive.com::MBI_SSL']
       this.msa = new LiveTokenManager(this.options.authTitle, scopes, cache({ cacheName: 'live', username }))
     } else { // Login with microsoftonline.com
       const scopes = ['XboxLive.signin', 'offline_access']
@@ -129,9 +130,9 @@ class MicrosoftAuthFlow {
           return sisu
         }
 
-        const userToken = await this.xbl.getUserToken(msaToken, !options.authTitle)
+        const userToken = await this.xbl.getUserToken(msaToken, !!options.skipTitleAuth)
 
-        if (options.authTitle) {
+        if (!options.skipTitleAuth) {
           const deviceToken = await this.xbl.getDeviceToken(options)
           const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
           const xsts = await this.xbl.getXSTSToken({ userToken, deviceToken, titleToken }, options)
@@ -190,7 +191,7 @@ class MicrosoftAuthFlow {
         const token = await this.mba.getAccessToken(publicKey, xsts)
         // If we want to auth with a title ID, make sure there's a TitleID in the response
         const body = JSON.parse(Buffer.from(token.chain[1].split('.')[1], 'base64').toString())
-        if (!body.extraData.titleId && this.options.authTitle) {
+        if (!body.extraData.titleId && !this.options.skipTitleAuth) {
           throw Error('missing titleId in response')
         }
         return token.chain
