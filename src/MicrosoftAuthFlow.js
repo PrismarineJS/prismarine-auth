@@ -1,7 +1,6 @@
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
-const assert = require('assert')
 const debug = require('debug')('prismarine-auth')
 
 const { createHash } = require('./common/Util')
@@ -32,7 +31,6 @@ class MicrosoftAuthFlow {
     this.options = options
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
-    this.options.skipTitleAuth = options.skipTitleAuth || !options.authTitle
   }
 
   initTokenManagers (username, cache) {
@@ -56,12 +54,22 @@ class MicrosoftAuthFlow {
       }
     }
 
-    if (this.options.authTitle) { // Login with login.live.com
-      const scopes = (this.options.skipTitleAuth) ? ['XboxLive.signin', 'offline_access'] : ['service::user.auth.xboxlive.com::MBI_SSL']
-      this.msa = new LiveTokenManager(this.options.authTitle, scopes, cache({ cacheName: 'live', username }))
-    } else { // Login with microsoftonline.com
-      const scopes = ['XboxLive.signin', 'offline_access']
-      this.msa = new MsaTokenManager(msalConfig, scopes, cache({ cacheName: 'msa', username }))
+    // prevent breaking changes for v1.7.0 and earlier
+    if (!this.options.flow) {
+      this.options.flow = 'msa'
+      if (this.options.authTitle) this.options.flow = 'live'
+      if (this.options.doSisuAuth) this.options.flow = 'sisu'
+    }
+
+    if (this.options.flow === 'live' || this.options.flow === 'sisu') {
+      if (!this.options.authTitle) throw new Error(`Please specify an "authTitle" in Authflow constructor when using ${this.options.flow} flow`)
+      this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'], cache({ cacheName: this.options.flow, username }))
+      this.doTitleAuth = true
+    } else if (this.options.flow === 'msa') {
+      if (this.options.authTitle) msalConfig.auth.clientId = this.options.authTitle
+      this.msa = new MsaTokenManager(msalConfig, ['XboxLive.signin', 'offline_access'], cache({ cacheName: 'msa', username }))
+    } else {
+      throw new Error(`Unknown flow: ${this.options.flow} (expected "live", "sisu", or "msa")`)
     }
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
@@ -122,17 +130,16 @@ class MicrosoftAuthFlow {
       return await retry(async () => {
         const msaToken = await this.getMsaToken()
 
-        if (options.doSisuAuth) {
-          assert(options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor when using sisu authentication')
+        if (options.flow === 'sisu') {
           debug(`[xbl] Sisu flow selected, trying to authenticate with authTitle ID ${options.authTitle}`)
           const deviceToken = await this.xbl.getDeviceToken(options)
           const sisu = await this.xbl.doSisuAuth(msaToken, deviceToken, options)
           return sisu
         }
 
-        const userToken = await this.xbl.getUserToken(msaToken, !!options.skipTitleAuth)
+        const userToken = await this.xbl.getUserToken(msaToken, options.flow === 'msa')
 
-        if (!options.skipTitleAuth) {
+        if (this.doTitleAuth) {
           const deviceToken = await this.xbl.getDeviceToken(options)
           const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
           const xsts = await this.xbl.getXSTSToken({ userToken, deviceToken, titleToken }, options)
@@ -146,7 +153,6 @@ class MicrosoftAuthFlow {
   }
 
   async getMinecraftJavaToken (options = {}) {
-    assert(this.options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor')
     const response = { token: '', entitlements: {}, profile: {} }
     if (await this.mca.verifyTokens()) {
       debug('[mc] Using existing tokens')
@@ -175,7 +181,6 @@ class MicrosoftAuthFlow {
   }
 
   async getMinecraftBedrockToken (publicKey) {
-    assert(this.options.authTitle !== undefined, 'Please specify an "authTitle" in Authflow constructor')
     // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
     // is this even a good idea to cache?
     if (await this.mba.verifyTokens() && false) { // eslint-disable-line
@@ -191,7 +196,7 @@ class MicrosoftAuthFlow {
         const token = await this.mba.getAccessToken(publicKey, xsts)
         // If we want to auth with a title ID, make sure there's a TitleID in the response
         const body = JSON.parse(Buffer.from(token.chain[1].split('.')[1], 'base64').toString())
-        if (!body.extraData.titleId && !this.options.skipTitleAuth) {
+        if (!body.extraData.titleId && this.doTitleAuth) {
           throw Error('missing titleId in response')
         }
         return token.chain
