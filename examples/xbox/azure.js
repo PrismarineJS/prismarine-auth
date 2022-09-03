@@ -6,7 +6,7 @@ if (process.argv.length !== 5) {
 }
 
 const doAuth = () => {
-  const flow = new Authflow(process.argv[2], process.argv[3], { authTitle: process.argv[4], skipTitleAuth: true })
+  const flow = new Authflow(process.argv[2], process.argv[3], { authTitle: process.argv[4], flow: 'msa' })
   flow.getXboxToken().then(console.log)
 }
 
