@@ -130,7 +130,7 @@ class MicrosoftAuthFlow {
           return sisu
         }
 
-        const userToken = await this.xbl.getUserToken(msaToken, !this.doTitleAuth)
+        const userToken = await this.xbl.getUserToken(msaToken, options.flow === 'msal')
 
         if (this.doTitleAuth) {
           const deviceToken = await this.xbl.getDeviceToken(options)
