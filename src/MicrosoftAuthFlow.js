@@ -28,7 +28,7 @@ async function retry (methodFn, beforeRetry, times) {
 class MicrosoftAuthFlow {
   constructor (username = '', cache = __dirname, options = {}, codeCallback) {
     this.username = username
-    this.options = { flow: 'msa', ...options }
+    this.options = { flow: 'msal', ...options }
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
   }
@@ -62,7 +62,7 @@ class MicrosoftAuthFlow {
       const config = (this.options.authTitle) ? { ...msalConfig, auth: { ...msalConfig.auth, clientId: this.options.authTitle } } : msalConfig
       this.msa = new MsaTokenManager(config, ['XboxLive.signin', 'offline_access'], cache({ cacheName: 'msal', username }))
     } else {
-      throw new Error(`Unknown flow: ${this.options.flow} (expected "live", "sisu", or "msa")`)
+      throw new Error(`Unknown flow: ${this.options.flow} (expected "live", "sisu", or "msal")`)
     }
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })

@@ -14,9 +14,9 @@ This is the main exposed class you interact with. Every instance holds its own t
   * `password` (optional) If you specify this option, we use password based auth.
   * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Required if using sisu or live flow.
   * `deviceType` (optional) if specifying an authTitle, the device type to auth as. For example, `Win32`, `iOS`, `Android`, `Nintendo`
-  * `flow` (optional) The auth flow to use. One of `live`, `msa`, `sisu`. Default is `msa`. 
+  * `flow` (optional) The auth flow to use. One of `live`, `msal`, `sisu`. Default is `msal`. 
     * `live` - Generate an XSTS token using the live.com domain which allows for user, device and title authentication. This flow will only work with authTitles that are authorised to request title tokens.
-    * `msa` - Generates an XSTS token using MSAL (Microsoft Authentication Library) which allows for user authentication only. This flow will work for a wider range of authTitles including custom Azure apps.
+    * `msal` - Generates an XSTS token using MSAL (Microsoft Authentication Library) which allows for user authentication only. This flow will work for a wider range of authTitles including custom Azure apps.
     * `sisu` - See [What does sisu flow do ?](#what-does-sisu-flow-do) for more info.
 * `codeCallback` (optional) The callback to call when doing device code auth. Otherwise, the code will be logged to the console.
 
