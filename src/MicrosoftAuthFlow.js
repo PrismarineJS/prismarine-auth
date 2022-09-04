@@ -28,7 +28,7 @@ async function retry (methodFn, beforeRetry, times) {
 class MicrosoftAuthFlow {
   constructor (username = '', cache = __dirname, options = {}, codeCallback) {
     this.username = username
-    this.options = options
+    this.options = { flow: 'msa', ...options }
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
   }
@@ -52,13 +52,6 @@ class MicrosoftAuthFlow {
         const hash = createHash(username)
         return new FileCache(path.join(cachePath, `./${hash}_${cacheName}-cache.json`))
       }
-    }
-
-    // prevent breaking changes for v1.7.0 and earlier
-    if (!this.options.flow) {
-      this.options.flow = 'msa'
-      if (this.options.authTitle) this.options.flow = 'live'
-      if (this.options.doSisuAuth) this.options.flow = 'sisu'
     }
 
     if (this.options.flow === 'live' || this.options.flow === 'sisu') {
