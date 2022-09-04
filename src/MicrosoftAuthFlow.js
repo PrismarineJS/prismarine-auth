@@ -58,9 +58,9 @@ class MicrosoftAuthFlow {
       if (!this.options.authTitle) throw new Error(`Please specify an "authTitle" in Authflow constructor when using ${this.options.flow} flow`)
       this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'], cache({ cacheName: this.options.flow, username }))
       this.doTitleAuth = true
-    } else if (this.options.flow === 'msa') {
-      if (this.options.authTitle) msalConfig.auth.clientId = this.options.authTitle
-      this.msa = new MsaTokenManager(msalConfig, ['XboxLive.signin', 'offline_access'], cache({ cacheName: 'msa', username }))
+    } else if (this.options.flow === 'msal') {
+      const config = (this.options.authTitle) ? { ...msalConfig, auth: { ...msalConfig.auth, clientId: this.options.authTitle } } : msalConfig
+      this.msa = new MsaTokenManager(config, ['XboxLive.signin', 'offline_access'], cache({ cacheName: 'msal', username }))
     } else {
       throw new Error(`Unknown flow: ${this.options.flow} (expected "live", "sisu", or "msa")`)
     }
