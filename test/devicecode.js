@@ -29,7 +29,7 @@ describe('device code authentication', () => {
 
     const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve })
     const clientX509 = keypair.toString('base64')
-    const flow = new Authflow('username', './test', { authTitle: Titles.MinecraftNintendoSwitch }, onMsaCode)
+    const flow = new Authflow('username', './test', { authTitle: Titles.MinecraftNintendoSwitch, flow: 'live' }, onMsaCode)
     flow.getMinecraftBedrockToken(clientX509)
   })
 })

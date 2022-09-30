@@ -6,7 +6,7 @@ if (process.argv.length !== 5) {
 }
 
 const doAuth = async () => {
-  const flow = new Authflow(process.argv[2], process.argv[4], { password: process.argv[3], authTitle: false })
+  const flow = new Authflow(process.argv[2], process.argv[4], { password: process.argv[3] })
   const response = await flow.getMinecraftJavaToken()
   console.log(response)
 }

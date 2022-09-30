@@ -90,8 +90,8 @@ declare module 'prismarine-auth' {
     authTitle?: Titles
     deviceType?: String
     deviceVersion?: String
-    doSisuAuth?: Boolean
     password?: String
+    flow?: 'live' | 'msal' | 'sisu'
   }
 
   export enum Titles {

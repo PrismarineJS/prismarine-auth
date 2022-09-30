@@ -12,9 +12,12 @@ This is the main exposed class you interact with. Every instance holds its own t
 * `cache` (optional, default='node_modules') - Where to store cached tokens or a cache factory function. node_modules if not specified.
 * `options`
   * `password` (optional) If you specify this option, we use password based auth.
-  * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Set to `false` if doing password auth. Required if doing sisu auth
+  * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Required if using sisu or live flow.
   * `deviceType` (optional) if specifying an authTitle, the device type to auth as. For example, `Win32`, `iOS`, `Android`, `Nintendo`
-  * `doSisuAuth` (optional) If you specify this option, we use sisu based auth.
+  * `flow` (optional) The auth flow to use. One of `live`, `msal`, `sisu`. Default is `msal`. 
+    * `live` - Generate an XSTS token using the live.com domain which allows for user, device and title authentication. This flow will only work with authTitles that are authorised to request title tokens.
+    * `msal` - Generates an XSTS token using MSAL (Microsoft Authentication Library) which allows for user authentication only. This flow will work for a wider range of authTitles including custom Azure apps.
+    * `sisu` - See [What does sisu flow do ?](#what-does-sisu-flow-do) for more info.
 * `codeCallback` (optional) The callback to call when doing device code auth. Otherwise, the code will be logged to the console.
 
 #### getMsaToken () : Promise<string>
@@ -54,7 +57,7 @@ The return object are multiple JWTs returned from the auth server, from both the
 Example usage :
 ```js
 const { Authflow, Titles } = require('prismarine-auth')
-const flow = new Authflow('', './', { authTitle: Titles.MinecraftNintendoSwitch, deviceType: 'Nintendo' })
+const flow = new Authflow('', './', { authTitle: Titles.MinecraftNintendoSwitch, deviceType: 'Nintendo', flow: 'live' })
 flow.getMinecraftJavaToken().then(console.log)
 ```
 
@@ -118,12 +121,12 @@ const cacheFactory = ({ username, cacheName }) => new InMemoryCache()
   * On Minecraft: Bedrock Edition, servers can additionally verify if you have done the full auth sequence or not, and can kick you if you have not.
   * You will get an error if you don't specify it when calling `getMinecraftJavaToken` or `getMinecraftBedrockToken` when doing device code auth. You can set it to `false` to skip signing.
 * If you just want an Microsoft/Xbox token, you do not need to specify a authTitle.
-* If doing password auth, set this option to false.
+* If doing password auth authTitle will not be used and should be removed.
 * If specifying this, you also should provide a `deviceType`, see the doc above
 
-### What does "doSisuAuth" do ?
+### What does sisu flow do ?
 
-* When `doSisuAuth` is defined as true, we will generate an xsts token using the sisu flow which is utilised in some Xbox mobile apps.
-* This flow allows generation of tokens for authTitles that normally wouldn't work using the normal flow, such as XboxAppIOS, XboxGamepassIOS and MinecraftJava.
+* We will generate an XSTS token using the sisu flow which is utilised in some Xbox mobile apps.
+* This flow allows generation of tokens for authTitles that normally wouldn't work using the other flows, such as XboxAppIOS, XboxGamepassIOS and MinecraftJava.
 * This flow will not currently work for custom Azure apps
 * When specifying this, you should also provide an `authTitle` and a corresponding `deviceType`. For example `{ authTitle: Titles.MinecraftJava, deviceType: 'Win32' }` failing this will cause a Forbidden HTTP error.

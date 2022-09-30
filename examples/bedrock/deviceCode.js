@@ -11,7 +11,7 @@ if (!username) {
 
 const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve }).toString('base64')
 const doAuth = async () => {
-  const flow = new Authflow(username, cacheDir, { authTitle: Titles.MinecraftNintendoSwitch, deviceType: 'Nintendo' })
+  const flow = new Authflow(username, cacheDir, { authTitle: Titles.MinecraftNintendoSwitch, deviceType: 'Nintendo', flow: 'live' })
   const XSTSToken = await flow.getMinecraftBedrockToken(keypair)
   console.log(XSTSToken)
 }
