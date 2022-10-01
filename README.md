@@ -19,9 +19,9 @@ npm install prismarine-auth
 - cacheDirectory? {String | Function} - Where we will store your tokens (optional) or a factory function that returns a cache.
 - options {Object?}
     - [password] {string} - If passed we will do password based authentication.
-    - [doSisuAuth] {boolean} - See the [API.md](docs/API.md)
     - [authTitle] {string} - See the [API.md](docs/API.md)
     - [deviceType] {string} - See the [API.md](docs/API.md)
+    - [flow] {string} - See the [API.md](docs/API.md)
 - onMsaCode {Function} - (For device code auth) What we should do when we get the code. Useful for passing the code to another function.
 
 [View more examples](https://github.com/PrismarineJS/prismarine-auth/tree/master/examples)
@@ -50,7 +50,7 @@ const { Authflow, Titles } = require('prismarine-auth')
 
 const userIdentifier = 'any unique identifier'
 const cacheDir = './' // You can leave this as undefined unless you want to specify a caching directory
-const flow = new Authflow(userIdentifier, cacheDir, { authTitle: false })
+const flow = new Authflow(userIdentifier, cacheDir)
 // Get a Minecraft Java Edition auth token, then log it
 flow.getMinecraftJavaToken().then(console.log)
 ```
