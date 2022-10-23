@@ -18,10 +18,10 @@ npm install prismarine-auth
 - username? {String} - Username for authentication
 - cacheDirectory? {String | Function} - Where we will store your tokens (optional) or a factory function that returns a cache.
 - options {Object?}
+    - [flow] {enum} Required if options is specified - see [API.md](docs/API.md) for options
     - [password] {string} - If passed we will do password based authentication.
     - [authTitle] {string} - See the [API.md](docs/API.md)
     - [deviceType] {string} - See the [API.md](docs/API.md)
-    - [flow] {string} - See the [API.md](docs/API.md)
 - onMsaCode {Function} - (For device code auth) What we should do when we get the code. Useful for passing the code to another function.
 
 [View more examples](https://github.com/PrismarineJS/prismarine-auth/tree/master/examples)
@@ -32,10 +32,9 @@ npm install prismarine-auth
 ```js
 const { Authflow, Titles } = require('prismarine-auth')
 
-const userIdentifier = 'any unique identifier'
+const userIdentifier = 'unique identifier for caching'
 const cacheDir = './' // You can leave this as undefined unless you want to specify a caching directory
-const options = {}
-const flow = new Authflow(userIdentifier, cacheDir, options)
+const flow = new Authflow(userIdentifier, cacheDir)
 // Get a auth token, then log it
 flow.getMsaToken().then(console.log)
 ```

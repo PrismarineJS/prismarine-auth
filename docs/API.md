@@ -10,14 +10,14 @@ This is the main exposed class you interact with. Every instance holds its own t
   * When using device code auth - a unique id
   * When using password auth - your microsoft account email
 * `cache` (optional, default='node_modules') - Where to store cached tokens or a cache factory function. node_modules if not specified.
-* `options`
-  * `password` (optional) If you specify this option, we use password based auth.
-  * `authTitle` (optional). See `require('prismarine-auth').Titles` for a list of possible titles, and FAQ section below for more info. Required if using sisu or live flow.
-  * `deviceType` (optional) if specifying an authTitle, the device type to auth as. For example, `Win32`, `iOS`, `Android`, `Nintendo`
-  * `flow` (optional) The auth flow to use. One of `live`, `msal`, `sisu`. Default is `msal`. 
-    * `live` - Generate an XSTS token using the live.com domain which allows for user, device and title authentication. This flow will only work with authTitles that are authorised to request title tokens.
-    * `msal` - Generates an XSTS token using MSAL (Microsoft Authentication Library) which allows for user authentication only. This flow will work for a wider range of authTitles including custom Azure apps.
+* `options` (optional)
+  * `flow` (required) The auth flow to use. One of `live`, `msal`, `sisu`. If no `options` argument is specified, `msal` will be used.
+    * `live` - Generate an XSTS token using the live.com domain which allows for user, device and title authentication. This flow will only work with Windows Live client IDs (such as official Microsoft apps, not custom Azure apps).
+    * `msal` - Generates an XSTS token using MSAL (Microsoft Authentication Library) which allows for user authentication only. Use this auth flow for custom Azure apps.
     * `sisu` - See [What does sisu flow do ?](#what-does-sisu-flow-do) for more info.
+  * `password` (optional) If you specify this option, we use password based auth. Note this may be unreliable.
+  * `authTitle` - The client ID for the service you are logging into. When using the `msal` flow, this is your custom Azure client token. When using `live`, this is the Windows Live SSO client ID - used when authenticating as a Windows app (such as a vanilla Minecraft client). For a list of titles, see `require('prismarine-auth').Titles` and FAQ section below for more info. (Required if using `sisu` or `live` flow, on `msal` flow we fallback to a default client ID.)
+  * `deviceType` (optional) if specifying an authTitle, the device type to auth as. For example, `Win32`, `iOS`, `Android`, `Nintendo`
 * `codeCallback` (optional) The callback to call when doing device code auth. Otherwise, the code will be logged to the console.
 
 #### getMsaToken () : Promise<string>
