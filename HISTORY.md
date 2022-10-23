@@ -1,5 +1,8 @@
 ## History
 
+### 2.0.1
+* Update docs
+
 ### 2.0.0
 * BREAKING : Add flow option (#55) @LucienHH
   * `flow` argument now required to explicitly specify what authentication flow (alternative endpoints for authentication) to use when instantiating Authflow. Supported options are `live`, `msal`, `sisu` ; see documentation for more information. Set this to `msal` if you have an custom Azure client token or `live` if you want to login as a official Microsoft app (like vanilla Minecraft client). 
