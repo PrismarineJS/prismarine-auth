@@ -26,9 +26,12 @@ async function retry (methodFn, beforeRetry, times) {
 }
 
 class MicrosoftAuthFlow {
-  constructor (username = '', cache = __dirname, options = {}, codeCallback) {
+  constructor (username = '', cache = __dirname, options, codeCallback) {
     this.username = username
-    this.options = { flow: 'msal', ...options }
+    if (options && !options.flow) {
+      throw new Error("Missing 'flow' argument in options. See docs for more information.")
+    }
+    this.options = options || { flow: 'msal' }
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
   }
