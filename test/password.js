@@ -8,7 +8,7 @@ const { Authflow } = require('../')
 
 describe('password authentication', async () => {
   it('should fail if not given a valid password', async () => {
-    const flow = new Authflow('this.is.not@valid.email.lol', './test', { password: 'sdfasdfas', authTitle: false })
+    const flow = new Authflow('this.is.not@valid.email.lol', './test', { password: 'sdfasdfas', flow: 'msal' })
     await expect(flow.getXboxToken()).to.eventually.be.rejectedWith('Invalid credentials')
   })
 })

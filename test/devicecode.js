@@ -14,11 +14,11 @@ describe('device code authentication', () => {
       if (!code) done(Error('missing user code'))
       if (code.userCode) done()
     }
-    const flow = new Authflow('emailIdentifier@test.prismarine', './test', { }, onMsaCode)
+    const flow = new Authflow('emailIdentifier@test.prismarine', './test', null, onMsaCode)
     flow.getXboxToken()
   })
   it('should error if no certificate is present for bedrock', async () => {
-    const flow = new Authflow('testauthflow', './test', { authTitle: Titles.MinecraftNintendoSwitch })
+    const flow = new Authflow('testauthflow', './test', { authTitle: Titles.MinecraftNintendoSwitch, flow: 'live' })
     await expect(flow.getMinecraftBedrockToken()).to.eventually.be.rejectedWith('Need to specifiy a ECDH x509 URL encoded public key')
   })
   it('should give us a token for bedrock', (done) => {
