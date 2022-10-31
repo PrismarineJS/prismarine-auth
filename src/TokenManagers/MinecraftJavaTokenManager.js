@@ -89,6 +89,7 @@ class MinecraftJavaTokenManager {
       publicDER: toDER(cert.keyPair.publicKey),
       privateDER: toDER(cert.keyPair.privateKey),
       signature: Buffer.from(cert.publicKeySignature, 'base64'),
+      signatureV2: Buffer.from(cert.publicKeySignatureV2, 'base64'),
       expiresOn: new Date(cert.expiresAt),
       refreshAfter: new Date(cert.refreshedAfter)
     }
