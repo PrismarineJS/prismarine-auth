@@ -1,5 +1,8 @@
 ## History
 
+### 2.1.0
+*  include signatureV2 (@jtsiskin)
+
 ### 2.0.1
 * Update docs
 
