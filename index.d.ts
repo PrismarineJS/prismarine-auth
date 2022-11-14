@@ -37,26 +37,26 @@ declare module 'prismarine-auth' {
 
   export interface MinecraftJavaEntitlements {
     items: MinecraftJavaEntitlementsItem[]
-    signature: string
-    keyId: string
+    signature: String
+    keyId: String
   }
 
   export interface MinecraftJavaEntitlementsItem {
-    name: string
-    signature: string
+    name: String
+    signature: String
   }
 
   export interface MinecraftJavaProfile {
-    id: string
-    name: string
+    id: String
+    name: String
     skins: MinecraftJavaProfileSkin[]
     capes: MinecraftJavaProfileCape[]
   }
 
   export interface MinecraftJavaProfileSkin {
-    id: string,
-    state: string,
-    url: string,
+    id: String,
+    state: String,
+    url: String,
     variant: 'CLASSIC'|'SLIM'
   }
 
@@ -69,13 +69,13 @@ declare module 'prismarine-auth' {
 
   export interface MinecraftJavaCertificatesRaw {
     keyPair: {
-      privateKey: string
-      publicKey: string
+      privateKey: String
+      publicKey: String
     }
-    publicKeySignature: string
-    publicKeySignatureV2: string
-    expiresAt: string
-    refreshedAfter: string
+    publicKeySignature: String
+    publicKeySignatureV2: String
+    expiresAt: String
+    refreshedAfter: String
   }
 
   export interface MinecraftJavaCertificates {
@@ -83,21 +83,21 @@ declare module 'prismarine-auth' {
       public: KeyObject
       private: KeyObject
       // PEM encoded keys from server
-      publicPEM: string
-      privatePEM: string
+      publicPEM: String
+      privatePEM: String
       // DER transformed keys
-      publicDER: string,
-      privateDER: string
+      publicDER: String,
+      privateDER: String
     },
-    expiresOn: string
-    refreshAfter: string
+    expiresOn: String
+    refreshAfter: String
   }
 
   export interface MicrosoftAuthFlowOptions {
     authTitle?: Titles
-    deviceType?: string
-    deviceVersion?: string
-    password?: string
+    deviceType?: String
+    deviceVersion?: String
+    password?: String
     flow: 'live' | 'msal' | 'sisu'
   }
 
