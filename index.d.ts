@@ -37,38 +37,45 @@ declare module 'prismarine-auth' {
 
   export interface MinecraftJavaEntitlements {
     items: MinecraftJavaEntitlementsItem[]
-    signature: String
-    keyId: String
+    signature: string
+    keyId: string
   }
 
   export interface MinecraftJavaEntitlementsItem {
-    name: String
-    signature: String
+    name: string
+    signature: string
   }
 
   export interface MinecraftJavaProfile {
-    id: String
-    name: String
+    id: string
+    name: string
     skins: MinecraftJavaProfileSkin[]
-    capes: Array
+    capes: MinecraftJavaProfileCape[]
   }
 
   export interface MinecraftJavaProfileSkin {
-    id: String,
-    state: String,
-    url: String,
+    id: string,
+    state: string,
+    url: string,
     variant: 'CLASSIC'|'SLIM'
+  }
+
+  export interface MinecraftJavaProfileCape {
+    id: string,
+    state: string,
+    url: string,
+    alias: string
   }
 
   export interface MinecraftJavaCertificatesRaw {
     keyPair: {
-      privateKey: String
-      publicKey: String
+      privateKey: string
+      publicKey: string
     }
-    publicKeySignature: String
-    publicKeySignatureV2: String
-    expiresAt: String
-    refreshedAfter: String
+    publicKeySignature: string
+    publicKeySignatureV2: string
+    expiresAt: string
+    refreshedAfter: string
   }
 
   export interface MinecraftJavaCertificates {
@@ -76,21 +83,21 @@ declare module 'prismarine-auth' {
       public: KeyObject
       private: KeyObject
       // PEM encoded keys from server
-      publicPEM: String
-      privatePEM: String
+      publicPEM: string
+      privatePEM: string
       // DER transformed keys
-      publicDER: String,
-      privateDER: String
+      publicDER: string,
+      privateDER: string
     },
-    expiresOn: String
-    refreshAfter: String
+    expiresOn: string
+    refreshAfter: string
   }
 
   export interface MicrosoftAuthFlowOptions {
     authTitle?: Titles
-    deviceType?: String
-    deviceVersion?: String
-    password?: String
+    deviceType?: string
+    deviceVersion?: string
+    password?: string
     flow: 'live' | 'msal' | 'sisu'
   }
 
