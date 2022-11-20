@@ -10,7 +10,7 @@ declare module 'prismarine-auth' {
      * @param options Options
      * @param codeCallback Optional callback to recieve token information using device code auth
      */
-    constructor(username?: string, cache?: string | CacheFactory, options?: MicrosoftAuthFlowOptions, codeCallback?: (res: { userCode: string, deviceCode: string, verificationUri:  string, expiresIn: number, interval: number, message: string }) => void)
+    constructor(username?: string, cache?: string | CacheFactory, options?: MicrosoftAuthFlowOptions, codeCallback?: (res: ServerDeviceCodeResponse) => void)
     /**
      * Deletes the caches in the specified cache directory.
      */
@@ -50,7 +50,7 @@ declare module 'prismarine-auth' {
     id: string
     name: string
     skins: MinecraftJavaProfileSkin[]
-    capes: Array
+    capes: MinecraftJavaProfileCape[]
   }
 
   export interface MinecraftJavaProfileSkin {
@@ -58,6 +58,13 @@ declare module 'prismarine-auth' {
     state: string,
     url: string,
     variant: 'CLASSIC'|'SLIM'
+  }
+
+  export interface MinecraftJavaProfileCape {
+    id: string,
+    state: string,
+    url: string,
+    alias: string
   }
 
   export interface MinecraftJavaCertificatesRaw {
@@ -104,6 +111,15 @@ declare module 'prismarine-auth' {
     BedrockXSTSRelyingParty = 'https://multiplayer.minecraft.net/',
     XboxAuthRelyingParty = 'http://auth.xboxlive.com/',
     XboxRelyingParty = 'http://xboxlive.com'
+  }
+
+  type ServerDeviceCodeResponse = {
+      user_code: string
+      device_code: string
+      verification_uri: string
+      expires_in: number
+      interval: number
+      message: string
   }
 
   export interface Cache {
