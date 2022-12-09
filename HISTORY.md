@@ -1,5 +1,8 @@
 ## History
 
+### 2.1.1
+* Fix typings
+
 ### 2.1.0
 *  include signatureV2 (@jtsiskin)
 
