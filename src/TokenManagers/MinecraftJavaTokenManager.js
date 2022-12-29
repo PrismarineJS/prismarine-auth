@@ -147,15 +147,17 @@ class MinecraftJavaTokenManager {
               hashOfBody: e.hash,
               signature: e.signature
             },
-            body: e.timestamp ? {
-              timestamp: e.timestamp,
-              salt: e.salt,
-              lastSeenSignatures: e.lastSeen.map(m => ({
-                profileId: m.uuid,
-                lastSignature: m.signature
-              })),
-              message: e.message
-            } : null,
+            body: e.timestamp
+              ? {
+                  timestamp: e.timestamp,
+                  salt: e.salt,
+                  lastSeenSignatures: e.lastSeen.map(m => ({
+                    profileId: m.uuid,
+                    lastSignature: m.signature
+                  })),
+                  message: e.message
+                }
+              : null,
             overridenMessage: e.originalMessage, // if it was modified by the server, ChatTrustLevel.java
             messageReported: e.reported
           }
