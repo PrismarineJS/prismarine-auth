@@ -147,7 +147,7 @@ class MinecraftJavaTokenManager {
               hashOfBody: e.hash,
               signature: e.signature
             },
-            body: {
+            body: e.timestamp ? {
               timestamp: e.timestamp,
               salt: e.salt,
               lastSeenSignatures: e.lastSeen.map(m => ({
@@ -155,8 +155,7 @@ class MinecraftJavaTokenManager {
                 lastSignature: m.signature
               })),
               message: e.message
-            },
-            overridenMessage: e.originalMessage // if it was modified by the server, ChatTrustLevel.java
+            } : null
           }
         }),
         reportedEntity: {
