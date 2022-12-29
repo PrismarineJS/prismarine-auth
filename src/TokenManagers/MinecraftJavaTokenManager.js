@@ -155,14 +155,23 @@ class MinecraftJavaTokenManager {
                 lastSignature: m.signature
               })),
               message: e.message
-            } : null
+            } : null,
+            overridenMessage: e.originalMessage, // if it was modified by the server, ChatTrustLevel.java
+            messageReported: e.reported
           }
         }),
         reportedEntity: {
           profileId: report.reportedPlayer
         },
         createdTime
-      }
+      },
+      clientInfo: {
+        clientVersion: report.clientVersion
+      },
+      thirdPartyServerInfo: {
+        address: report.serverAddress
+      },
+      realmInfo: report.realmInfo
     }
 
     debug('[mc] reporting player with payload', body)
