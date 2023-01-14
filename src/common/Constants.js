@@ -14,6 +14,7 @@ module.exports = {
     MinecraftServicesCertificate: 'https://api.minecraftservices.com/player/certificates',
     MinecraftServicesEntitlement: 'https://api.minecraftservices.com/entitlements/mcstore',
     MinecraftServicesProfile: 'https://api.minecraftservices.com/minecraft/profile',
+    MinecraftServicesReport: 'https://api.minecraftservices.com/player/report',
     LiveDeviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
     LiveTokenRequest: 'https://login.live.com/oauth20_token.srf'
   },
