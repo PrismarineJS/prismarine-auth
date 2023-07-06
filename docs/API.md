@@ -63,9 +63,10 @@ flow.getMinecraftJavaToken().then(console.log)
 
 ### Cache
 
-A cache can be used to alter the cache location. Instead of using the filesystem you can implement the cache your self.
+prismarine-auth uses caching to ensure users don't have to constantly sign in when authenticating to Microsoft/Xbox services. By default, if you pass a String value to Authflow's `cacheDir` function call argument, we'll use the local file system to store and retrieve data to build a cache. However, in some circumstances, you may not have access to the local file system, or have a more advanced use-case that requires database retreival, for example. In these scenarios, you can implement cache storage and retreval yourself to match your needs.
 
-This is done by creating a class that supports three methods:
+If you pass a function to Authflow's `cacheDir` function call argument, you are expected to return a *factory method*, which means your function should instantiate and return a class or an object that implements the interface [defined here](https://github.com/PrismarineJS/prismarine-auth/blob/cf0957495458dc7cb0f2579d97b13d682be27d8f/index.d.ts#L125) and copied below:
+
 
 ```typescript
 // Return the stored value, this can be called multiple times
@@ -76,11 +77,7 @@ setCached(value: any): Promise<void>
 setCachedPartial(value: any): Promise<void>
 ```
 
-### CacheFactory
-
-The cache factory is used to create new instances of the cache. This libary will call your factory function for each cache instance it needs to create.
-
-Your function will be passed an object with the following properties:
+Your cache function itself will be passed an object with the following properties:
 
 ```js
 {
@@ -89,7 +86,7 @@ Your function will be passed an object with the following properties:
 }
 ```
 
-You could create a minimal in memory cache like this:
+As an example of usage, you could create a minimal in memory cache like this (note that the returned class instance implements all the functions in the interface linked above):
 
 ```js
 class InMemoryCache {
@@ -108,7 +105,10 @@ class InMemoryCache {
   }
 }
 
-const cacheFactory = ({ username, cacheName }) => new InMemoryCache()
+function cacheFactory ({ username, cacheName }) {
+  return new InMemoryCache()
+}
+// Passed like `new Authflow('bob', cacheFactory, ...)`
 ```
 
 ## FAQ
