@@ -114,7 +114,7 @@ class MicrosoftAuthFlow {
   async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.XboxRelyingParty) {
     const options = { ...this.options, relyingParty }
 
-    const { xstsToken, userToken, deviceToken, titleToken } = await this.xbl.getValidTokens(relyingParty)
+    const { xstsToken, userToken, deviceToken, titleToken } = await this.xbl.getCachedTokens(relyingParty)
 
     if (xstsToken.valid) {
       debug('[xbl] Using existing XSTS token')

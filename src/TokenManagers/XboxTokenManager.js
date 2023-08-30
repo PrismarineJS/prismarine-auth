@@ -34,7 +34,7 @@ class XboxTokenManager {
     await this.cache.setCachedPartial(data)
   }
 
-  async getValidTokens (relyingParty) {
+  async getCachedTokens (relyingParty) {
     const cachedTokens = await this.cache.getCached()
 
     const xstsHash = createHash(relyingParty)
