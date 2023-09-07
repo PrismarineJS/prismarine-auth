@@ -132,6 +132,7 @@ class MicrosoftAuthFlow {
     return await retry(async () => {
       const msaToken = await this.getMsaToken()
 
+      // sisu flow generates user and title tokens differently to other flows and should also be used to refresh them if they are invalid
       if (options.flow === 'sisu' && (!userToken.valid || !deviceToken.valid || !titleToken.valid)) {
         debug(`[xbl] Sisu flow selected, trying to authenticate with authTitle ID ${options.authTitle}`)
         const dt = await this.xbl.getDeviceToken(options)
