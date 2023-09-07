@@ -39,19 +39,19 @@ class XboxTokenManager {
 
     const xstsHash = createHash(relyingParty)
 
-    const tokens = {
-      userToken: { valid: false },
-      titleToken: { valid: false },
-      deviceToken: { valid: false },
-      xstsToken: { valid: false }
+    const result = {}
+
+    for (const token of ['userToken', 'titleToken', 'deviceToken']) {
+      const cached = cachedTokens[token]
+      result[token] = cached && checkIfValid(cached.NotAfter)
+        ? { valid: true, token: cached.Token, data: cached }
+        : { valid: false }
     }
+    result.xstsToken = cachedTokens[xstsHash] && checkIfValid(cachedTokens[xstsHash].expiresOn)
+      ? { valid: true, data: cachedTokens[xstsHash] }
+      : { valid: false }
 
-    if (cachedTokens.userToken && checkIfValid(cachedTokens.userToken.NotAfter)) tokens.userToken = { valid: true, token: cachedTokens.userToken.Token, data: cachedTokens.userToken }
-    if (cachedTokens.titleToken && checkIfValid(cachedTokens.titleToken.NotAfter)) tokens.titleToken = { valid: true, token: cachedTokens.titleToken.Token, data: cachedTokens.titleToken }
-    if (cachedTokens.deviceToken && checkIfValid(cachedTokens.deviceToken.NotAfter)) tokens.deviceToken = { valid: true, token: cachedTokens.deviceToken.Token, data: cachedTokens.deviceToken }
-    if (cachedTokens[xstsHash] && checkIfValid(cachedTokens[xstsHash].expiresOn)) tokens.xstsToken = { valid: true, data: cachedTokens[xstsHash] }
-
-    return tokens
+    return result
   }
 
   checkTokenError (errorCode, response) {
