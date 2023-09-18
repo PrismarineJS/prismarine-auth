@@ -113,39 +113,40 @@ class MicrosoftAuthFlow {
 
   async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.XboxRelyingParty) {
     const options = { ...this.options, relyingParty }
-    if (await this.xbl.verifyTokens(relyingParty)) {
+
+    const { xstsToken, userToken, deviceToken, titleToken } = await this.xbl.getCachedTokens(relyingParty)
+
+    if (xstsToken.valid) {
       debug('[xbl] Using existing XSTS token')
-      const { data } = await this.xbl.getCachedXstsToken(relyingParty)
-      return data
-    } else if (options.password) {
+      return xstsToken.data
+    }
+
+    if (options.password) {
       debug('[xbl] password is present, trying to authenticate using xboxreplay/xboxlive-auth')
       const xsts = await this.xbl.doReplayAuth(this.username, options.password, options)
       return xsts
-    } else {
-      debug('[xbl] Need to obtain tokens')
-      return await retry(async () => {
-        const msaToken = await this.getMsaToken()
-
-        if (options.flow === 'sisu') {
-          debug(`[xbl] Sisu flow selected, trying to authenticate with authTitle ID ${options.authTitle}`)
-          const deviceToken = await this.xbl.getDeviceToken(options)
-          const sisu = await this.xbl.doSisuAuth(msaToken, deviceToken, options)
-          return sisu
-        }
-
-        const userToken = await this.xbl.getUserToken(msaToken, options.flow === 'msal')
-
-        if (this.doTitleAuth) {
-          const deviceToken = await this.xbl.getDeviceToken(options)
-          const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
-          const xsts = await this.xbl.getXSTSToken({ userToken, deviceToken, titleToken }, options)
-          return xsts
-        } else {
-          const xsts = await this.xbl.getXSTSToken({ userToken }, options)
-          return xsts
-        }
-      }, () => { this.msa.forceRefresh = true }, 2)
     }
+
+    debug('[xbl] Need to obtain tokens')
+
+    return await retry(async () => {
+      const msaToken = await this.getMsaToken()
+
+      // sisu flow generates user and title tokens differently to other flows and should also be used to refresh them if they are invalid
+      if (options.flow === 'sisu' && (!userToken.valid || !deviceToken.valid || !titleToken.valid)) {
+        debug(`[xbl] Sisu flow selected, trying to authenticate with authTitle ID ${options.authTitle}`)
+        const dt = await this.xbl.getDeviceToken(options)
+        const sisu = await this.xbl.doSisuAuth(msaToken, dt, options)
+        return sisu
+      }
+
+      const ut = userToken.token ?? await this.xbl.getUserToken(msaToken, options.flow === 'msal')
+      const dt = deviceToken.token ?? await this.xbl.getDeviceToken(options)
+      const tt = titleToken.token ?? (this.doTitleAuth ? await this.xbl.getTitleToken(msaToken, dt) : undefined)
+
+      const xsts = await this.xbl.getXSTSToken({ userToken: ut, deviceToken: dt, titleToken: tt }, options)
+      return xsts
+    }, () => { this.msa.forceRefresh = true }, 2)
   }
 
   async getMinecraftJavaToken (options = {}) {
