@@ -1,5 +1,11 @@
 ## History
 
+### 2.3.0
+* [Add command workflow (#75)](https://github.com/PrismarineJS/prismarine-auth/commit/a574e5acc72ac0499d1c3c146303468134b52307) (thanks @LucienHH)
+* [Cache fixes (#73)](https://github.com/PrismarineJS/prismarine-auth/commit/85b66dc5bdd4b6ce9b763bdf18a79fa9ac3357c1) (thanks @LucienHH)
+* [Bump @azure/msal-node from 1.18.1 to 2.0.2 (#72)](https://github.com/PrismarineJS/prismarine-auth/commit/a51a660f16abcd50830f08059128a8030cc7903e) (thanks @dependabot[bot])
+* [Update caching doc for clarity](https://github.com/PrismarineJS/prismarine-auth/commit/9e967ca2942002881b4b3ca23cac567367f563a5) (thanks @extremeheat)
+
 ### 2.2.0
 * Add mcpc chat report method
 
