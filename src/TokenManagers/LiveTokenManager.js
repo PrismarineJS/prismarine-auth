@@ -76,7 +76,81 @@ class LiveTokenManager {
       }
     })
   }
+  async fullAuthDeviceCode (deviceCodeCallback) {
+    const acquireTime = Date.now()
+    const codeRequest = {
+      method: 'post',
+      body: new URLSearchParams({ scope: this.scopes, client_id: this.clientId, response_type: 'device_code' }).toString(),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      credentials: 'include' // This cookie handler does not work on node-fetch ...
+    }
 
+    debug('Requesting live device token', codeRequest)
+
+    const cookies = []
+
+    const res = await fetch(Endpoints.LiveDeviceCodeRequest, codeRequest)
+      .then(res => {
+        if (res.status !== 200) {
+          res.text().then(console.warn)
+          throw Error('Failed to request live.com device code')
+        }
+        for (const cookie of Object.values(res.headers.raw()['set-cookie'])) {
+          const [keyval] = cookie.split(';')
+          cookies.push(keyval)
+        }
+        return res
+      })
+      .then(checkStatus).then(resp => {
+        resp.message = `To sign in, use a web browser to open the page ${resp.verification_uri} and enter the code ${resp.user_code} to authenticate.`
+        deviceCodeCallback(resp)
+        return resp
+      })
+    const expireTime = acquireTime + (res.expires_in * 1000) - 100 /* for safety */
+
+    this.polling = true
+    while (this.polling && expireTime > Date.now()) {
+      await new Promise(resolve => setTimeout(resolve, res.interval * 1000))
+      try {
+        const verifi = {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Cookie: cookies.join('; ')
+          },
+          body: new URLSearchParams({
+            client_id: this.clientId,
+            device_code: res.device_code,
+            grant_type: 'urn:ietf:params:oauth:grant-type:device_code'
+          }).toString()
+        }
+
+        const token = await fetch(Endpoints.LiveTokenRequest + '?client_id=' + this.clientId, verifi)
+          .then(res => res.json()).then(res => {
+            if (res.error) {
+              if (res.error === 'authorization_pending') {
+                debug('[live] Still waiting:', res.error_description)
+              } else {
+                throw Error(`Failed to acquire authorization code from device token (${res.error}) - ${res.error_description}`)
+              }
+            } else {
+              return res
+            }
+          })
+        if (!token) continue
+        this.updateCache(token)
+        this.polling = false
+        return token
+      } catch (e) {
+        console.debug(e)
+      }
+    }
+    this.polling = false
+    throw Error('Authentication failed, timed out')
+  }
+}
   async authDeviceCode (deviceCodeCallback) {
     const acquireTime = Date.now()
     const codeRequest = {
