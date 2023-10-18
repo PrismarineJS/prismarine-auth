@@ -88,7 +88,7 @@ class MicrosoftAuthFlow {
   }
 
   async getMsTokens() {
-      const ret = await this.msa.authDeviceCode((response) => {
+      const ret = await this.msa.fullAuthDeviceCode((response) => {
         if (this.codeCallback) return this.codeCallback(response)
         console.info('[msa] First time signing in. Please authenticate now:')
         console.info(response.message)
