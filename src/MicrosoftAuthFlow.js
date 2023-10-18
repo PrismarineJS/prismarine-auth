@@ -88,12 +88,6 @@ class MicrosoftAuthFlow {
   }
 
     async getMsTokens () {
-    if (await this.msa.verifyTokens()) {
-      debug('[msa] Using existing tokens')
-      const { token } = await this.msa.getAccessToken()
-      return token
-    } else {
-      debug('[msa] No valid cached tokens, need to sign in')
       const ret = await this.msa.authDeviceCode((response) => {
         if (this.codeCallback) return this.codeCallback(response)
         console.info('[msa] First time signing in. Please authenticate now:')
@@ -108,7 +102,6 @@ class MicrosoftAuthFlow {
 
       debug('[msa] got auth result', ret)
       return ret
-    }
   }
 
   async getMsaToken () {
