@@ -87,23 +87,20 @@ class MicrosoftAuthFlow {
     }
   }
 
-    async getMsTokens () {
+  async getMsTokens() {
       const ret = await this.msa.authDeviceCode((response) => {
         if (this.codeCallback) return this.codeCallback(response)
         console.info('[msa] First time signing in. Please authenticate now:')
         console.info(response.message)
       })
-
       if (ret.account) {
         console.info(`[msa] Signed in as ${ret.account.username}`)
       } else { // We don't get extra account data here per scope
         console.info('[msa] Signed in with Microsoft')
       }
-
       debug('[msa] got auth result', ret)
       return ret
   }
-
   async getMsaToken () {
     if (await this.msa.verifyTokens()) {
       debug('[msa] Using existing tokens')
