@@ -105,7 +105,7 @@ class LiveTokenManager {
         return res
       })
       .then(checkStatus).then(resp => {
-        resp.message = `To sign in, use a web browser to open the page ${resp.verification_uri} and enter the code ${resp.user_code} to authenticate.`
+        resp.message = `To sign in, use a web browser to open the page ${resp.verification_uri}?otc=${resp.user_code}`
         deviceCodeCallback(resp)
         return resp
       })
