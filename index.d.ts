@@ -114,10 +114,10 @@ declare module 'prismarine-auth' {
   }
 
   type ServerDeviceCodeResponse = {
-      user_code: string
-      device_code: string
-      verification_uri: string
-      expires_in: number
+      userCode: string
+      deviceCode: string
+      verificationUri: string
+      expiresIn: number
       interval: number
       message: string
   }
