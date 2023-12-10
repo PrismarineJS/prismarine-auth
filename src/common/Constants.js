@@ -16,7 +16,8 @@ module.exports = {
     MinecraftServicesProfile: 'https://api.minecraftservices.com/minecraft/profile',
     MinecraftServicesReport: 'https://api.minecraftservices.com/player/report',
     LiveDeviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
-    LiveTokenRequest: 'https://login.live.com/oauth20_token.srf'
+    LiveTokenRequest: 'https://login.live.com/oauth20_token.srf',
+    LiveTokenAuth: 'https://login.live.com/oauth20_authorize.srf'
   },
   msalConfig: {
     // Initialize msal

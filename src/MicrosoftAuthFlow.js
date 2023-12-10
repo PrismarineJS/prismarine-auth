@@ -62,6 +62,7 @@ class MicrosoftAuthFlow {
       this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'], cache({ cacheName: this.options.flow, username }))
       this.doTitleAuth = true
     } else if (this.options.flow === 'msal') {
+      if (this.options.password) throw new Error('Password is not supported with msal flow, please use live/sisu flow instead.')
       const config = Object.assign({ ...msalConfig }, this.options.authTitle ? { auth: { ...msalConfig.auth, clientId: this.options.authTitle } } : {})
       this.msa = new MsaTokenManager(config, ['XboxLive.signin', 'offline_access'], cache({ cacheName: 'msal', username }))
     } else {
@@ -92,23 +93,31 @@ class MicrosoftAuthFlow {
       debug('[msa] Using existing tokens')
       const { token } = await this.msa.getAccessToken()
       return token
-    } else {
-      debug('[msa] No valid cached tokens, need to sign in')
-      const ret = await this.msa.authDeviceCode((response) => {
-        if (this.codeCallback) return this.codeCallback(response)
-        console.info('[msa] First time signing in. Please authenticate now:')
-        console.info(response.message)
-      })
-
-      if (ret.account) {
-        console.info(`[msa] Signed in as ${ret.account.username}`)
-      } else { // We don't get extra account data here per scope
-        console.info('[msa] Signed in with Microsoft')
-      }
-
-      debug('[msa] got auth result', ret)
-      return ret.accessToken
     }
+
+    debug('[msa] No valid cached tokens, need to sign in')
+
+    if (this.options.password) {
+      debug('[msa] password is present, trying to authenticate with email and password')
+      const msa = await this.msa.getAccessTokenWithPassword(this.username, this.options.password)
+      return msa.access_token
+    }
+
+    const ret = await this.msa.authDeviceCode((response) => {
+      console.log(response)
+      if (this.codeCallback) return this.codeCallback(response)
+      console.info('[msa] First time signing in. Please authenticate now:')
+      console.info(response.message)
+    })
+
+    if (ret.account) {
+      console.info(`[msa] Signed in as ${ret.account.username}`)
+    } else { // We don't get extra account data here per scope
+      console.info('[msa] Signed in with Microsoft')
+    }
+
+    debug('[msa] got auth result', ret)
+    return ret.accessToken
   }
 
   async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.XboxRelyingParty) {

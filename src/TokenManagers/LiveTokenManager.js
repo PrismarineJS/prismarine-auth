@@ -4,6 +4,11 @@ const fetch = require('node-fetch')
 const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
+const getMatchForIndex = (entry, regex, index = 0) => {
+  const match = entry.match(regex)
+  return match?.[index] || 0
+}
+
 class LiveTokenManager {
   constructor (clientId, scopes, cache) {
     this.clientId = clientId
@@ -150,6 +155,91 @@ class LiveTokenManager {
     }
     this.polling = false
     throw Error('Authentication failed, timed out')
+  }
+
+  async preparePasswordAuth () {
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      redirect_uri: 'https://login.live.com/oauth20_desktop.srf',
+      response_type: 'token',
+      scope: this.scopes
+    })
+
+    const response = await fetch(`${Endpoints.LiveTokenAuth}?${params}`)
+
+    const body = await response.text() || ''
+
+    const cookie = (response.headers.raw()['set-cookie'] || [])
+      .map((c) => c.split(';')[0]).join('; ')
+
+    const matches = {
+      PPFT: getMatchForIndex(body, /sFTTag:'.*value="(.*)"\/>'/, 1),
+      urlPost: getMatchForIndex(body, /urlPost:'(.+?(?='))/, 1)
+    }
+
+    debug(`Pre-auth response: ${JSON.stringify(matches)}`)
+
+    if (matches.PPFT !== 0 && matches.urlPost !== 0) {
+      return {
+        url: response.url,
+        cookie,
+        matches
+      }
+    }
+
+    // fetch error from html body else throw url hash which contains error
+    const inBodyError = (body.match(/(?<=<span id="errorDescription">)(.*?)(?=<\/span>)/gm) || [])[0]
+
+    throw Error(inBodyError || new URL(response.url).hash)
+  }
+
+  async getAccessTokenWithPassword (email, password) {
+    const preAuthResponse = await this.preparePasswordAuth()
+
+    const payload = new URLSearchParams()
+    payload.append('login', email)
+    payload.append('loginfmt', email)
+    payload.append('passwd', password)
+    payload.append('PPFT', preAuthResponse.matches.PPFT)
+
+    debug(`Requesting access token with email ${email} and password with clientId ${this.clientId} and scopes ${this.scopes}`)
+
+    const response = await fetch(preAuthResponse.matches.urlPost, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        Cookie: preAuthResponse.cookie
+      },
+      body: payload.toString(),
+      redirect: 'manual'
+    })
+
+    // Proof.Type is an object that contains the type of 2FA option enabled on the account
+    const isTwoFactorEnabled = getMatchForIndex(await response.text(), /(?<=PROOF\.Type = )(.*?)(?=;)/)
+
+    if (isTwoFactorEnabled) {
+      throw Error('Two factor authentication is enabled on this account, please use DeviceCode instead by removing the password option.')
+    }
+
+    // if the response is 200 then we have landed on a "failed" page i.e. Incorrect credentials, new application or a new signin location
+    if (response.status === 200) {
+      throw Error(`Coudln't sign in at ${preAuthResponse.url} with email ${email} and password. Please see https://github.com/PrismarineJS/prismarine-auth/blob/master/docs/API.md#why-is-password-auth-unreliable-`)
+    }
+
+    const location = response.headers.get('location')
+    const hash = location.split('#')[1]
+    const output = {}
+
+    for (const part of new URLSearchParams(hash)) {
+      if (part[0] === 'expires_in') output[part[0]] = Number(part[1])
+      else output[part[0]] = part[1]
+    }
+
+    await this.updateCache(output)
+
+    debug(`Got access token: ${JSON.stringify(output)}`)
+
+    return output
   }
 }
 
