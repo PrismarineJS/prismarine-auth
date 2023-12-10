@@ -113,6 +113,13 @@ function cacheFactory ({ username, cacheName }) {
 
 ## FAQ
 
+### Why is password auth unreliable ?
+* The implementation of password auth is a hacky workaround reversed engineered from the login flow when an account logs in on an Xbox console. The process mimics logging in on a browser and is very likely to be blocked by one of the following:
+  * If an account has never signed into the application/authTitle before. This is due to the account needing to accept the application's scope permissions.
+  * If an account has 2FA enabled. We do not recommend disabling 2FA for this, please use device code auth instead.
+  * If an account is logging in from an unusual location. Verify login from new location at https://account.live.com/activity
+  * Invalid credentials. Make sure you are using the correct email, defined as the `username` parameter in the constructor and the correct password.
+
 ### What does "authTitle" do ?
 
 * The auth title is the "Client ID" used for authenticating to Microsoft. [This is apart of Oauth.](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow)
@@ -121,7 +128,6 @@ function cacheFactory ({ username, cacheName }) {
   * On Minecraft: Bedrock Edition, servers can additionally verify if you have done the full auth sequence or not, and can kick you if you have not.
   * You will get an error if you don't specify it when calling `getMinecraftJavaToken` or `getMinecraftBedrockToken` when doing device code auth. You can set it to `false` to skip signing.
 * If you just want an Microsoft/Xbox token, you do not need to specify a authTitle.
-* If doing password auth authTitle will not be used and should be removed.
 * If specifying this, you also should provide a `deviceType`, see the doc above
 
 ### What does sisu flow do ?

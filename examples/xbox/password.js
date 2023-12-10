@@ -6,9 +6,9 @@ if (process.argv.length !== 5) {
 }
 
 const doAuth = async () => {
-  const flow = new Authflow(process.argv[2], process.argv[4], { password: process.argv[3], flow: 'live', authTitle: Titles.MinecraftNintendoSwitch })
-  const response = await flow.getMinecraftJavaToken()
+  const flow = new Authflow(process.argv[2], process.argv[4], { password: process.argv[3], authTitle: Titles.MinecraftNintendoSwitch, flow: 'live' })
+  const response = await flow.getXboxToken()
   console.log(response)
 }
 
-module.exports = doAuth()
+doAuth()
