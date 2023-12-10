@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@azure/msal-node": "^2.0.2",
-    "@xboxreplay/xboxlive-auth": "^3.3.3",
     "debug": "^4.3.3",
     "jose": "^4.1.4",
     "node-fetch": "^2.6.1",
