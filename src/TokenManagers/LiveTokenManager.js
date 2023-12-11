@@ -223,7 +223,7 @@ class LiveTokenManager {
 
     // if the response is 200 then we have landed on a "failed" page i.e. Incorrect credentials, new application or a new signin location
     if (response.status === 200) {
-      throw Error(`Coudln't sign in at ${preAuthResponse.url} with email ${email} and password. Please see https://github.com/PrismarineJS/prismarine-auth/blob/master/docs/API.md#why-is-password-auth-unreliable-`)
+      throw Error(`Couldn't sign in at ${preAuthResponse.url} with email ${email} and password. Please see https://github.com/PrismarineJS/prismarine-auth/blob/master/docs/API.md#why-is-password-auth-unreliable-`)
     }
 
     const location = response.headers.get('location')
