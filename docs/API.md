@@ -24,11 +24,12 @@ This is the main exposed class you interact with. Every instance holds its own t
 
 [Returns a Microsoft account access token.](https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens)
 
-#### getXboxToken (relyingParty?: string) : Promise<{ userXUID: string, userHash: string, XSTSToken: string, expiresOn: number }>
+#### getXboxToken (relyingParty?: string, forceRefresh?: boolean) : Promise<{ userXUID: string, userHash: string, XSTSToken: string, expiresOn: number }>
 
 [Returns XSTS token data](https://docs.microsoft.com/en-us/gaming/xbox-live/api-ref/xbox-live-rest/additional/edsauthorization).
 
 * `relyingParty` (optional, default='http://xboxlive.com') "relying party", apart of xbox auth api
+* `forceRefresh` (optional, default=false) If true, we will ignore the cache and get a new token
 
 Example usage :
 ```js
