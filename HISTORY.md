@@ -1,5 +1,9 @@
 ## History
 
+### 2.4.0
+* [Add `forceRefresh` option to `getXboxToken` (#90)](https://github.com/PrismarineJS/prismarine-auth/commit/ac3e64e0eec408d9eeefa6b0bdcd11c30cef22be) (thanks @LucienHH)
+* [Add URL with prefilled auth code to login message (#81)](https://github.com/PrismarineJS/prismarine-auth/commit/5cbe0e0a5157ae32c0a1ea531b295c2c9cd20783) (thanks @kairu82642)
+
 ### 2.3.0
 * [Add command workflow (#75)](https://github.com/PrismarineJS/prismarine-auth/commit/a574e5acc72ac0499d1c3c146303468134b52307) (thanks @LucienHH)
 * [Cache fixes (#73)](https://github.com/PrismarineJS/prismarine-auth/commit/85b66dc5bdd4b6ce9b763bdf18a79fa9ac3357c1) (thanks @LucienHH)
