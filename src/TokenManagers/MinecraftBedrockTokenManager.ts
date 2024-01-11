@@ -4,8 +4,13 @@ const fetch = require('node-fetch')
 const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
+const FileCache = require('../common/cache/FileCache')
+
 class BedrockTokenManager {
-  constructor (cache) {
+  cache: typeof FileCache
+  forceRefresh?: boolean | undefined
+
+  constructor (cache: typeof FileCache) {
     this.cache = cache
   }
 
@@ -15,16 +20,16 @@ class BedrockTokenManager {
     if (!token) return
     debug('Auth token', token)
     const jwt = token.chain[0]
-    const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
+    const payload = jwt.split('.').map((k: string) => Buffer.from(k, 'base64'))[1]
 
     const body = JSON.parse(String(payload))
     const expires = new Date(body.exp * 1000)
-    const remainingMs = expires - Date.now()
+    const remainingMs = expires.getTime() - Date.now()
     const valid = remainingMs > 1000
     return { valid, until: expires, chain: token.chain }
   }
 
-  async setCachedAccessToken (data) {
+  async setCachedAccessToken (data: any) {
     await this.cache.setCachedPartial({
       mca: {
         ...data,
@@ -45,7 +50,7 @@ class BedrockTokenManager {
     return false
   }
 
-  async getAccessToken (clientPublicKey, xsts) {
+  async getAccessToken (clientPublicKey: string, xsts: any) {
     debug('[mc] authing to minecraft', clientPublicKey, xsts)
     const headers = {
       'Content-Type': 'application/json',

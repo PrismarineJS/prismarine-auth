@@ -1,7 +1,10 @@
 const fs = require('fs')
 
 class FileCache {
-  constructor (cacheLocation) {
+  cacheLocation: string
+  cache?: any | undefined
+
+  constructor (cacheLocation: string) {
     this.cacheLocation = cacheLocation
   }
 
@@ -15,7 +18,7 @@ class FileCache {
     }
   }
 
-  async getCached () {
+  async getCached (): Promise<any> {
     if (this.cache === undefined) {
       this.cache = await this.loadInitialValue()
     }
@@ -23,12 +26,12 @@ class FileCache {
     return this.cache
   }
 
-  async setCached (cached) {
+  async setCached (cached: any) {
     this.cache = cached
     fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
   }
 
-  async setCachedPartial (cached) {
+  async setCachedPartial (cached: any) {
     await this.setCached({
       ...this.cache,
       ...cached
