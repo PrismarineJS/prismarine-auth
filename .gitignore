@@ -3,3 +3,5 @@ package-lock.json
 .vscode
 
 *-cache.json
+src/**.js
+test/**.js
