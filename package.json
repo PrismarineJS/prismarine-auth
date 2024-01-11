@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --recursive --reporter spec --exit",
-    "pretest": "npm run lint && tsc",
+    "pretest": "npm run lint && npm run build",
+    "build": "tsc",
     "lint": "standard",
     "fix": "standard --fix"
   },

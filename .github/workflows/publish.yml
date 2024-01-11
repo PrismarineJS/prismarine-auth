@@ -14,6 +14,8 @@ jobs:
       uses: actions/setup-node@master
       with:
         node-version: 14.0.0
+    - name: Compile
+      run: npm run build
     - id: publish
       uses: JS-DevTools/npm-publish@v1
       with:
