@@ -1,7 +1,7 @@
 const debug = require('debug')('prismarine-auth')
 const crypto = require('crypto')
 
-async function checkStatus (res) {
+async function checkStatus (res: Response): Promise<any> {
   if (res.ok) { // res.status >= 200 && res.status < 300
     return res.json()
   } else {
@@ -11,7 +11,7 @@ async function checkStatus (res) {
   }
 }
 
-function createHash (input) {
+function createHash (input: string) {
   return crypto.createHash('sha1').update(input ?? '', 'binary').digest('hex').substr(0, 6)
 }
 

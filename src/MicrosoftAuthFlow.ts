@@ -13,7 +13,7 @@ const XboxTokenManager = require('./TokenManagers/XboxTokenManager')
 const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
 const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManager')
 
-async function retry (methodFn, beforeRetry, times) {
+async function retry<T> (methodFn: () => Promise<T>, beforeRetry: () => Promise<any> | any, times: number) {
   while (times--) {
     if (times !== 0) {
       try { return await methodFn() } catch (e) { if (e instanceof URIError) { throw e } else { debug(e) } }
@@ -25,18 +25,37 @@ async function retry (methodFn, beforeRetry, times) {
   }
 }
 
+type MicrosoftAuthFlowOptions = {
+  flow: 'live' | 'sisu' | 'msal',
+  authTitle?: string | undefined,
+  relyingParty?: string | undefined,
+  password?: string | undefined,
+  fetchEntitlements?: boolean | undefined,
+  fetchProfile?: boolean | undefined,
+  fetchCertificates?: boolean | undefined
+}
+
 class MicrosoftAuthFlow {
-  constructor (username = '', cache = __dirname, options, codeCallback) {
+  username: string
+  options: MicrosoftAuthFlowOptions
+  xbl?: typeof XboxTokenManager | undefined
+  msa?: typeof MsaTokenManager | undefined
+  mba?: typeof BedrockTokenManager | undefined
+  mca?: typeof JavaTokenManager | undefined
+  doTitleAuth?: boolean | undefined
+  codeCallback: (response: any) => void
+  
+  constructor (username: string = '', cache: string = __dirname, options: MicrosoftAuthFlowOptions, codeCallback: (response: any) => void) {
     this.username = username
     if (options && !options.flow) {
       throw new Error("Missing 'flow' argument in options. See docs for more information.")
     }
-    this.options = options || { flow: 'msal' }
+    this.options = options ?? { flow: 'msal' }
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
   }
 
-  initTokenManagers (username, cache) {
+  initTokenManagers (username: string, cache: string | (({ cacheName, username }: { cacheName: string, username: string }) => any)) {
     if (typeof cache !== 'function') {
       let cachePath = cache
 
@@ -74,7 +93,7 @@ class MicrosoftAuthFlow {
     this.mca = new JavaTokenManager(cache({ cacheName: 'mca', username }))
   }
 
-  static resetTokenCaches (cache) {
+  static resetTokenCaches (cache: string) {
     if (!cache) throw new Error('You must provide a cache directory to reset.')
     try {
       if (fs.existsSync(cache)) {
@@ -94,7 +113,7 @@ class MicrosoftAuthFlow {
       return token
     } else {
       debug('[msa] No valid cached tokens, need to sign in')
-      const ret = await this.msa.authDeviceCode((response) => {
+      const ret = await this.msa.authDeviceCode((response: any) => {
         if (this.codeCallback) return this.codeCallback(response)
         console.info('[msa] First time signing in. Please authenticate now:')
         console.info(response.message)
@@ -149,8 +168,12 @@ class MicrosoftAuthFlow {
     }, () => { this.msa.forceRefresh = true }, 2)
   }
 
-  async getMinecraftJavaToken (options = {}) {
-    const response = { token: '', entitlements: {}, profile: {} }
+  async getMinecraftJavaToken (options: Partial<{
+    fetchEntitlements: boolean,
+    fetchProfile: boolean,
+    fetchCertificates: boolean
+  }> = {}) {
+    const response = { token: '', entitlements: {}, profile: {}, certificates: undefined }
     if (await this.mca.verifyTokens()) {
       debug('[mc] Using existing tokens')
       const { token } = await this.mca.getCachedAccessToken()
@@ -165,19 +188,19 @@ class MicrosoftAuthFlow {
     }
 
     if (options.fetchEntitlements) {
-      response.entitlements = await this.mca.fetchEntitlements(response.token).catch(e => debug('Failed to obtain entitlement data', e))
+      response.entitlements = await this.mca.fetchEntitlements(response.token).catch((e: Error) => debug('Failed to obtain entitlement data', e))
     }
     if (options.fetchProfile) {
-      response.profile = await this.mca.fetchProfile(response.token).catch(e => debug('Failed to obtain profile data', e))
+      response.profile = await this.mca.fetchProfile(response.token).catch((e: Error) => debug('Failed to obtain profile data', e))
     }
     if (options.fetchCertificates) {
-      response.certificates = await this.mca.fetchCertificates(response.token).catch(e => debug('Failed to obtain keypair data', e))
+      response.certificates = await this.mca.fetchCertificates(response.token).catch((e: Error) => debug('Failed to obtain keypair data', e))
     }
 
     return response
   }
 
-  async getMinecraftBedrockToken (publicKey) {
+  async getMinecraftBedrockToken (publicKey: string | undefined = undefined) {
     // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
     // is this even a good idea to cache?
     if (await this.mba.verifyTokens() && false) { // eslint-disable-line

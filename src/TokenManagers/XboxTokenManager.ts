@@ -9,20 +9,27 @@ const fetch = require('node-fetch')
 const { Endpoints, xboxLiveErrors } = require('../common/Constants')
 const { checkStatus, createHash } = require('../common/Util')
 
+const FileCache = require('../common/cache/FileCache')
+
 const UUID = require('uuid-1345')
 const nextUUID = () => UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: Date.now().toString() })
 
-const checkIfValid = (expires) => {
-  const remainingMs = new Date(expires) - Date.now()
+const checkIfValid = (expires: number) => {
+  const remainingMs = new Date(expires).getTime() - Date.now()
   const valid = remainingMs > 1000
   return valid
 }
 
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {
-  constructor (ecKey, cache) {
+  key: any
+  cache: typeof FileCache
+  jwk: any
+  headers: { [key: string]: any | undefined }
+
+  constructor (ecKey: any, cache: typeof FileCache) {
     this.key = ecKey
-    exportJWK(ecKey.publicKey).then(jwk => {
+    exportJWK(ecKey.publicKey).then((jwk: any) => {
       this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }
     })
     this.cache = cache
@@ -30,16 +37,20 @@ class XboxTokenManager {
     this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
   }
 
-  async setCachedToken (data) {
+  async setCachedToken (data: any) {
     await this.cache.setCachedPartial(data)
   }
 
-  async getCachedTokens (relyingParty) {
+  async getCachedTokens (relyingParty: string) {
     const cachedTokens = await this.cache.getCached()
 
     const xstsHash = createHash(relyingParty)
 
-    const result = {}
+    const result: { [key: string] : {
+      valid: boolean,
+      token?: string,
+      data?: any
+    } | undefined } = {}
 
     for (const token of ['userToken', 'titleToken', 'deviceToken']) {
       const cached = cachedTokens[token]
@@ -54,17 +65,17 @@ class XboxTokenManager {
     return result
   }
 
-  checkTokenError (errorCode, response) {
+  checkTokenError (errorCode: keyof typeof xboxLiveErrors, response: any) {
     // { Identity: '0', XErr: 2148916233, Message: '', Redirect: 'https://start.ui.xboxlive.com/CreateAccount' }
     // https://wiki.vg/Microsoft_Authentication_Scheme#Authenticate_with_XSTS
     // Because we do the full auth sequence like the official XAL, the issue with accounts under 18 (2148916238)
     // should not happen through title auth. But the user must always have an xbox.com profile before being able
     // to obtain a Minecraft or Xbox token.
     if (errorCode in xboxLiveErrors) throw new Error(xboxLiveErrors[errorCode])
-    else throw new Error(`Xbox Live authentication failed to obtain a XSTS token. XErr: ${errorCode}\n${JSON.stringify(response)}`)
+    else throw new Error(`Xbox Live authentication failed to obtain a XSTS token. XErr: ${String(errorCode)}\n${JSON.stringify(response)}`)
   }
 
-  async getUserToken (accessToken, azure) {
+  async getUserToken (accessToken: string, azure: boolean) {
     debug('[xbl] obtaining xbox token with ms token', accessToken)
     const preamble = azure ? 'd=' : 't='
 
@@ -91,7 +102,7 @@ class XboxTokenManager {
   }
 
   // Make signature for the data being sent to server with our private key; server is sent our public key in plaintext
-  sign (url, authorizationToken, payload) {
+  sign (url: string, authorizationToken: string, payload: string) {
     // Their backend servers use Windows epoch timestamps, account for that. The server is very picky,
     // bad percision or wrong epoch may fail the request.
     const windowsTimestamp = (BigInt((Date.now() / 1000) | 0) + 11644473600n) * 10000000n
@@ -121,7 +132,10 @@ class XboxTokenManager {
     return header.toBuffer()
   }
 
-  async doReplayAuth (email, password, options = {}) {
+  async doReplayAuth (email: string, password: string, options: {
+    authTitle?: string,
+    relyingParty?: string
+  } = {}) {
     try {
       const preAuthResponse = await XboxLiveAuth.preAuth()
       const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password })
@@ -137,7 +151,10 @@ class XboxTokenManager {
     }
   }
 
-  async doSisuAuth (accessToken, deviceToken, options = {}) {
+  async doSisuAuth (accessToken: string, deviceToken: string, options: {
+    authTitle?: string,
+    relyingParty?: string
+  } = {}) {
     const payload = {
       AccessToken: 't=' + accessToken,
       AppId: options.authTitle,
@@ -173,7 +190,14 @@ class XboxTokenManager {
     return xsts
   }
 
-  async getXSTSToken (tokens, options = {}) {
+  async getXSTSToken (tokens: {
+    userToken: string,
+    deviceToken?: string,
+    titleToken?: string
+  }, options: {
+    relyingParty?: string,
+    optionalDisplayClaims?: string[]
+  } = {}) {
     debug('[xbl] obtaining xsts token', { userToken: tokens.userToken, deviceToken: tokens.deviceToken, titleToken: tokens.titleToken })
 
     const payload = {
@@ -215,7 +239,7 @@ class XboxTokenManager {
    * Requests an Xbox Live-related device token that uniquely links the XToken (aka xsts token)
    * @param {{ DeviceType, Version }} asDevice The hardware type and version to auth as, for example Android or Nintendo
    */
-  async getDeviceToken (asDevice) {
+  async getDeviceToken (asDevice: { deviceType?: string, deviceVersion?: string } = {}) {
     const payload = {
       Properties: {
         AuthMethod: 'ProofOfPossession',
@@ -242,7 +266,7 @@ class XboxTokenManager {
   }
 
   // This *only* works with live.com auth
-  async getTitleToken (msaAccessToken, deviceToken) {
+  async getTitleToken (msaAccessToken: string, deviceToken: string) {
     const payload = {
       Properties: {
         AuthMethod: 'RPS',

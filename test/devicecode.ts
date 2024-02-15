@@ -10,7 +10,9 @@ const curve = 'secp384r1'
 
 describe('device code authentication', () => {
   it('should give us a token', (done) => {
-    const onMsaCode = (code) => {
+    const onMsaCode = (code: {
+      userCode: any | undefined
+    }) => {
       if (!code) done(Error('missing user code'))
       if (code.userCode) done()
     }
@@ -22,7 +24,9 @@ describe('device code authentication', () => {
     await expect(flow.getMinecraftBedrockToken()).to.eventually.be.rejectedWith('Need to specifiy a ECDH x509 URL encoded public key')
   })
   it('should give us a token for bedrock', (done) => {
-    const onMsaCode = (code) => {
+    const onMsaCode = (code: {
+      message: string | undefined
+    }) => {
       if (!code) done(Error('missing user code'))
       if (code.message) done()
     }

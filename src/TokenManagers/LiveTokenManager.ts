@@ -1,11 +1,21 @@
+import { Response } from "node-fetch"
+
 const debug = require('debug')('prismarine-auth')
 const fetch = require('node-fetch')
 
 const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
+const FileCache = require('../common/cache/FileCache')
+
 class LiveTokenManager {
-  constructor (clientId, scopes, cache) {
+  clientId: string
+  scopes: string
+  cache: typeof FileCache
+  forceRefresh?: boolean | undefined
+  polling?: boolean | undefined
+
+  constructor (clientId: string, scopes: string, cache: typeof FileCache) {
     this.clientId = clientId
     this.scopes = scopes
     this.cache = cache
@@ -55,7 +65,7 @@ class LiveTokenManager {
   async getAccessToken () {
     const { token } = await this.cache.getCached()
     if (!token) return
-    const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
+    const until = new Date(token.obtainedOn + token.expires_in).getTime() - Date.now()
     const valid = until > 1000
     return { valid, until, token: token.access_token }
   }
@@ -63,12 +73,12 @@ class LiveTokenManager {
   async getRefreshToken () {
     const { token } = await this.cache.getCached()
     if (!token) return
-    const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
+    const until = new Date(token.obtainedOn + token.expires_in).getTime() - Date.now()
     const valid = until > 1000
     return { valid, until, token: token.refresh_token }
   }
 
-  async updateCache (data) {
+  async updateCache (data: any) {
     await this.cache.setCachedPartial({
       token: {
         ...data,
@@ -77,7 +87,7 @@ class LiveTokenManager {
     })
   }
 
-  async authDeviceCode (deviceCodeCallback) {
+  async authDeviceCode (deviceCodeCallback: (resp: Response) => void) {
     const acquireTime = Date.now()
     const codeRequest = {
       method: 'post',
@@ -90,10 +100,10 @@ class LiveTokenManager {
 
     debug('Requesting live device token', codeRequest)
 
-    const cookies = []
+    const cookies: string[] = []
 
     const res = await fetch(Endpoints.LiveDeviceCodeRequest, codeRequest)
-      .then(res => {
+      .then((res: Response) => {
         if (res.status !== 200) {
           res.text().then(console.warn)
           throw Error('Failed to request live.com device code')
@@ -104,7 +114,7 @@ class LiveTokenManager {
         }
         return res
       })
-      .then(checkStatus).then(resp => {
+      .then(checkStatus).then((resp: any) => {
         resp.message = `To sign in, use a web browser to open the page ${resp.verification_uri} and use the code ${resp.user_code} or visit http://microsoft.com/link?otc=${resp.user_code}`
         deviceCodeCallback(resp)
         return resp
@@ -129,7 +139,7 @@ class LiveTokenManager {
         }
 
         const token = await fetch(Endpoints.LiveTokenRequest + '?client_id=' + this.clientId, verifi)
-          .then(res => res.json()).then(res => {
+          .then((res: Response) => res.json()).then((res: any) => {
             if (res.error) {
               if (res.error === 'authorization_pending') {
                 debug('[live] Still waiting:', res.error_description)
