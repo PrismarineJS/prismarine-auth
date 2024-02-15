@@ -1,5 +1,8 @@
 ## History
 
+### 2.4.1
+* [Match Titles enum with exported Titles (#93)](https://github.com/PrismarineJS/prismarine-auth/commit/76e3f468bf78ada1c525d0aa9906df3f27e5c772) (thanks @LucienHH)
+
 ### 2.4.0
 * [Add `forceRefresh` option to `getXboxToken` (#90)](https://github.com/PrismarineJS/prismarine-auth/commit/ac3e64e0eec408d9eeefa6b0bdcd11c30cef22be) (thanks @LucienHH)
 * [Add URL with prefilled auth code to login message (#81)](https://github.com/PrismarineJS/prismarine-auth/commit/5cbe0e0a5157ae32c0a1ea531b295c2c9cd20783) (thanks @kairu82642)
