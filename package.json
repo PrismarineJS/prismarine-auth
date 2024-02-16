@@ -34,7 +34,7 @@
     "@azure/msal-node": "^2.0.2",
     "@xboxreplay/xboxlive-auth": "^3.3.3",
     "debug": "^4.3.3",
-    "jose": "^4.1.4",
+    "jose": "^5.2.0",
     "node-fetch": "^2.6.1",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2"
