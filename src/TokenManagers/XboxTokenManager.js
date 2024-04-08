@@ -3,7 +3,7 @@ const crypto = require('crypto')
 const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
 const debug = require('debug')('prismarine-auth')
 const { SmartBuffer } = require('smart-buffer')
-const { exportJWK } = require('jose')
+const { exportJWK, importSPKI } = require('jose')
 const fetch = require('node-fetch')
 
 const { Endpoints, xboxLiveErrors } = require('../common/Constants')
@@ -22,9 +22,13 @@ const checkIfValid = (expires) => {
 class XboxTokenManager {
   constructor (ecKey, cache) {
     this.key = ecKey
-    exportJWK(ecKey.publicKey).then(jwk => {
-      this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }
+
+    importSPKI(ecKey.publicKey.export({ type: 'spki', format: 'pem' }), 'ES256', { extractable: true }).then(pubKey => {
+      exportJWK(pubKey).then(jwk => {
+        this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }
+      })
     })
+
     this.cache = cache
 
     this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
