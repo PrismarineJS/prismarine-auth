@@ -1,5 +1,7 @@
 ## prismarine-auth
 
+See the [types](../index.d.ts) for additional information on the exposed API.
+
 ### Authflow
 
 This is the main exposed class you interact with. Every instance holds its own token cache.
