@@ -39,6 +39,15 @@ const flow = new Authflow(userIdentifier, cacheDir)
 flow.getMsaToken().then(console.log)
 ```
 
+**Note**: By default, this library will authenticate as Minecraft for Nintendo Switch, with a `flow` set to `live`. For non-Minecraft applications you should
+register for Microsoft Azure Oauth token. See https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app#register-an-application for more information on obtaining an Azure token. You then use it with the `msal` flow like this:
+
+```js
+const flow = new Authflow(userIdentifier, cacheDir, { flow: 'msal', authTitle: '000-000-000-000' })
+```
+
+If `flow` is `live`, the default, then you can only specify existing Microsoft client IDs. This library exposes some default Microsoft client IDs under the exported `Titles` object. See the [types](./index.d.ts) for more information.
+
 ### getXboxToken
 See [docs/API.md](docs/API.md)
 

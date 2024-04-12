@@ -94,6 +94,8 @@ declare module 'prismarine-auth' {
   }
 
   export interface MicrosoftAuthFlowOptions {
+    // If using Azure auth, specify an object to pass to MSAL
+    msalConfig?: object
     authTitle?: Titles
     deviceType?: string
     deviceVersion?: string

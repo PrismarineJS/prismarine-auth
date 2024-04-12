@@ -12,6 +12,7 @@ const JavaTokenManager = require('./TokenManagers/MinecraftJavaTokenManager')
 const XboxTokenManager = require('./TokenManagers/XboxTokenManager')
 const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
 const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManager')
+const Titles = require('./common/Titles')
 
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
@@ -31,7 +32,7 @@ class MicrosoftAuthFlow {
     if (options && !options.flow) {
       throw new Error("Missing 'flow' argument in options. See docs for more information.")
     }
-    this.options = options || { flow: 'msal' }
+    this.options = options || { flow: 'live', authTitle: Titles.MinecraftNintendoSwitch }
     this.initTokenManagers(username, cache)
     this.codeCallback = codeCallback
   }
@@ -62,7 +63,12 @@ class MicrosoftAuthFlow {
       this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'], cache({ cacheName: this.options.flow, username }))
       this.doTitleAuth = true
     } else if (this.options.flow === 'msal') {
-      const config = Object.assign({ ...msalConfig }, this.options.authTitle ? { auth: { ...msalConfig.auth, clientId: this.options.authTitle } } : {})
+      let config = this.options.msalConfig
+      if (!config) {
+        config = structuredClone(msalConfig)
+        if (!this.options.authTitle) throw new Error('Must specify an Azure client ID token inside the `authTitle` parameter when using Azure-based auth. See https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app#register-an-application for more information on obtaining an Azure token.')
+        config.auth.clientId = this.options.authTitle
+      }
       this.msa = new MsaTokenManager(config, ['XboxLive.signin', 'offline_access'], cache({ cacheName: 'msal', username }))
     } else {
       throw new Error(`Unknown flow: ${this.options.flow} (expected "live", "sisu", or "msal")`)
