@@ -8,14 +8,15 @@ const { expect } = chai
 const crypto = require('crypto')
 const curve = 'secp384r1'
 
-describe('device code authentication', () => {
+describe('device code authentication', function () {
+  this.timeout(4000)
   it('should give us a token', (done) => {
     const onMsaCode = (code) => {
       if (!code) done(Error('missing user code'))
       if (code.userCode) done()
     }
     const flow = new Authflow('emailIdentifier@test.prismarine', './test', null, onMsaCode)
-    flow.getXboxToken()
+    flow.getXboxToken().catch(done)
   })
   it('should error if no certificate is present for bedrock', async () => {
     const flow = new Authflow('testauthflow', './test', { authTitle: Titles.MinecraftNintendoSwitch, flow: 'live' })
@@ -30,6 +31,6 @@ describe('device code authentication', () => {
     const keypair = crypto.generateKeyPairSync('ec', { namedCurve: curve })
     const clientX509 = keypair.toString('base64')
     const flow = new Authflow('username', './test', { authTitle: Titles.MinecraftNintendoSwitch, flow: 'live' }, onMsaCode)
-    flow.getMinecraftBedrockToken(clientX509)
+    flow.getMinecraftBedrockToken(clientX509).catch(done)
   })
 })
