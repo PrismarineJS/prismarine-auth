@@ -1,7 +1,7 @@
 # prismarine-auth
 [![NPM version](https://img.shields.io/npm/v/prismarine-auth.svg)](http://npmjs.com/package/prismarine-auth)
 [![Build Status](https://github.com/PrismarineJS/prismarine-auth/workflows/CI/badge.svg)](https://github.com/PrismarineJS/prismarine-auth/actions?query=workflow%3A%22CI%22)
-[![Discord](https://img.shields.io/badge/chat-on%20discord-brightgreen.svg)](https://discord.gg/GsEFRM8)
+[![Official Discord](https://img.shields.io/static/v1.svg?label=PrismarineJS&message=Discord&color=blue&logo=discord)](https://discord.gg/GsEFRM8)
 [![Try it on gitpod](https://img.shields.io/badge/try-on%20gitpod-brightgreen.svg)](https://gitpod.io/#https://github.com/PrismarineJS/prismarine-auth)
 
 Quickly and easily obtain auth tokens to authenticate with Microsoft/Xbox/Minecraft/Mojang
@@ -24,8 +24,6 @@ npm install prismarine-auth
     - [deviceType] {string} - See the [API.md](docs/API.md)
 - onMsaCode {Function} - (For device code auth) What we should do when we get the code. Useful for passing the code to another function.
 
-[View more examples](https://github.com/PrismarineJS/prismarine-auth/tree/master/examples)
-
 ### Examples
 
 ### getMsaToken
@@ -38,6 +36,15 @@ const flow = new Authflow(userIdentifier, cacheDir)
 // Get a auth token, then log it
 flow.getMsaToken().then(console.log)
 ```
+
+**Note**: By default, this library will authenticate as Minecraft for Nintendo Switch, with a `flow` set to `live`. For non-Minecraft applications you should
+register for Microsoft Azure Oauth token. See https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app#register-an-application for more information on obtaining an Azure token. You then use it with the `msal` flow like this:
+
+```js
+const flow = new Authflow(userIdentifier, cacheDir, { flow: 'msal', authTitle: '000-000-000-000' })
+```
+
+If `flow` is `live`, the default, then you can only specify existing Microsoft client IDs. This library exposes some default Microsoft client IDs under the exported `Titles` object. See the [types](./index.d.ts) for more information.
 
 ### getXboxToken
 See [docs/API.md](docs/API.md)
@@ -70,6 +77,11 @@ flow.getMinecraftJavaToken().then(console.log)
 
 ### getMinecraftBedrockToken
 See [docs/API.md](docs/API.md) and [example](examples).
+
+### More
+[View more examples here](https://github.com/PrismarineJS/prismarine-auth/tree/master/examples).
+
+See the [types](./index.d.ts) to checkout the full API.
 
 ## API
 
