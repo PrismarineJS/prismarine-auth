@@ -1,5 +1,8 @@
 ## History
 
+### 2.4.2
+* [Fix CI, default to `live` over `msal` flow (#97)](https://github.com/PrismarineJS/prismarine-auth/commit/e693bcbc9123dd05fef77dc9032b0a8adad9f2df) (thanks @extremeheat)
+
 ### 2.4.1
 * [Match Titles enum with exported Titles (#93)](https://github.com/PrismarineJS/prismarine-auth/commit/76e3f468bf78ada1c525d0aa9906df3f27e5c772) (thanks @LucienHH)
 
