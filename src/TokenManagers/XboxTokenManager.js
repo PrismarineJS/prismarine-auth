@@ -3,7 +3,6 @@ const crypto = require('crypto')
 const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
 const debug = require('debug')('prismarine-auth')
 const { SmartBuffer } = require('smart-buffer')
-const { exportJWK, importSPKI } = require('jose')
 const fetch = require('node-fetch')
 
 const { Endpoints, xboxLiveErrors } = require('../common/Constants')
@@ -23,11 +22,12 @@ class XboxTokenManager {
   constructor (ecKey, cache) {
     this.key = ecKey
 
-    importSPKI(ecKey.publicKey.export({ type: 'spki', format: 'pem' }), 'ES256', { extractable: true }).then(pubKey => {
-      exportJWK(pubKey).then(jwk => {
+    crypto.subtle.importKey('spki', ecKey.publicKey.export({ type: 'spki', format: 'der' }), { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify']).then(pubKey => {
+      crypto.subtle.exportKey('jwk', pubKey).then(jwk => {
         this.jwk = { ...jwk, alg: 'ES256', use: 'sig' }
-      })
+      });
     })
+
 
     this.cache = cache
 
