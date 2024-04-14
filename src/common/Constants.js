@@ -20,7 +20,7 @@ module.exports = {
   },
   msalConfig: {
     // Initialize msal
-    // Docs: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-common/docs/request.md#public-apis-1
+    // Docs: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-node/docs/configuration.md#usage
     auth: {
       // the minecraft client:
       // clientId: "000000004C12AE6F",

@@ -127,7 +127,7 @@ class MsaTokenManager {
             resolve(response)
           })
       }).catch((error) => {
-        console.warn('[msa] Error getting device code')
+        console.warn('[msa] Error getting device code. Ensure your supplied `authTitle` token (or clientId in your supplied MSAL config) is valid and that it has permission to do non-interactive code based auth.')
         console.debug(JSON.stringify(error))
         reject(error)
       })

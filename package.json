@@ -1,10 +1,11 @@
 {
   "name": "prismarine-auth",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "Authentication library for Microsoft, Xbox Live, and Minecraft with caching support",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive --reporter spec --exit",
+    "mocha": "mocha test/*.test.js --reporter spec --exit",
+    "test": "npm run mocha",
     "pretest": "npm run lint",
     "lint": "standard",
     "fix": "standard --fix"
