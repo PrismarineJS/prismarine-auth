@@ -11,10 +11,6 @@ declare module 'prismarine-auth' {
      * @param codeCallback Optional callback to recieve token information using device code auth
      */
     constructor(username?: string, cache?: string | CacheFactory, options?: MicrosoftAuthFlowOptions, codeCallback?: (res: ServerDeviceCodeResponse) => void)
-    /**
-     * Deletes the caches in the specified cache directory.
-     */
-    static resetTokenCaches(cache: string): boolean
 
     // Returns a Microsoft Oauth access token -- https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens
     getMsaToken(): Promise<string>
@@ -101,6 +97,8 @@ declare module 'prismarine-auth' {
     deviceVersion?: string
     password?: string
     flow: 'live' | 'msal' | 'sisu'
+    // Reset the cache and obtain fresh tokens for everything
+    forceRefresh?: boolean
   }
 
   export enum Titles {

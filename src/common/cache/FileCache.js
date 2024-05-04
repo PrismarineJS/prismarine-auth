@@ -5,13 +5,17 @@ class FileCache {
     this.cacheLocation = cacheLocation
   }
 
+  async reset () {
+    const cached = {}
+    fs.writeFileSync(this.cacheLocation, JSON.stringify(cached))
+    return cached
+  }
+
   async loadInitialValue () {
     try {
       return JSON.parse(fs.readFileSync(this.cacheLocation, 'utf8'))
     } catch (e) {
-      const cached = {}
-      fs.writeFileSync(this.cacheLocation, JSON.stringify(cached))
-      return cached
+      return this.reset()
     }
   }
 

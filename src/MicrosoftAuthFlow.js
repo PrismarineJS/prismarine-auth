@@ -26,6 +26,8 @@ async function retry (methodFn, beforeRetry, times) {
   }
 }
 
+const CACHE_IDS = ['msal', 'live', 'sisu', 'xbl', 'bed', 'mca']
+
 class MicrosoftAuthFlow {
   constructor (username = '', cache = __dirname, options, codeCallback) {
     this.username = username
@@ -33,11 +35,11 @@ class MicrosoftAuthFlow {
       throw new Error("Missing 'flow' argument in options. See docs for more information.")
     }
     this.options = options || { flow: 'live', authTitle: Titles.MinecraftNintendoSwitch }
-    this.initTokenManagers(username, cache)
+    this.initTokenManagers(username, cache, options?.forceRefresh)
     this.codeCallback = codeCallback
   }
 
-  initTokenManagers (username, cache) {
+  initTokenManagers (username, cache, forceRefresh) {
     if (typeof cache !== 'function') {
       let cachePath = cache
 
@@ -48,13 +50,20 @@ class MicrosoftAuthFlow {
           fs.mkdirSync(cachePath, { recursive: true })
         }
       } catch (e) {
-        console.log('Failed to open cache dir', e)
+        console.log('Failed to open cache dir', e, ' ... will use current dir')
         cachePath = __dirname
       }
 
       cache = ({ cacheName, username }) => {
+        if (!CACHE_IDS.includes(cacheName)) {
+          throw new Error(`Cannot instantiate cache for unknown ID: '${cacheName}'`)
+        }
         const hash = createHash(username)
-        return new FileCache(path.join(cachePath, `./${hash}_${cacheName}-cache.json`))
+        const result = new FileCache(path.join(cachePath, `./${hash}_${cacheName}-cache.json`))
+        if (forceRefresh) {
+          result.reset()
+        }
+        return result
       }
     }
 
@@ -78,19 +87,6 @@ class MicrosoftAuthFlow {
     this.xbl = new XboxTokenManager(keyPair, cache({ cacheName: 'xbl', username }))
     this.mba = new BedrockTokenManager(cache({ cacheName: 'bed', username }))
     this.mca = new JavaTokenManager(cache({ cacheName: 'mca', username }))
-  }
-
-  static resetTokenCaches (cache) {
-    if (!cache) throw new Error('You must provide a cache directory to reset.')
-    try {
-      if (fs.existsSync(cache)) {
-        fs.rmSync(cache, { recursive: true })
-        return true
-      }
-    } catch (e) {
-      console.log('Failed to clear cache dir', e)
-      return false
-    }
   }
 
   async getMsaToken () {
