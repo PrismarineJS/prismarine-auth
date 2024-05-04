@@ -128,6 +128,7 @@ declare module 'prismarine-auth' {
   }
 
   export interface Cache {
+    reset(): Promise<void>
     getCached(): Promise<any>
     setCached(value: any): Promise<void>
     setCachedPartial(value: any): Promise<void>
