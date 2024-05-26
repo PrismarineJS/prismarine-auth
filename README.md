@@ -19,6 +19,7 @@ npm install prismarine-auth
 - cacheDirectory? {String | Function} - Where we will store your tokens (optional) or a factory function that returns a cache.
 - options {Object?}
     - [flow] {enum} Required if options is specified - see [API.md](docs/API.md) for options
+    - [forceRefresh] {boolean} - Clear all cached tokens for the specified `username` to get new ones on subsequent token requests
     - [password] {string} - If passed we will do password based authentication.
     - [authTitle] {string} - See the [API.md](docs/API.md)
     - [deviceType] {string} - See the [API.md](docs/API.md)
