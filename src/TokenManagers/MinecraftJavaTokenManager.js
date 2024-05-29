@@ -94,7 +94,7 @@ class MinecraftJavaTokenManager {
   async fetchEntitlements (accessToken) {
     debug(`[mc] fetching entitlements with ${accessToken.slice(0, 16)}`)
     const headers = { ...fetchOptions.headers, Authorization: `Bearer ${accessToken}` }
-    const entitlements = await fetch(Endpoints.MinecraftServicesEntitlement, { headers }).then(checkStatus)
+    const entitlements = await fetch(Endpoints.MinecraftServicesLicense + `?requestId=${crypto.randomUUID()}`, { headers }).then(checkStatus)
     debug(`[mc] got entitlement response: ${entitlements}`)
     return entitlements
   }

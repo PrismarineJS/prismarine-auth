@@ -26,17 +26,26 @@ declare module 'prismarine-auth' {
       fetchCertificates?: boolean,
       fetchEntitlements?: boolean
       fetchProfile?: boolean
-    }): Promise<{ token: string, entitlements: MinecraftJavaEntitlements, profile: MinecraftJavaProfile, certificates: MinecraftJavaCertificates }>
+    }): Promise<{ token: string, entitlements: MinecraftJavaLicenses, profile: MinecraftJavaProfile, certificates: MinecraftJavaCertificates }>
     // Returns a Minecraft Bedrock Edition auth token. Public key parameter must be a KeyLike object.
     getMinecraftBedrockToken(publicKey: KeyObject): Promise<string>
   }
 
+  // via request to https://api.minecraftservices.com/entitlements/license, a list of licenses the player has
+  // which includes available access via Xbox Game Pass subscriptions
+  export interface MinecraftJavaLicenses {
+    items: { name: string, source: string }[]
+    signature: string
+    keyId: string
+    errors?: unknown[]
+  }
+
+  // via https://api.minecraftservices.com/entitlements/mcstore
   export interface MinecraftJavaEntitlements {
     items: MinecraftJavaEntitlementsItem[]
     signature: string
     keyId: string
   }
-
   export interface MinecraftJavaEntitlementsItem {
     name: string
     signature: string

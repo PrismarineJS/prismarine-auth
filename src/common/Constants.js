@@ -13,6 +13,7 @@ module.exports = {
     MinecraftServicesLogWithXbox: 'https://api.minecraftservices.com/authentication/login_with_xbox',
     MinecraftServicesCertificate: 'https://api.minecraftservices.com/player/certificates',
     MinecraftServicesEntitlement: 'https://api.minecraftservices.com/entitlements/mcstore',
+    MinecraftServicesLicense: 'https://api.minecraftservices.com/entitlements/license',
     MinecraftServicesProfile: 'https://api.minecraftservices.com/minecraft/profile',
     MinecraftServicesReport: 'https://api.minecraftservices.com/player/report',
     LiveDeviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
