@@ -1,5 +1,10 @@
 ## History
 
+### 2.5.0
+* [Update mcpc endpoint for entitlements check (#101)](https://github.com/PrismarineJS/prismarine-auth/commit/d7ac3def2b9b9c14b2565581f4cf87f2f92fa188) (thanks @extremeheat)
+* [Add a forceRefresh option to Authflow (#100)](https://github.com/PrismarineJS/prismarine-auth/commit/01c826692494efaad5540446bd582e094a41fbd8) (thanks @extremeheat)
+* [Add 3 MC authTitles (#99)](https://github.com/PrismarineJS/prismarine-auth/commit/b84c345770242d23ce35e8b943573936f86e4047) (thanks @w0ahL)
+
 ### 2.4.2
 * [Fix CI, default to `live` over `msal` flow (#97)](https://github.com/PrismarineJS/prismarine-auth/commit/e693bcbc9123dd05fef77dc9032b0a8adad9f2df) (thanks @extremeheat)
 
