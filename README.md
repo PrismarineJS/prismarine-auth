@@ -59,7 +59,7 @@ const userIdentifier = 'any unique identifier'
 const cacheDir = './' // You can leave this as undefined unless you want to specify a caching directory
 const flow = new Authflow(userIdentifier, cacheDir)
 // Get a Minecraft Java Edition auth token, then log it
-flow.getMinecraftJavaToken().then(console.log)
+flow.getMinecraftJavaToken({ fetchProfile: true }).then(console.log)
 ```
 
 ### Expected Response
