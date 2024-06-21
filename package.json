@@ -28,14 +28,13 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "mocha": "^10.0.0",
-    "standard": "^17.0.0",
-    "prismarine-auth": "file:."
+    "prismarine-auth": "file:.",
+    "standard": "^17.0.0"
   },
   "dependencies": {
     "@azure/msal-node": "^2.0.2",
     "@xboxreplay/xboxlive-auth": "^3.3.3",
     "debug": "^4.3.3",
-    "jose": "^4.1.4",
     "node-fetch": "^2.6.1",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2"
