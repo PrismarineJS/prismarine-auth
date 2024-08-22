@@ -59,7 +59,7 @@ class MinecraftServicesTokenManager {
 
     await this.setCachedToken({ mcs: tokenResponse })
 
-    return response.result
+    return tokenResponse
   }
 }
 
