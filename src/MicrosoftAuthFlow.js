@@ -117,7 +117,7 @@ class MicrosoftAuthFlow {
     }
   }
 
-  async getPlayfabLogin() {
+  async getPlayfabLogin () {
     const cache = this.pfb.getCachedAccessToken()
 
     if (cache.valid) {
