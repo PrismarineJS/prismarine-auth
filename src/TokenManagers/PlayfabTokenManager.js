@@ -20,16 +20,15 @@ class PlayfabTokenManager {
     if (!cache) return
 
     const expires = new Date(cache.EntityToken.TokenExpiration)
-    
+
     const remaining = expires - Date.now()
-    
+
     const valid = remaining > 1000
 
     return { valid, until: expires, data: cache }
   }
 
   async getAccessToken (xsts) {
-
     const response = await fetch(Endpoints.PlayfabLoginWithXbox, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
@@ -65,7 +64,6 @@ class PlayfabTokenManager {
 
     return data.data
   }
-
 }
 
 module.exports = PlayfabTokenManager

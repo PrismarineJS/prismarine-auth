@@ -9,7 +9,7 @@ if (!username) {
 
 async function doAuth () {
   const flow = new Authflow(username, cacheDir, { authTitle: Titles.MinecraftNintendoSwitch, deviceType: 'Nintendo', flow: 'live' })
-  
+
   const response = await flow.getMinecraftServicesToken()
 
   console.log(response)

@@ -5,11 +5,11 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class MinecraftServicesTokenManager {
-  constructor(cache) {
+  constructor (cache) {
     this.cache = cache
   }
 
-  async getCachedAccessToken() {
+  async getCachedAccessToken () {
     const { mcs: token } = await this.cache.getCached()
     debug('[mcs] token cache', token)
 
@@ -21,19 +21,18 @@ class MinecraftServicesTokenManager {
     return { valid, until: expires, token: token.mcToken, data: token }
   }
 
-  async setCachedToken(data) {
+  async setCachedToken (data) {
     await this.cache.setCachedPartial(data)
   }
 
-  async getAccessToken(sessionTicket, options = {}) {
-
+  async getAccessToken (sessionTicket, options = {}) {
     const response = await fetch(Endpoints.MinecraftServicesSessionStart, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        device: { 
-          applicationType: options.applicationType ?? 'MinecraftPE', 
-          gameVersion: options.version ?? '1.20.62', 
+      body: JSON.stringify({
+        device: {
+          applicationType: options.applicationType ?? 'MinecraftPE',
+          gameVersion: options.version ?? '1.20.62',
           id: options.deviceId ?? 'c1681ad3-415e-30cd-abd3-3b8f51e771d1',
           memory: options.deviceMemory ?? String(8 * (1024 * 1024 * 1024)),
           platform: options.platform ?? 'Windows10',
@@ -61,7 +60,6 @@ class MinecraftServicesTokenManager {
     await this.setCachedToken({ mcs: tokenResponse })
 
     return response.result
-
   }
 }
 
