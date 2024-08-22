@@ -18,7 +18,7 @@ class MinecraftServicesTokenManager {
     const expires = new Date(token.validUntil)
     const remainingMs = expires - Date.now()
     const valid = remainingMs > 1000
-    return { valid, until: expires, token: token.authorizationHeader, data: token }
+    return { valid, until: expires, token: token.mcToken, data: token }
   }
 
   async setCachedToken(data) {
@@ -48,9 +48,17 @@ class MinecraftServicesTokenManager {
       })
     }).then(checkStatus)
 
-    debug('[mc] mc-services token response', response.result)
+    const tokenResponse = {
+      mcToken: response.result.authorizationHeader,
+      validUntil: response.result.validUntil,
+      treatments: response.result.treatments,
+      configurations: response.result.configurations,
+      treatmentContext: response.result.treatmentContext
+    }
 
-    await this.setCachedToken({ mcs: response.result })
+    debug('[mc] mc-services token response', tokenResponse)
+
+    await this.setCachedToken({ mcs: tokenResponse })
 
     return response.result
 
