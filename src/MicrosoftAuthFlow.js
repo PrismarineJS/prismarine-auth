@@ -28,7 +28,7 @@ async function retry (methodFn, beforeRetry, times) {
   }
 }
 
-const CACHE_IDS = ['msal', 'live', 'sisu', 'xbl', 'bed', 'mca']
+const CACHE_IDS = ['msal', 'live', 'sisu', 'xbl', 'bed', 'mca', 'mcs', 'pfb']
 
 class MicrosoftAuthFlow {
   constructor (username = '', cache = __dirname, options, codeCallback) {
