@@ -30,70 +30,9 @@ declare module 'prismarine-auth' {
     // Returns a Minecraft Bedrock Edition auth token. Public key parameter must be a KeyLike object.
     getMinecraftBedrockToken(publicKey: KeyObject): Promise<string>
 
-    getMinecraftServicesToken(): Promise<{
-      mcToken: string,
-      validUntil: string,
-      treatments: string[],
-      treatmentContext: string,
-      configurations: object
-    }>
+    getMinecraftServicesToken(): Promise<GetMinecraftServicesResponse>
 
-    getPlayfabLogin(): Promise<{
-      SessionTicket: string;
-      PlayFabId: string;
-      NewlyCreated: boolean;
-      SettingsForUser: {
-          NeedsAttribution: boolean;
-          GatherDeviceInfo: boolean;
-          GatherFocusInfo: boolean;
-      };
-      LastLoginTime: string;
-      InfoResultPayload: {
-          AccountInfo: {
-              PlayFabId: string;
-              Created: string;
-              TitleInfo: {
-                  Origination: string;
-                  Created: string;
-                  LastLogin: string;
-                  FirstLogin: string;
-                  isBanned: boolean;
-                  TitlePlayerAccount: {
-                      Id: string;
-                      Type: string;
-                      TypeString: string;
-                  };
-              };
-              PrivateInfo: Record<string, unknown>;
-              XboxInfo: {
-                  XboxUserId: string;
-                  XboxUserSandbox: string;
-              };
-          };
-          UserInventory: any[];
-          UserDataVersion: number;
-          UserReadOnlyDataVersion: number;
-          CharacterInventories: any[];
-          PlayerProfile: {
-              PublisherId: string;
-              TitleId: string;
-              PlayerId: string;
-          };
-      };
-      EntityToken: {
-          EntityToken: string;
-          TokenExpiration: string;
-          Entity: {
-              Id: string;
-              Type: string;
-              TypeString: string;
-          };
-      };
-      TreatmentAssignment: {
-          Variants: any[];
-          Variables: any[];
-      };
-    }>
+    getPlayfabLogin(): Promise<GetPlayfabLoginResponse>
 
   }
 
@@ -210,4 +149,69 @@ declare module 'prismarine-auth' {
   }
 
   export type CacheFactory = (options: { username: string, cacheName: string }) => Cache
+
+  export type GetMinecraftServicesResponse = {
+    mcToken: string
+    validUntil: string
+    treatments: string[]
+    treatmentContext: string
+    configurations: object
+  }
+
+  export type GetPlayfabLoginResponse = {
+    SessionTicket: string;
+    PlayFabId: string;
+    NewlyCreated: boolean;
+    SettingsForUser: {
+        NeedsAttribution: boolean;
+        GatherDeviceInfo: boolean;
+        GatherFocusInfo: boolean;
+    };
+    LastLoginTime: string;
+    InfoResultPayload: {
+        AccountInfo: {
+            PlayFabId: string;
+            Created: string;
+            TitleInfo: {
+                Origination: string;
+                Created: string;
+                LastLogin: string;
+                FirstLogin: string;
+                isBanned: boolean;
+                TitlePlayerAccount: {
+                    Id: string;
+                    Type: string;
+                    TypeString: string;
+                };
+            };
+            PrivateInfo: Record<string, unknown>;
+            XboxInfo: {
+                XboxUserId: string;
+                XboxUserSandbox: string;
+            };
+        };
+        UserInventory: any[];
+        UserDataVersion: number;
+        UserReadOnlyDataVersion: number;
+        CharacterInventories: any[];
+        PlayerProfile: {
+            PublisherId: string;
+            TitleId: string;
+            PlayerId: string;
+        };
+    };
+    EntityToken: {
+        EntityToken: string;
+        TokenExpiration: string;
+        Entity: {
+            Id: string;
+            Type: string;
+            TypeString: string;
+        };
+    };
+    TreatmentAssignment: {
+        Variants: any[];
+        Variables: any[];
+    };
+  }
 }
