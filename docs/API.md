@@ -39,7 +39,7 @@ Example usage :
 const { Authflow } = require('prismarine-auth')
 const flow = new Authflow() // No parameters needed
 flow.getXboxToken().then(console.log)
-``````
+```
 
 #### getMinecraftJavaToken (options?: { fetchEntitlements?: boolean fetchProfile?: boolean }) : Promise<{ token: string, entitlements: object, profile: object }>
 
@@ -53,6 +53,18 @@ Returns a Minecraft Java Edition auth token.
 Returns a Minecraft: Bedrock Edition auth token. The first parameter is a Node.js KeyObject. Please see the examples folder for example usage.
 
 The return object are multiple JWTs returned from the auth server, from both the Mojang and Xbox steps.
+
+### getPlayfabLogin (): Promise<GetPlayfabLoginResponse>
+
+Returns a Playfab login response which can be used to authenticate to the Playfab API. The SessionTicket returned in the response is used when generating the MCToken.
+
+[Returns ServerLoginResult](https://learn.microsoft.com/en-us/rest/api/playfab/server/authentication/login-with-xbox?view=playfab-rest#serverloginresult)
+
+### getMinecraftServicesToken (): Promise<GetMinecraftServicesResponse>
+
+Returns an mctoken which can be used to query the minecraft-services.net/api and is also used to authenticate the WebSocket connection for the NetherNet WebRTC signalling channel.
+
+The return object contains the `mcToken` and `treatments` relating to the features the user has access to.
 
 ### Titles
 

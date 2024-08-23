@@ -79,6 +79,50 @@ flow.getMinecraftJavaToken({ fetchProfile: true }).then(console.log)
 ### getMinecraftBedrockToken
 See [docs/API.md](docs/API.md) and [example](examples).
 
+### getMinecraftServicesToken
+```js
+const { Authflow, Titles } = require('prismarine-auth')
+
+const userIdentifier = 'any unique identifier'
+const cacheDir = './' // You can leave this as undefined unless you want to specify a caching directory
+const flow = new Authflow(userIdentifier, cacheDir)
+// Get a Minecraft Services token, then log it
+flow.getMinecraftServicesToken().then(console.log)
+```
+
+### Expected Response
+```json
+{
+    "mcToken": "MCToken eyJ...",
+    "validUntil": "1970-01-01T00:00:00.000Z",
+    "treatments": [
+      "mc-enable-feedback-landing-page",
+      "mc-store-enableinbox",
+      "mc-nps-freeorpaid-paidaug24",
+      // and more
+    ],
+    "configurations": {
+      "validation": {
+        "id": "Validation",
+        "parameters": {
+          "minecraftnetaatest": "false"
+        }
+      },
+      "minecraft": {
+        "id": "Minecraft",
+        "parameters": {
+          "with-spongebobadd-button-noswitch": "true",
+          "sfsdfsdfsfss": "true",
+          "fsdfd": "true",
+          "mc-maelstrom-disable": "true",
+          // and more
+        }
+      }
+    },
+    "treatmentContext": "mc-sunsetting_5:31118471;mc-..."
+}
+```
+
 ### More
 [View more examples here](https://github.com/PrismarineJS/prismarine-auth/tree/master/examples).
 
