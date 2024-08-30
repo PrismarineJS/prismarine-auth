@@ -153,17 +153,23 @@ class MicrosoftAuthFlow {
 
   async getMinecraftJavaToken (options = {}) {
     const response = { token: '', entitlements: {}, profile: {} }
-    if (await this.mca.verifyTokens()) {
-      debug('[mc] Using existing tokens')
-      const { token } = await this.mca.getCachedAccessToken()
-      response.token = token
+
+    if(options.msaToken) {
+      response.token = options.msaToken
+      debug('[mc] Using MSA token directly')
     } else {
-      debug('[mc] Need to obtain tokens')
-      await retry(async () => {
-        const xsts = await this.getXboxToken(Endpoints.PCXSTSRelyingParty)
-        debug('[xbl] xsts data', xsts)
-        response.token = await this.mca.getAccessToken(xsts)
-      }, () => { this.xbl.forceRefresh = true }, 2)
+      if (await this.mca.verifyTokens()) {
+        debug('[mc] Using existing tokens')
+        const { token } = await this.mca.getCachedAccessToken()
+        response.token = token
+      } else {
+        debug('[mc] Need to obtain tokens')
+        await retry(async () => {
+          const xsts = await this.getXboxToken(Endpoints.PCXSTSRelyingParty)
+          debug('[xbl] xsts data', xsts)
+          response.token = await this.mca.getAccessToken(xsts)
+        }, () => { this.xbl.forceRefresh = true }, 2)
+      }
     }
 
     if (options.fetchEntitlements) {
@@ -183,9 +189,6 @@ class MicrosoftAuthFlow {
     // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
     // is this even a good idea to cache?
     if (await this.mba.verifyTokens() && false) { // eslint-disable-line
-      debug('[mc] Using existing tokens')
-      const { chain } = this.mba.getCachedAccessToken()
-      return chain
     } else {
       if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
       debug('[mc] Need to obtain tokens')
