@@ -3,6 +3,11 @@ import { KeyObject } from 'crypto'
 
 declare module 'prismarine-auth' {
   export class Authflow {
+
+    username: string
+
+    options: MicrosoftAuthFlowOptions
+
     /**
      * Creates a new Authflow instance, which holds its own token cache
      * @param username A unique identifier. If using password auth, this should be an email.
@@ -15,7 +20,7 @@ declare module 'prismarine-auth' {
     // Returns a Microsoft Oauth access token -- https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens
     getMsaToken(): Promise<string>
     // Returns an XSTS token -- https://docs.microsoft.com/en-us/gaming/xbox-live/api-ref/xbox-live-rest/additional/edsauthorization
-    getXboxToken(relyingParty?: string): Promise<{
+    getXboxToken(relyingParty?: string, forceRefresh?: boolean): Promise<{
       userXUID: string,
       userHash: string,
       XSTSToken: string,
