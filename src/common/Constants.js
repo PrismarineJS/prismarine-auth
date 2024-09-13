@@ -2,6 +2,7 @@ module.exports = {
   Endpoints: {
     PCXSTSRelyingParty: 'rp://api.minecraftservices.com/',
     BedrockXSTSRelyingParty: 'https://multiplayer.minecraft.net/',
+    PlayfabRelyingParty: 'https://b980a380.minecraft.playfabapi.com/',
     XboxAuthRelyingParty: 'http://auth.xboxlive.com/',
     XboxRelyingParty: 'http://xboxlive.com',
     BedrockAuth: 'https://multiplayer.minecraft.net/authentication',
@@ -17,7 +18,9 @@ module.exports = {
     MinecraftServicesProfile: 'https://api.minecraftservices.com/minecraft/profile',
     MinecraftServicesReport: 'https://api.minecraftservices.com/player/report',
     LiveDeviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
-    LiveTokenRequest: 'https://login.live.com/oauth20_token.srf'
+    LiveTokenRequest: 'https://login.live.com/oauth20_token.srf',
+    MinecraftServicesSessionStart: 'https://authorization.franchise.minecraft-services.net/api/v1.0/session/start',
+    PlayfabLoginWithXbox: 'https://20ca2.playfabapi.com/Client/LoginWithXbox'
   },
   msalConfig: {
     // Initialize msal
