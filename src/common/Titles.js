@@ -5,5 +5,7 @@ module.exports = {
   MinecraftJava: '00000000402b5328',
   MinecraftIOS: '000000004c17c01a',
   XboxAppIOS: '000000004c12ae6f',
-  XboxGamepassIOS: '000000004c20a908'
+  XboxGamepassIOS: '000000004c20a908',
+  XboxAppBetaIOS: '000000004415494b',
+  XboxAppPC: '000000004424da1f'
 }
