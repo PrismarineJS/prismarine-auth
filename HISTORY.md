@@ -1,5 +1,8 @@
 ## History
 
+### 2.5.1
+* [Remove jose dependency (#103)](https://github.com/PrismarineJS/prismarine-auth/commit/e70f42efddf01d4edeb3a3bb53c19cb76fd66ad0) (thanks @bluefoxy009)
+
 ### 2.5.0
 * [Update mcpc endpoint for entitlements check (#101)](https://github.com/PrismarineJS/prismarine-auth/commit/d7ac3def2b9b9c14b2565581f4cf87f2f92fa188) (thanks @frej4189)
 * [Add a forceRefresh option to Authflow (#100)](https://github.com/PrismarineJS/prismarine-auth/commit/01c826692494efaad5540446bd582e094a41fbd8) (thanks @extremeheat)
