@@ -97,7 +97,8 @@ class LiveTokenManager {
           res.text().then(console.warn)
           throw Error('Failed to request live.com device code')
         }
-        for (const cookie of res.headers.get('set-cookie')) {
+        if (res.headers.get('set-cookie')) {
+          const cookie = res.headers.get('set-cookie')
           const [keyval] = cookie.split(';')
           cookies.push(keyval)
         }
