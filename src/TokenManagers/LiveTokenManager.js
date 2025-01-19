@@ -1,5 +1,4 @@
 const debug = require('debug')('prismarine-auth')
-const fetch = require('node-fetch')
 
 const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
@@ -98,7 +97,8 @@ class LiveTokenManager {
           res.text().then(console.warn)
           throw Error('Failed to request live.com device code')
         }
-        for (const cookie of Object.values(res.headers.raw()['set-cookie'])) {
+        if (res.headers.get('set-cookie')) {
+          const cookie = res.headers.get('set-cookie')
           const [keyval] = cookie.split(';')
           cookies.push(keyval)
         }
