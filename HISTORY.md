@@ -1,5 +1,9 @@
 ## History
 
+### 2.6.0
+* [Bump mocha from 10.8.2 to 11.0.1 (#112)](https://github.com/PrismarineJS/prismarine-auth/commit/c5a13a05a34da8b9821c19eda900eca3543f89d3) (thanks @dependabot[bot])
+* [Remove node-fetch in favor of the Node.js built-in fetch() function (#118)](https://github.com/PrismarineJS/prismarine-auth/commit/73634a7ea20ed20e9e7403bfd142534fd786179b) (thanks @extremeheat)
+
 ### 2.5.1
 * [Remove jose dependency (#103)](https://github.com/PrismarineJS/prismarine-auth/commit/e70f42efddf01d4edeb3a3bb53c19cb76fd66ad0) (thanks @bluefoxy009)
 
