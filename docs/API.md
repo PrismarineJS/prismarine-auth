@@ -60,7 +60,7 @@ Returns a Playfab login response which can be used to authenticate to the Playfa
 
 [Returns ServerLoginResult](https://learn.microsoft.com/en-us/rest/api/playfab/server/authentication/login-with-xbox?view=playfab-rest#serverloginresult)
 
-### getMinecraftBedrockServicesToken (): Promise<GetMinecraftBedrockServicesResponse>
+### getMinecraftBedrockServicesToken ({ version }): Promise<GetMinecraftBedrockServicesResponse>
 
 Returns an mctoken which can be used to query the minecraft-services.net/api and is also used to authenticate the WebSocket connection for the NetherNet WebRTC signalling channel.
 
