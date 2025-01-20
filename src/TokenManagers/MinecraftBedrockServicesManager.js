@@ -1,5 +1,4 @@
 const debug = require('debug')('prismarine-auth')
-const fetch = require('node-fetch')
 
 const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
