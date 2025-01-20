@@ -79,7 +79,7 @@ flow.getMinecraftJavaToken({ fetchProfile: true }).then(console.log)
 ### getMinecraftBedrockToken
 See [docs/API.md](docs/API.md) and [example](examples).
 
-### getMinecraftServicesToken
+### getMinecraftBedrockServicesToken
 ```js
 const { Authflow, Titles } = require('prismarine-auth')
 
@@ -87,7 +87,7 @@ const userIdentifier = 'any unique identifier'
 const cacheDir = './' // You can leave this as undefined unless you want to specify a caching directory
 const flow = new Authflow(userIdentifier, cacheDir)
 // Get a Minecraft Services token, then log it
-flow.getMinecraftServicesToken().then(console.log)
+flow.getMinecraftBedrockServicesToken().then(console.log)
 ```
 
 ### Expected Response

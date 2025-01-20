@@ -10,7 +10,7 @@ if (!username) {
 async function doAuth () {
   const flow = new Authflow(username, cacheDir, { authTitle: Titles.MinecraftNintendoSwitch, deviceType: 'Nintendo', flow: 'live' })
 
-  const response = await flow.getMinecraftServicesToken()
+  const response = await flow.getMinecraftBedrockServicesToken({ version: '1.21.50' })
 
   console.log(response)
 }

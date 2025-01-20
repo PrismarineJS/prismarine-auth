@@ -35,7 +35,7 @@ declare module 'prismarine-auth' {
     // Returns a Minecraft Bedrock Edition auth token. Public key parameter must be a KeyLike object.
     getMinecraftBedrockToken(publicKey: KeyObject): Promise<string>
 
-    getMinecraftServicesToken(): Promise<GetMinecraftServicesResponse>
+    getMinecraftBedrockServicesToken(): Promise<GetMinecraftBedrockServicesResponse>
 
     getPlayfabLogin(): Promise<GetPlayfabLoginResponse>
 
@@ -155,7 +155,7 @@ declare module 'prismarine-auth' {
 
   export type CacheFactory = (options: { username: string, cacheName: string }) => Cache
 
-  export type GetMinecraftServicesResponse = {
+  export type GetMinecraftBedrockServicesResponse = {
     mcToken: string
     validUntil: string
     treatments: string[]

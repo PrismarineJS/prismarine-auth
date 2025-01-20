@@ -14,7 +14,7 @@ const XboxTokenManager = require('./TokenManagers/XboxTokenManager')
 const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
 const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManager')
 const PlayfabTokenManager = require('./TokenManagers/PlayfabTokenManager')
-const MinecraftServicesTokenManager = require('./TokenManagers/MinecraftServicesManager')
+const MinecraftServicesTokenManager = require('./TokenManagers/MinecraftBedrockServicesManager')
 
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
@@ -131,7 +131,7 @@ class MicrosoftAuthFlow {
     return playfab
   }
 
-  async getMinecraftServicesToken () {
+  async getMinecraftBedrockServicesToken ({ verison }) {
     const cache = await this.mcs.getCachedAccessToken()
 
     if (cache.valid) {
@@ -140,7 +140,7 @@ class MicrosoftAuthFlow {
 
     const playfab = await this.getPlayfabLogin()
 
-    const mcs = await this.mcs.getAccessToken(playfab.SessionTicket)
+    const mcs = await this.mcs.getAccessToken(playfab.SessionTicket, { verison })
 
     return mcs
   }

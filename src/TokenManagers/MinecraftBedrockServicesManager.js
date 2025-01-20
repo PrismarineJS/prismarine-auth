@@ -4,7 +4,7 @@ const fetch = require('node-fetch')
 const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
-class MinecraftServicesTokenManager {
+class MinecraftBedrockServicesTokenManager {
   constructor (cache) {
     this.cache = cache
   }
@@ -63,4 +63,4 @@ class MinecraftServicesTokenManager {
   }
 }
 
-module.exports = MinecraftServicesTokenManager
+module.exports = MinecraftBedrockServicesTokenManager
