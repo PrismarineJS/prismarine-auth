@@ -3,6 +3,7 @@ const path = require('path')
 const crypto = require('crypto')
 const debug = require('debug')('prismarine-auth')
 
+const Titles = require('./common/Titles')
 const { createHash } = require('./common/Util')
 const { Endpoints, msalConfig } = require('./common/Constants')
 const FileCache = require('./common/cache/FileCache')
@@ -12,7 +13,8 @@ const JavaTokenManager = require('./TokenManagers/MinecraftJavaTokenManager')
 const XboxTokenManager = require('./TokenManagers/XboxTokenManager')
 const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
 const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManager')
-const Titles = require('./common/Titles')
+const PlayfabTokenManager = require('./TokenManagers/PlayfabTokenManager')
+const MinecraftServicesTokenManager = require('./TokenManagers/MinecraftBedrockServicesManager')
 
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
@@ -26,7 +28,7 @@ async function retry (methodFn, beforeRetry, times) {
   }
 }
 
-const CACHE_IDS = ['msal', 'live', 'sisu', 'xbl', 'bed', 'mca']
+const CACHE_IDS = ['msal', 'live', 'sisu', 'xbl', 'bed', 'mca', 'mcs', 'pfb']
 
 class MicrosoftAuthFlow {
   constructor (username = '', cache = __dirname, options, codeCallback) {
@@ -87,6 +89,8 @@ class MicrosoftAuthFlow {
     this.xbl = new XboxTokenManager(keyPair, cache({ cacheName: 'xbl', username }))
     this.mba = new BedrockTokenManager(cache({ cacheName: 'bed', username }))
     this.mca = new JavaTokenManager(cache({ cacheName: 'mca', username }))
+    this.mcs = new MinecraftServicesTokenManager(cache({ cacheName: 'mcs', username }))
+    this.pfb = new PlayfabTokenManager(cache({ cacheName: 'pfb', username }))
   }
 
   async getMsaToken () {
@@ -111,6 +115,34 @@ class MicrosoftAuthFlow {
       debug('[msa] got auth result', ret)
       return ret.accessToken
     }
+  }
+
+  async getPlayfabLogin () {
+    const cache = this.pfb.getCachedAccessToken()
+
+    if (cache.valid) {
+      return cache.data
+    }
+
+    const xsts = await this.getXboxToken(Endpoints.PlayfabRelyingParty)
+
+    const playfab = await this.pfb.getAccessToken(xsts)
+
+    return playfab
+  }
+
+  async getMinecraftBedrockServicesToken ({ verison }) {
+    const cache = await this.mcs.getCachedAccessToken()
+
+    if (cache.valid) {
+      return cache.data
+    }
+
+    const playfab = await this.getPlayfabLogin()
+
+    const mcs = await this.mcs.getAccessToken(playfab.SessionTicket, { verison })
+
+    return mcs
   }
 
   async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.XboxRelyingParty, forceRefresh = false) {

@@ -3,6 +3,11 @@ import { KeyObject } from 'crypto'
 
 declare module 'prismarine-auth' {
   export class Authflow {
+
+    username: string
+
+    options: MicrosoftAuthFlowOptions
+
     /**
      * Creates a new Authflow instance, which holds its own token cache
      * @param username A unique identifier. If using password auth, this should be an email.
@@ -15,7 +20,7 @@ declare module 'prismarine-auth' {
     // Returns a Microsoft Oauth access token -- https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens
     getMsaToken(): Promise<string>
     // Returns an XSTS token -- https://docs.microsoft.com/en-us/gaming/xbox-live/api-ref/xbox-live-rest/additional/edsauthorization
-    getXboxToken(relyingParty?: string): Promise<{
+    getXboxToken(relyingParty?: string, forceRefresh?: boolean): Promise<{
       userXUID: string,
       userHash: string,
       XSTSToken: string,
@@ -29,6 +34,11 @@ declare module 'prismarine-auth' {
     }): Promise<{ token: string, entitlements: MinecraftJavaLicenses, profile: MinecraftJavaProfile, certificates: MinecraftJavaCertificates }>
     // Returns a Minecraft Bedrock Edition auth token. Public key parameter must be a KeyLike object.
     getMinecraftBedrockToken(publicKey: KeyObject): Promise<string>
+
+    getMinecraftBedrockServicesToken(config: { version: string }): Promise<GetMinecraftBedrockServicesResponse>
+
+    getPlayfabLogin(): Promise<GetPlayfabLoginResponse>
+
   }
 
   // via request to https://api.minecraftservices.com/entitlements/license, a list of licenses the player has
@@ -144,4 +154,69 @@ declare module 'prismarine-auth' {
   }
 
   export type CacheFactory = (options: { username: string, cacheName: string }) => Cache
+
+  export type GetMinecraftBedrockServicesResponse = {
+    mcToken: string
+    validUntil: string
+    treatments: string[]
+    treatmentContext: string
+    configurations: object
+  }
+
+  export type GetPlayfabLoginResponse = {
+    SessionTicket: string;
+    PlayFabId: string;
+    NewlyCreated: boolean;
+    SettingsForUser: {
+        NeedsAttribution: boolean;
+        GatherDeviceInfo: boolean;
+        GatherFocusInfo: boolean;
+    };
+    LastLoginTime: string;
+    InfoResultPayload: {
+        AccountInfo: {
+            PlayFabId: string;
+            Created: string;
+            TitleInfo: {
+                Origination: string;
+                Created: string;
+                LastLogin: string;
+                FirstLogin: string;
+                isBanned: boolean;
+                TitlePlayerAccount: {
+                    Id: string;
+                    Type: string;
+                    TypeString: string;
+                };
+            };
+            PrivateInfo: Record<string, unknown>;
+            XboxInfo: {
+                XboxUserId: string;
+                XboxUserSandbox: string;
+            };
+        };
+        UserInventory: any[];
+        UserDataVersion: number;
+        UserReadOnlyDataVersion: number;
+        CharacterInventories: any[];
+        PlayerProfile: {
+            PublisherId: string;
+            TitleId: string;
+            PlayerId: string;
+        };
+    };
+    EntityToken: {
+        EntityToken: string;
+        TokenExpiration: string;
+        Entity: {
+            Id: string;
+            Type: string;
+            TypeString: string;
+        };
+    };
+    TreatmentAssignment: {
+        Variants: any[];
+        Variables: any[];
+    };
+  }
 }
