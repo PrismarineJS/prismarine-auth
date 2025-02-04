@@ -32,7 +32,7 @@
     "standard": "^17.0.0"
   },
   "dependencies": {
-    "@azure/msal-node": "^2.0.2",
+    "@azure/msal-node": "^3.2.0",
     "@xboxreplay/xboxlive-auth": "^3.3.3",
     "debug": "^4.3.3",
     "smart-buffer": "^4.1.0",
