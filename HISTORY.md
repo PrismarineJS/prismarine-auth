@@ -1,5 +1,8 @@
 ## History
 
+### 2.7.0
+* [Add methods for fetching PlayFab and Minecraft Service tokens  (#107)](https://github.com/PrismarineJS/prismarine-auth/commit/1402f43dae29c8ffe65ffa2840b27542c06767ca) (thanks @LucienHH)
+
 ### 2.6.0
 * [Bump mocha from 10.8.2 to 11.0.1 (#112)](https://github.com/PrismarineJS/prismarine-auth/commit/c5a13a05a34da8b9821c19eda900eca3543f89d3) (thanks @dependabot[bot])
 * [Remove node-fetch in favor of the Node.js built-in fetch() function (#118)](https://github.com/PrismarineJS/prismarine-auth/commit/73634a7ea20ed20e9e7403bfd142534fd786179b) (thanks @extremeheat)
