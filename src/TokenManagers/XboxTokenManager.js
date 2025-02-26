@@ -75,10 +75,10 @@ class XboxTokenManager {
     }
 
     const body = JSON.stringify(payload)
-    const signature = this.sign(Endpoints.XboxUserAuth, '', body).toString('base64')
+    const signature = this.sign(Endpoints.xbox.userAuth, '', body).toString('base64')
     const headers = { ...this.headers, signature, 'Content-Type': 'application/json', accept: 'application/json', 'x-xbl-contract-version': '2' }
 
-    const ret = await fetch(Endpoints.XboxUserAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await fetch(Endpoints.xbox.userAuth, { method: 'post', headers, body }).then(checkStatus)
 
     await this.setCachedToken({ userToken: ret })
 
@@ -147,11 +147,11 @@ class XboxTokenManager {
 
     const body = JSON.stringify(payload)
 
-    const signature = this.sign(Endpoints.SisuAuthorize, '', body).toString('base64')
+    const signature = this.sign(Endpoints.xbox.sisuAuthorize, '', body).toString('base64')
 
     const headers = { Signature: signature }
 
-    const req = await fetch(Endpoints.SisuAuthorize, { method: 'post', headers, body })
+    const req = await fetch(Endpoints.xbox.sisuAuthorize, { method: 'post', headers, body })
     const ret = await req.json()
     if (!req.ok) this.checkTokenError(parseInt(req.headers.get('x-err')), ret)
 
@@ -186,11 +186,11 @@ class XboxTokenManager {
     }
 
     const body = JSON.stringify(payload)
-    const signature = this.sign(Endpoints.XstsAuthorize, '', body).toString('base64')
+    const signature = this.sign(Endpoints.xbox.xstsAuthorize, '', body).toString('base64')
 
     const headers = { ...this.headers, Signature: signature }
 
-    const req = await fetch(Endpoints.XstsAuthorize, { method: 'post', headers, body })
+    const req = await fetch(Endpoints.xbox.xstsAuthorize, { method: 'post', headers, body })
     const ret = await req.json()
     if (!req.ok) this.checkTokenError(ret.XErr, ret)
 
@@ -226,10 +226,10 @@ class XboxTokenManager {
     }
 
     const body = JSON.stringify(payload)
-    const signature = this.sign(Endpoints.XboxDeviceAuth, '', body).toString('base64')
+    const signature = this.sign(Endpoints.xbox.deviceAuth, '', body).toString('base64')
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Endpoints.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await fetch(Endpoints.xbox.deviceAuth, { method: 'post', headers, body }).then(checkStatus)
 
     await this.setCachedToken({ deviceToken: ret })
 
@@ -251,11 +251,11 @@ class XboxTokenManager {
       TokenType: 'JWT'
     }
     const body = JSON.stringify(payload)
-    const signature = this.sign(Endpoints.XboxTitleAuth, '', body).toString('base64')
+    const signature = this.sign(Endpoints.xbox.titleAuth, '', body).toString('base64')
 
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Endpoints.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await fetch(Endpoints.xbox.titleAuth, { method: 'post', headers, body }).then(checkStatus)
 
     await this.setCachedToken({ titleToken: ret })
 

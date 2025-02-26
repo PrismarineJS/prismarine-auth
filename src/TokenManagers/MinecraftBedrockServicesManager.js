@@ -25,7 +25,7 @@ class MinecraftBedrockServicesTokenManager {
   }
 
   async getAccessToken (sessionTicket, options = {}) {
-    const response = await fetch(Endpoints.MinecraftServicesSessionStart, {
+    const response = await fetch(Endpoints.minecraftBedrock.servicesSessionStart, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

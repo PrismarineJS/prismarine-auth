@@ -145,7 +145,7 @@ class MicrosoftAuthFlow {
     return mcs
   }
 
-  async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.XboxRelyingParty, forceRefresh = false) {
+  async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.xbox.relyingParty, forceRefresh = false) {
     const options = { ...this.options, relyingParty }
 
     const { xstsToken, userToken, deviceToken, titleToken } = await this.xbl.getCachedTokens(relyingParty)
@@ -192,7 +192,7 @@ class MicrosoftAuthFlow {
     } else {
       debug('[mc] Need to obtain tokens')
       await retry(async () => {
-        const xsts = await this.getXboxToken(Endpoints.PCXSTSRelyingParty)
+        const xsts = await this.getXboxToken(Endpoints.minecraftJava.XSTSRelyingParty)
         debug('[xbl] xsts data', xsts)
         response.token = await this.mca.getAccessToken(xsts)
       }, () => { this.xbl.forceRefresh = true }, 2)
@@ -200,12 +200,16 @@ class MicrosoftAuthFlow {
 
     if (options.fetchEntitlements) {
       response.entitlements = await this.mca.fetchEntitlements(response.token).catch(e => debug('Failed to obtain entitlement data', e))
+      // response.hasMinecraft = response.entitlements.items.some(item => item.name === 'game_minecraft')
     }
     if (options.fetchProfile) {
       response.profile = await this.mca.fetchProfile(response.token).catch(e => debug('Failed to obtain profile data', e))
     }
     if (options.fetchCertificates) {
       response.certificates = await this.mca.fetchCertificates(response.token).catch(e => debug('Failed to obtain keypair data', e))
+    }
+    if (options.fetchAttributes) {
+      response.attributes = await this.mca.fetchAttributes(response.token).catch(e => debug('Failed to obtain attributes data', e))
     }
 
     return response
@@ -222,7 +226,7 @@ class MicrosoftAuthFlow {
       if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
       debug('[mc] Need to obtain tokens')
       return await retry(async () => {
-        const xsts = await this.getXboxToken(Endpoints.BedrockXSTSRelyingParty)
+        const xsts = await this.getXboxToken(Endpoints.minecraftBedrock.XSTSRelyingParty)
         debug('[xbl] xsts data', xsts)
         const token = await this.mba.getAccessToken(publicKey, xsts)
         // If we want to auth with a title ID, make sure there's a TitleID in the response

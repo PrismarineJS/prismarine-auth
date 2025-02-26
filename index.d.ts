@@ -29,9 +29,11 @@ declare module 'prismarine-auth' {
     // Returns a Minecraft Java Edition auth token
     getMinecraftJavaToken(options?: {
       fetchCertificates?: boolean,
-      fetchEntitlements?: boolean
-      fetchProfile?: boolean
-    }): Promise<{ token: string, entitlements: MinecraftJavaLicenses, profile: MinecraftJavaProfile, certificates: MinecraftJavaCertificates }>
+      fetchEntitlements?: boolean,
+      fetchProfile?: boolean,
+      // TODO: Implement attribute fetching
+      // fetchAttributes?: boolean,
+    }): Promise<{ token: string, entitlements: MinecraftJavaEntitlements, profile: MinecraftJavaProfile, certificates: MinecraftJavaCertificates }>
     // Returns a Minecraft Bedrock Edition auth token. Public key parameter must be a KeyLike object.
     getMinecraftBedrockToken(publicKey: KeyObject): Promise<string>
 
