@@ -119,35 +119,26 @@ class MicrosoftAuthFlow {
 
   async getPlayfabLogin () {
     const cache = this.pfb.getCachedAccessToken()
-
     if (cache.valid) {
       return cache.data
     }
-
     const xsts = await this.getXboxToken(Endpoints.PlayfabRelyingParty)
-
     const playfab = await this.pfb.getAccessToken(xsts)
-
     return playfab
   }
 
   async getMinecraftBedrockServicesToken ({ verison }) {
     const cache = await this.mcs.getCachedAccessToken()
-
     if (cache.valid) {
       return cache.data
     }
-
     const playfab = await this.getPlayfabLogin()
-
     const mcs = await this.mcs.getAccessToken(playfab.SessionTicket, { verison })
-
     return mcs
   }
 
   async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.xbox.relyingParty, forceRefresh = false) {
     const options = { ...this.options, relyingParty }
-
     const { xstsToken, userToken, deviceToken, titleToken } = await this.xbl.getCachedTokens(relyingParty)
 
     if (xstsToken.valid && !forceRefresh) {
@@ -200,7 +191,6 @@ class MicrosoftAuthFlow {
 
     if (options.fetchEntitlements) {
       response.entitlements = await this.mca.fetchEntitlements(response.token).catch(e => debug('Failed to obtain entitlement data', e))
-      // response.hasMinecraft = response.entitlements.items.some(item => item.name === 'game_minecraft')
     }
     if (options.fetchProfile) {
       response.profile = await this.mca.fetchProfile(response.token).catch(e => debug('Failed to obtain profile data', e))
