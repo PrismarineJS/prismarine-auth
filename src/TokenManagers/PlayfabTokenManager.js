@@ -1,5 +1,4 @@
 const debug = require('debug')('prismarine-auth')
-
 const { Endpoints } = require('../common/Constants')
 
 class PlayfabTokenManager {
@@ -13,17 +12,11 @@ class PlayfabTokenManager {
 
   async getCachedAccessToken () {
     const { pfb: cache } = await this.cache.getCached()
-
     debug('[pf] token cache', cache)
-
     if (!cache) return
-
     const expires = new Date(cache.EntityToken.TokenExpiration)
-
     const remaining = expires - Date.now()
-
     const valid = remaining > 1000
-
     return { valid, until: expires, data: cache }
   }
 
@@ -58,9 +51,7 @@ class PlayfabTokenManager {
     })
 
     const data = await response.json()
-
     await this.setCachedAccessToken({ pfb: data.data })
-
     return data.data
   }
 }

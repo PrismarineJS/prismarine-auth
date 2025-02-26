@@ -1,25 +1,34 @@
 module.exports = {
   Endpoints: {
-    PCXSTSRelyingParty: 'rp://api.minecraftservices.com/',
-    BedrockXSTSRelyingParty: 'https://multiplayer.minecraft.net/',
+    minecraftJava: {
+      XSTSRelyingParty: 'rp://api.minecraftservices.com/',
+      loginWithXbox: 'https://api.minecraftservices.com/authentication/login_with_xbox',
+      profile: 'https://api.minecraftservices.com/minecraft/profile',
+      license: 'https://api.minecraftservices.com/entitlements/license',
+      entitlements: 'https://api.minecraftservices.com/entitlements/mcstore',
+      attributes: 'https://api.minecraftservices.com/player/attributes',
+      certificates: 'https://api.minecraftservices.com/player/certificates',
+      reportPlayer: 'https://api.minecraftservices.com/player/report'
+    },
+    minecraftBedrock: {
+      XSTSRelyingParty: 'https://multiplayer.minecraft.net/',
+      authenticate: 'https://multiplayer.minecraft.net/authentication',
+      servicesSessionStart: 'https://authorization.franchise.minecraft-services.net/api/v1.0/session/start'
+    },
+    xbox: {
+      authRelyingParty: 'http://auth.xboxlive.com',
+      relyingParty: 'http://xboxlive.com',
+      deviceAuth: 'https://device.auth.xboxlive.com/device/authenticate',
+      titleAuth: 'https://title.auth.xboxlive.com/title/authenticate',
+      userAuth: 'https://user.auth.xboxlive.com/user/authenticate',
+      sisuAuthorize: 'https://sisu.xboxlive.com/authorize',
+      xstsAuthorize: 'https://xsts.auth.xboxlive.com/xsts/authorize'
+    },
+    live: {
+      deviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
+      tokenRequest: 'https://login.live.com/oauth20_token.srf'
+    },
     PlayfabRelyingParty: 'https://b980a380.minecraft.playfabapi.com/',
-    XboxAuthRelyingParty: 'http://auth.xboxlive.com/',
-    XboxRelyingParty: 'http://xboxlive.com',
-    BedrockAuth: 'https://multiplayer.minecraft.net/authentication',
-    XboxDeviceAuth: 'https://device.auth.xboxlive.com/device/authenticate',
-    XboxTitleAuth: 'https://title.auth.xboxlive.com/title/authenticate',
-    XboxUserAuth: 'https://user.auth.xboxlive.com/user/authenticate',
-    SisuAuthorize: 'https://sisu.xboxlive.com/authorize',
-    XstsAuthorize: 'https://xsts.auth.xboxlive.com/xsts/authorize',
-    MinecraftServicesLogWithXbox: 'https://api.minecraftservices.com/authentication/login_with_xbox',
-    MinecraftServicesCertificate: 'https://api.minecraftservices.com/player/certificates',
-    MinecraftServicesEntitlement: 'https://api.minecraftservices.com/entitlements/mcstore',
-    MinecraftServicesLicense: 'https://api.minecraftservices.com/entitlements/license',
-    MinecraftServicesProfile: 'https://api.minecraftservices.com/minecraft/profile',
-    MinecraftServicesReport: 'https://api.minecraftservices.com/player/report',
-    LiveDeviceCodeRequest: 'https://login.live.com/oauth20_connect.srf',
-    LiveTokenRequest: 'https://login.live.com/oauth20_token.srf',
-    MinecraftServicesSessionStart: 'https://authorization.franchise.minecraft-services.net/api/v1.0/session/start',
     PlayfabLoginWithXbox: 'https://20ca2.playfabapi.com/Client/LoginWithXbox'
   },
   msalConfig: {
@@ -47,5 +56,6 @@ module.exports = {
     2148916236: 'Your account requires proof of age. Please login to https://login.live.com/login.srf and provide proof of age.',
     2148916237: 'Your account has reached the its limit for playtime. Your account has been blocked from logging in.',
     2148916238: 'The account date of birth is under 18 years and cannot proceed unless the account is added to a family by an adult.'
-  }
+  },
+  oneDayMs: 86400000
 }

@@ -1,7 +1,7 @@
 const debug = require('debug')('prismarine-auth')
 
 const { Endpoints } = require('../common/Constants')
-const { checkStatus } = require('../common/Util')
+const { checkStatusWithHelp } = require('../common/Util')
 
 class BedrockTokenManager {
   constructor (cache) {
@@ -51,11 +51,11 @@ class BedrockTokenManager {
       'User-Agent': 'MCPE/UWP',
       Authorization: `XBL3.0 x=${xsts.userHash};${xsts.XSTSToken}`
     }
-    const MineServicesResponse = await fetch(Endpoints.BedrockAuth, {
+    const MineServicesResponse = await fetch(Endpoints.minecraftBedrock.authenticate, {
       method: 'post',
       headers,
       body: JSON.stringify({ identityPublicKey: clientPublicKey })
-    }).then(checkStatus)
+    }).then(checkStatusWithHelp({ 401: 'Ensure that you are able to sign-in to Minecraft with this account' }))
 
     debug('[mc] mc auth response', MineServicesResponse)
     await this.setCachedAccessToken(MineServicesResponse)
