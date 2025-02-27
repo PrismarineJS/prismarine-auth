@@ -25,9 +25,9 @@ async function retry (methodFn, beforeRetry, times) {
   }
 }
 
-const CACHE_IDS = ['msal', 'live', 'sisu', 'xbl', 'bed', 'mca', 'mcs', 'pfb']
-
 class MicrosoftAuthFlow {
+  static CACHE_NAMES = ['msal', 'live', 'sisu', 'xbl', 'bed', 'mca', 'mcs', 'pfb']
+
   constructor (username = '', cacherOrDir = __dirname, options, codeCallback) {
     this.username = username
     if (options && !options.flow) {
@@ -39,7 +39,7 @@ class MicrosoftAuthFlow {
   }
 
   async initTokenManagers (username, cacherOrDir, forceRefresh, abortSignal) {
-    const cacher = typeof cacherOrDir === 'string' ? createFileSystemCache(cacherOrDir, CACHE_IDS) : cacherOrDir
+    const cacher = typeof cacherOrDir === 'string' ? createFileSystemCache(cacherOrDir, MicrosoftAuthFlow.CACHE_NAMES) : cacherOrDir
     if (forceRefresh) {
       await cacher.reset()
     }

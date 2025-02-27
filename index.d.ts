@@ -3,9 +3,9 @@ import { KeyObject } from 'crypto'
 
 declare module 'prismarine-auth' {
   export class Authflow {
-
+    // List of cache names (identifiers) that are used by the Authflow class
+    static CACHE_NAMES: string[]
     username: string
-
     options: MicrosoftAuthFlowOptions
 
     /**
@@ -233,4 +233,6 @@ declare module 'prismarine-auth' {
       Variables: any[];
     };
   }
+
+  export function createFileSystemCache(cacheDir: string, cacheIds: string[]): Promise<CacheFactory>
 }

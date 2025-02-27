@@ -1,3 +1,5 @@
+const { createFileSystemCache } = require('./src/common/cache/FileCache')
+
 if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[0]) < 14) {
   console.error('Your node version is currently', process.versions.node)
   console.error('Please update it to a version >= 14.x.x from https://nodejs.org/')
@@ -6,5 +8,6 @@ if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[
 
 module.exports = {
   Authflow: require('./src/MicrosoftAuthFlow'),
-  Titles: require('./src/common/Titles')
+  Titles: require('./src/common/Titles'),
+  createFileSystemCache
 }
