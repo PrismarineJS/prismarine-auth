@@ -34,11 +34,11 @@ class MicrosoftAuthFlow {
       throw new Error("Missing 'flow' argument in options. See docs for more information.")
     }
     this.options = options || { flow: 'live', authTitle: Titles.MinecraftNintendoSwitch }
-    this.ready = this.initTokenManagers(username, cacherOrDir, options?.forceRefresh, options?.abortSignal)
+    this.ready = this._initTokenManagers(username, cacherOrDir, this.options.forceRefresh, this.options.abortSignal)
     this.codeCallback = codeCallback
   }
 
-  async initTokenManagers (username, cacherOrDir, forceRefresh, abortSignal) {
+  async _initTokenManagers (username, cacherOrDir, forceRefresh, abortSignal) {
     const cacher = typeof cacherOrDir === 'string' ? createFileSystemCache(cacherOrDir, MicrosoftAuthFlow.CACHE_NAMES) : cacherOrDir
     if (forceRefresh) {
       await cacher.reset()

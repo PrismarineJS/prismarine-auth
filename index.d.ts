@@ -117,7 +117,8 @@ declare module 'prismarine-auth' {
     password?: string
     flow: 'live' | 'msal' | 'sisu'
     // Reset the cache and obtain fresh tokens for everything
-    forceRefresh?: boolean
+    forceRefresh?: boolean,
+    signal?: AbortSignal
   }
 
   export enum Titles {

@@ -23,6 +23,7 @@ npm install prismarine-auth
     - [password] {string} - If passed we will do password based authentication.
     - [authTitle] {string} - See the [API.md](docs/API.md)
     - [deviceType] {string} - See the [API.md](docs/API.md)
+    - [abortSignal] {AbortSignal} - (Optional) An AbortSignal to cancel the request.
 - onMsaCode {Function} - (For device code auth) What we should do when we get the code. Useful for passing the code to another function.
 
 ### Examples
