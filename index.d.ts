@@ -148,19 +148,27 @@ declare module 'prismarine-auth' {
 
   export interface Cache {
     reset(): Promise<void>
-    getCached(): Promise<any>
-    setCached(value: any): Promise<void>
-    setCachedPartial(value: any): Promise<void>
 
+    // Stores a key-value pair in the cache
     set(key: string, value: any, options: { expiresOn?: number, obtainedOn?: number }): Promise<void>
+    // Retrieves a value from the cache
     get(key: string): Promise<any>
 
     // Removes all expired keys
     cleanupExpired(): Promise<void>
+    // Returns true if the cache is empty
     isEmpty(): Promise<boolean>
   }
 
   export type CacheFactory = (options: { username: string, cacheName: string }) => Cache
+
+  export interface CacheFactory {
+    createCache(options: { username: string, cacheName: string }): Promise<Cache>
+    hashKey(cacheName: string, identifier: string): string;
+    deleteCache(cacheName: string, identifier: string): Promise<void>
+    deleteCaches(cacheName: string): Promise<void>
+    cleanup(): Promise<void>
+  }
 
   export type GetMinecraftBedrockServicesResponse = {
     mcToken: string

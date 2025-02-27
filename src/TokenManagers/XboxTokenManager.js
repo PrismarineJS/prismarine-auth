@@ -40,7 +40,6 @@ class XboxTokenManager {
         xstsToken: { valid: false }
       }
     }
-    console.log('cacheTokens', cache)
     const cachedTokens = cache.value
     const xstsHash = createHash(relyingParty)
     const result = {}

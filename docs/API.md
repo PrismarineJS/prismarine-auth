@@ -11,7 +11,7 @@ This is the main exposed class you interact with. Every instance holds its own t
 * `username` (optional, default='')
   * When using device code auth - a unique id
   * When using password auth - your microsoft account email
-* `cache` (optional, default='node_modules') - Where to store cached tokens or a cache factory function. node_modules if not specified.
+* `cacherOrDir` (optional) - Where to store cached tokens or a cache factory function.
 * `options` (optional)
   * `flow` (required) The auth flow to use. One of `live`, `msal`, `sisu`. If no `options` argument is specified, `msal` will be used.
     * `live` - Generate an XSTS token using the live.com domain which allows for user, device and title authentication. This flow will only work with Windows Live client IDs (such as official Microsoft apps, not custom Azure apps).
@@ -79,26 +79,39 @@ flow.getMinecraftJavaToken().then(console.log)
 
 ### Cache
 
-prismarine-auth uses caching to ensure users don't have to constantly sign in when authenticating to Microsoft/Xbox services. By default, if you pass a String value to Authflow's `cacheDir` function call argument, we'll use the local file system to store and retrieve data to build a cache. However, in some circumstances, you may not have access to the local file system, or have a more advanced use-case that requires database retreival, for example. In these scenarios, you can implement cache storage and retreval yourself to match your needs.
+prismarine-auth uses caching to ensure users don't have to constantly sign in when authenticating 
+to Microsoft/Xbox services. By default, if you pass a String value to Authflow's `cacheDir` function 
+call argument, we use the local file system to store and retrieve data to build a cache.
+However, you may not have access to the local file system, or have a more advanced use-case that 
+requires database retrieval, for example. In these scenarios, you can implement 
+cache storage and retrieval yourself to match your needs.
 
-If you pass a function to Authflow's `cacheDir` function call argument, you are expected to return a *factory method*, which means your function should instantiate and return a class or an object that implements the interface [defined here](https://github.com/PrismarineJS/prismarine-auth/blob/cf0957495458dc7cb0f2579d97b13d682be27d8f/index.d.ts#L125) and copied below:
-
-
-```typescript
-// Return the stored value, this can be called multiple times
-getCached(): Promise<any>
-// Replace the stored value
-setCached(value: any): Promise<void>
-// Replace an part of the stored value. Implement this using the spread operator
-setCachedPartial(value: any): Promise<void>
+If you pass an object to Authflow's `cacheDir` function call argument, you are expected to return a 
+*factory object* that implements the following interface:
+```js
+interface CacheFactory {
+    createCache(options: { username: string, cacheName: string }): Promise<Cache>
+    hashKey(cacheName: string, identifier: string): string;
+    deleteCache(cacheName: string, identifier: string): Promise<void>
+    deleteCaches(cacheName: string): Promise<void>
+    cleanup(): Promise<void>
+}
 ```
 
-Your cache function itself will be passed an object with the following properties:
+When .createCache() is called on the factory object, your function should instantiate and return 
+a class or an object that implements the `Cache` interface [defined here](../index.d.ts) and copied below:
 
-```js
-{
-  username: string, // Name of the user we're trying to get a token for
-  cacheName: string, // Depends on the cache usage, each cache has a unique name
+```typescript
+interface Cache {
+  reset(): Promise<void>
+  // Stores a key-value pair in the cache
+  set(key: string, value: any, options: { expiresOn?: number, obtainedOn?: number }): Promise<void>
+  // Retrieves a value from the cache
+  get(key: string): Promise<any>
+  // Removes all expired keys
+  cleanupExpired(): Promise<void>
+  // Returns true if the cache is empty
+  isEmpty(): Promise<boolean>
 }
 ```
 
@@ -110,24 +123,49 @@ class InMemoryCache {
   async reset () {
     // (should clear the data in the cache like a first run)
   }
-  async getCached () {
-    return this.cache
+  async set (key, value, { expiresOn = Date.now() + 9000, obtainedOn = Date.now() } = {}) {
+    this.cache[key] = { value, expiresOn, obtainedOn }
   }
-  async setCached (value) {
-    this.cache = value
-  }
-  async setCachedPartial (value) {
-    this.cache = {
-      ...this.cache,
-      ...value
+  async get (key) {
+    const data = this.cache[key]
+    if (!data) return null
+    if (data.expiresOn && data.expiresOn < Date.now()) {
+      delete this.cache[key]
+      return null
     }
+    return data.value
+  }
+  cleanupExpired () {
+    for (const key in this.cache) {
+      if (this.cache[key].expiresOn < Date.now()) {
+        delete this.cache[key]
+      }
+    }
+  }
+  isEmpty () {
+    return Promise.resolve(Object.keys(this.cache).length === 0)
   }
 }
 
-function cacheFactory ({ username, cacheName }) {
-  return new InMemoryCache()
+const cacheFactory = {
+  async createCache ({ username, cacheName }) {
+    return new InMemoryCache()
+  },
+  hashKey (cacheName, identifier) {
+    return `${cacheName}:${identifier}`
+  },
+  async deleteCache (cacheName, identifier) {
+    // (should delete the cache for the given identifier)
+  },
+  async deleteCaches (cacheName) {
+    // (should delete all caches for the given cacheName)
+  },
+  async cleanup () {
+    // (should clean up any resources used by the cache)
+  }
 }
-// Passed like `new Authflow('bob', cacheFactory, ...)`
+
+// Passed like `new Authflow('bob', cacheFactory, ...)` to the Authflow constructor
 ```
 
 ## FAQ
