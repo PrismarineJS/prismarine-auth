@@ -4,10 +4,13 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class LiveTokenManager {
-  constructor (clientId, scopes, cache) {
+  constructor (clientId, scopes, cache, abortSignal) {
     this.clientId = clientId
     this.scopes = scopes
     this.cache = cache
+    this.forceRefresh = false
+    this.abortSignal = abortSignal
+    this.abortSignal?.addEventListener('abort', () => { this.polling = false })
   }
 
   async verifyTokens () {
@@ -47,38 +50,30 @@ class LiveTokenManager {
     }
 
     const token = await fetch(Endpoints.live.tokenRequest, codeRequest).then(checkStatus)
-    this.updateCache(token)
+    this.updateCachedToken(token)
     return token
   }
 
   async getAccessToken () {
-    const { token } = await this.cache.getCached()
-    if (!token) return
-    const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
-    const valid = until > 1000
-    return { valid, until, token: token.access_token }
+    const cached = await this.cache.get('tokens')
+    if (!cached) return
+    return { valid: cached.valid, token: cached.value.access_token, until: cached.expiresOn }
   }
 
   async getRefreshToken () {
-    const { token } = await this.cache.getCached()
-    if (!token) return
-    const until = new Date(token.obtainedOn + token.expires_in) - Date.now()
-    const valid = until > 1000
-    return { valid, until, token: token.refresh_token }
+    const cached = await this.cache.get('tokens')
+    if (!cached) return
+    return { valid: cached.valid, token: cached.value.refresh_token, until: cached.expiresOn }
   }
 
-  async updateCache (data) {
-    await this.cache.setCachedPartial({
-      token: {
-        ...data,
-        obtainedOn: Date.now()
-      }
-    })
+  async updateCachedToken (data) {
+    await this.cache.set('tokens', data, { obtainedOn: Date.now(), expiresOn: data.expires_in * 1000 })
   }
 
   async authDeviceCode (deviceCodeCallback) {
     const acquireTime = Date.now()
     const codeRequest = {
+      signal: this.abortSignal,
       method: 'post',
       body: new URLSearchParams({ scope: this.scopes, client_id: this.clientId, response_type: 'device_code' }).toString(),
       headers: {
@@ -141,7 +136,7 @@ class LiveTokenManager {
             }
           })
         if (!token) continue
-        this.updateCache(token)
+        this.updateCachedToken(token)
         this.polling = false
         return { accessToken: token.access_token }
       } catch (e) {

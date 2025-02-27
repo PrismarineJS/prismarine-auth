@@ -1,12 +1,9 @@
-const fs = require('fs')
-const path = require('path')
 const crypto = require('crypto')
 const debug = require('debug')('prismarine-auth')
 
 const Titles = require('./common/Titles')
-const { createHash } = require('./common/Util')
 const { Endpoints, msalConfig } = require('./common/Constants')
-const FileCache = require('./common/cache/FileCache')
+const { createFileSystemCache } = require('./common/cache/FileCache')
 
 const LiveTokenManager = require('./TokenManagers/LiveTokenManager')
 const JavaTokenManager = require('./TokenManagers/MinecraftJavaTokenManager')
@@ -14,7 +11,7 @@ const XboxTokenManager = require('./TokenManagers/XboxTokenManager')
 const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
 const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManager')
 const PlayfabTokenManager = require('./TokenManagers/PlayfabTokenManager')
-const MinecraftServicesTokenManager = require('./TokenManagers/MinecraftBedrockServicesManager')
+const MCBedrockServicesTokenManager = require('./TokenManagers/MinecraftBedrockServicesManager')
 
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
@@ -31,47 +28,26 @@ async function retry (methodFn, beforeRetry, times) {
 const CACHE_IDS = ['msal', 'live', 'sisu', 'xbl', 'bed', 'mca', 'mcs', 'pfb']
 
 class MicrosoftAuthFlow {
-  constructor (username = '', cache = __dirname, options, codeCallback) {
+  constructor (username = '', cacherOrDir = __dirname, options, codeCallback) {
     this.username = username
     if (options && !options.flow) {
       throw new Error("Missing 'flow' argument in options. See docs for more information.")
     }
     this.options = options || { flow: 'live', authTitle: Titles.MinecraftNintendoSwitch }
-    this.initTokenManagers(username, cache, options?.forceRefresh)
+    this.ready = this.initTokenManagers(username, cacherOrDir, options?.forceRefresh, options?.abortSignal)
     this.codeCallback = codeCallback
   }
 
-  initTokenManagers (username, cache, forceRefresh) {
-    if (typeof cache !== 'function') {
-      let cachePath = cache
-
-      debug(`Using cache path: ${cachePath}`)
-
-      try {
-        if (!fs.existsSync(cachePath)) {
-          fs.mkdirSync(cachePath, { recursive: true })
-        }
-      } catch (e) {
-        console.log('Failed to open cache dir', e, ' ... will use current dir')
-        cachePath = __dirname
-      }
-
-      cache = ({ cacheName, username }) => {
-        if (!CACHE_IDS.includes(cacheName)) {
-          throw new Error(`Cannot instantiate cache for unknown ID: '${cacheName}'`)
-        }
-        const hash = createHash(username)
-        const result = new FileCache(path.join(cachePath, `./${hash}_${cacheName}-cache.json`))
-        if (forceRefresh) {
-          result.reset()
-        }
-        return result
-      }
+  async initTokenManagers (username, cacherOrDir, forceRefresh, abortSignal) {
+    const cacher = typeof cacherOrDir === 'string' ? createFileSystemCache(cacherOrDir, CACHE_IDS) : cacherOrDir
+    if (forceRefresh) {
+      await cacher.reset()
     }
 
     if (this.options.flow === 'live' || this.options.flow === 'sisu') {
       if (!this.options.authTitle) throw new Error(`Please specify an "authTitle" in Authflow constructor when using ${this.options.flow} flow`)
-      this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'], cache({ cacheName: this.options.flow, username }))
+      this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'],
+        await cacher.createCache({ cacheName: this.options.flow, username }), abortSignal)
       this.doTitleAuth = true
     } else if (this.options.flow === 'msal') {
       let config = this.options.msalConfig
@@ -80,20 +56,23 @@ class MicrosoftAuthFlow {
         if (!this.options.authTitle) throw new Error('Must specify an Azure client ID token inside the `authTitle` parameter when using Azure-based auth. See https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app#register-an-application for more information on obtaining an Azure token.')
         config.auth.clientId = this.options.authTitle
       }
-      this.msa = new MsaTokenManager(config, ['XboxLive.signin', 'offline_access'], cache({ cacheName: 'msal', username }))
+      const scopes = this.options.scopes ?? ['XboxLive.signin']
+      this.msa = new MsaTokenManager(config, scopes.concat('offline_access'),
+        await cacher.createCache({ cacheName: 'msal', username }), abortSignal)
     } else {
       throw new Error(`Unknown flow: ${this.options.flow} (expected "live", "sisu", or "msal")`)
     }
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
-    this.xbl = new XboxTokenManager(keyPair, cache({ cacheName: 'xbl', username }))
-    this.mba = new BedrockTokenManager(cache({ cacheName: 'bed', username }))
-    this.mca = new JavaTokenManager(cache({ cacheName: 'mca', username }))
-    this.mcs = new MinecraftServicesTokenManager(cache({ cacheName: 'mcs', username }))
-    this.pfb = new PlayfabTokenManager(cache({ cacheName: 'pfb', username }))
+    this.xbl = new XboxTokenManager(keyPair, await cacher.createCache({ cacheName: 'xbl', username }), abortSignal)
+    this.mba = new BedrockTokenManager(await cacher.createCache({ cacheName: 'bed', username }), abortSignal)
+    this.mca = new JavaTokenManager(await cacher.createCache({ cacheName: 'mca', username }), abortSignal)
+    this.mcs = new MCBedrockServicesTokenManager(await cacher.createCache({ cacheName: 'mcs', username }), abortSignal)
+    this.pfb = new PlayfabTokenManager(await cacher.createCache({ cacheName: 'pfb', username }), abortSignal)
   }
 
   async getMsaToken () {
+    await this.ready
     if (await this.msa.verifyTokens()) {
       debug('[msa] Using existing tokens')
       const { token } = await this.msa.getAccessToken()
@@ -118,6 +97,7 @@ class MicrosoftAuthFlow {
   }
 
   async getPlayfabLogin () {
+    await this.ready
     const cache = this.pfb.getCachedAccessToken()
     if (cache.valid) {
       return cache.data
@@ -128,6 +108,7 @@ class MicrosoftAuthFlow {
   }
 
   async getMinecraftBedrockServicesToken ({ verison }) {
+    await this.ready
     const cache = await this.mcs.getCachedAccessToken()
     if (cache.valid) {
       return cache.data
@@ -138,6 +119,7 @@ class MicrosoftAuthFlow {
   }
 
   async getXboxToken (relyingParty = this.options.relyingParty || Endpoints.xbox.relyingParty, forceRefresh = false) {
+    await this.ready
     const options = { ...this.options, relyingParty }
     const { xstsToken, userToken, deviceToken, titleToken } = await this.xbl.getCachedTokens(relyingParty)
 
@@ -175,6 +157,7 @@ class MicrosoftAuthFlow {
   }
 
   async getMinecraftJavaToken (options = {}) {
+    await this.ready
     const response = { token: '', entitlements: {}, profile: {} }
     if (await this.mca.verifyTokens()) {
       debug('[mc] Using existing tokens')
@@ -199,13 +182,15 @@ class MicrosoftAuthFlow {
       response.certificates = await this.mca.fetchCertificates(response.token).catch(e => debug('Failed to obtain keypair data', e))
     }
     if (options.fetchAttributes) {
-      response.attributes = await this.mca.fetchAttributes(response.token).catch(e => debug('Failed to obtain attributes data', e))
+      // TODO: Implement this
+      // response.attributes = await this.mca.fetchAttributes(response.token).catch(e => debug('Failed to obtain attributes data', e))
     }
 
     return response
   }
 
   async getMinecraftBedrockToken (publicKey) {
+    await this.ready
     // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
     // is this even a good idea to cache?
     if (await this.mba.verifyTokens() && false) { // eslint-disable-line

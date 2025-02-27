@@ -2,26 +2,30 @@ const debug = require('debug')('prismarine-auth')
 const { Endpoints } = require('../common/Constants')
 
 class PlayfabTokenManager {
-  constructor (cache) {
+  constructor (cache, abortSignal) {
     this.cache = cache
+    this.abortSignal = abortSignal
   }
 
   async setCachedAccessToken (data) {
-    await this.cache.setCachedPartial(data)
+    const expires = new Date(data.EntityToken.TokenExpiration)
+    await this.cache.set('auth', data, { expiresOn: Number(expires) })
   }
 
   async getCachedAccessToken () {
-    const { pfb: cache } = await this.cache.getCached()
+    const cache = await this.cache.get('auth')
     debug('[pf] token cache', cache)
     if (!cache) return
-    const expires = new Date(cache.EntityToken.TokenExpiration)
-    const remaining = expires - Date.now()
-    const valid = remaining > 1000
-    return { valid, until: expires, data: cache }
+    return {
+      valid: cache.valid,
+      until: cache.expiresOn,
+      data: cache.value
+    }
   }
 
   async getAccessToken (xsts) {
     const response = await fetch(Endpoints.PlayfabLoginWithXbox, {
+      signal: this.abortSignal,
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

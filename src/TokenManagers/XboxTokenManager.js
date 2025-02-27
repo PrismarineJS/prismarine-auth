@@ -18,23 +18,31 @@ const checkIfValid = (expires) => {
 
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {
-  constructor (ecKey, cache) {
+  constructor (ecKey, cache, abortSignal) {
     this.key = ecKey
     this.jwk = { ...ecKey.publicKey.export({ format: 'jwk' }), alg: 'ES256', use: 'sig' }
     this.cache = cache
-
+    this.abortSignal = abortSignal
     this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
   }
 
   async setCachedToken (data) {
-    await this.cache.setCachedPartial(data)
+    await this.cache.setPartial('xbl', data, { expiresOn: data.expiresOn })
   }
 
   async getCachedTokens (relyingParty) {
-    const cachedTokens = await this.cache.getCached()
-
+    const cache = await this.cache.get('xbl')
+    if (!cache || !cache.valid) {
+      return {
+        userToken: { valid: false },
+        titleToken: { valid: false },
+        deviceToken: { valid: false },
+        xstsToken: { valid: false }
+      }
+    }
+    console.log('cacheTokens', cache)
+    const cachedTokens = cache.value
     const xstsHash = createHash(relyingParty)
-
     const result = {}
 
     for (const token of ['userToken', 'titleToken', 'deviceToken']) {

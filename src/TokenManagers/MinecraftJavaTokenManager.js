@@ -28,27 +28,28 @@ const reportReasons = {
 const toDER = pem => pem.split('\n').slice(1, -1).reduce((acc, cur) => Buffer.concat([acc, Buffer.from(cur, 'base64')]), Buffer.alloc(0))
 
 class MinecraftJavaTokenManager {
-  constructor (cache) {
+  constructor (cache, abortSignal) {
     this.cache = cache
+    this.abortSignal = abortSignal
   }
 
   async getCachedAccessToken () {
-    const { mca: token } = await this.cache.getCached()
+    const token = await this.cache.get('mca')
     debug('[mc] token cache', token)
     if (!token) return
-    const expires = token.obtainedOn + (token.expires_in * 1000)
-    const remaining = expires - Date.now()
-    const valid = remaining > 1000
-    return { valid, until: expires, token: token.access_token, data: token }
+    return {
+      valid: token.valid,
+      until: token.expiresOn,
+      token: token.value.access_token,
+      data: token.value
+    }
   }
 
   async setCachedAccessToken (data) {
-    await this.cache.setCachedPartial({
-      mca: {
-        ...data,
-        obtainedOn: Date.now()
-      }
-    })
+    if (!data || !data.access_token) {
+      throw new Error('Invalid data: missing access token')
+    }
+    await this.cache.set('mca', data, { expiresOn: data.expires_in * 1000 + Date.now() })
   }
 
   async verifyTokens () {

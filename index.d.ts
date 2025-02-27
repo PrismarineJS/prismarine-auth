@@ -151,6 +151,13 @@ declare module 'prismarine-auth' {
     getCached(): Promise<any>
     setCached(value: any): Promise<void>
     setCachedPartial(value: any): Promise<void>
+
+    set(key: string, value: any, options: { expiresOn?: number, obtainedOn?: number }): Promise<void>
+    get(key: string): Promise<any>
+
+    // Removes all expired keys
+    cleanupExpired(): Promise<void>
+    isEmpty(): Promise<boolean>
   }
 
   export type CacheFactory = (options: { username: string, cacheName: string }) => Cache
