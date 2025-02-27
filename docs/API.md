@@ -77,37 +77,40 @@ const flow = new Authflow('', './', { authTitle: Titles.MinecraftNintendoSwitch,
 flow.getMinecraftJavaToken().then(console.log)
 ```
 
-### Cache
+### Caching
 
-prismarine-auth uses caching to ensure users don't have to constantly sign in when authenticating 
-to Microsoft/Xbox services. By default, if you pass a String value to Authflow's `cacheDir` function 
-call argument, we use the local file system to store and retrieve data to build a cache.
-However, you may not have access to the local file system, or have a more advanced use-case that 
-requires database retrieval, for example. In these scenarios, you can implement 
-cache storage and retrieval yourself to match your needs.
+prismarine-auth uses caching so users don't have to repeatedly sign in when authenticating 
+to Microsoft/Xbox services.
 
-If you pass an object to Authflow's `cacheDir` function call argument, you are expected to return a 
+By default, if you pass a String value to Authflow's `cacherOrDir` function call argument, we use the local file system 
+to store and retrieve data to build a cache. However, you may for example not have access to the local file system,
+or have a more advanced use-case that requires database retrieval. In these scenarios, you can implement cache storage 
+and retrieval yourself to match your needs.
+
+If you pass an object to Authflow's `cacherOrDir` function call argument, you are expected to return a 
 *factory object* that implements the following interface:
-```js
+
+```ts
 interface CacheFactory {
-    createCache(options: { username: string, cacheName: string }): Promise<Cache>
-    hashKey(cacheName: string, identifier: string): string;
-    deleteCache(cacheName: string, identifier: string): Promise<void>
-    deleteCaches(cacheName: string): Promise<void>
-    cleanup(): Promise<void>
+  createCache(options: { username: string, cacheName: string }): Promise<Cache>
+  hashKey(cacheName: string, identifier: string): string;
+  deleteCache(cacheName: string, identifier: string): Promise<void>
+  deleteCaches(cacheName: string): Promise<void>
+  cleanup(): Promise<void>
 }
 ```
 
 When .createCache() is called on the factory object, your function should instantiate and return 
 a class or an object that implements the `Cache` interface [defined here](../index.d.ts) and copied below:
 
-```typescript
+```ts
 interface Cache {
+  // Erases all keys in the cache
   reset(): Promise<void>
   // Stores a key-value pair in the cache
   set(key: string, value: any, options: { expiresOn?: number, obtainedOn?: number }): Promise<void>
   // Retrieves a value from the cache
-  get(key: string): Promise<any>
+  get(key: string): Promise<{ valid: boolean, value?: any, expiresOn?: number }>
   // Removes all expired keys
   cleanupExpired(): Promise<void>
   // Returns true if the cache is empty
@@ -115,11 +118,11 @@ interface Cache {
 }
 ```
 
-As an example of usage, you could create a minimal in memory cache like this (note that the returned class instance implements all the functions in the interface linked above):
+As an example of usage, you could create a minimal in memory cache like this:
 
-```js
-class InMemoryCache {
-  private cache = {}
+```ts
+class InMemoryCache implements Cache {
+  cache = {}
   async reset () {
     // (should clear the data in the cache like a first run)
   }
@@ -128,12 +131,8 @@ class InMemoryCache {
   }
   async get (key) {
     const data = this.cache[key]
-    if (!data) return null
-    if (data.expiresOn && data.expiresOn < Date.now()) {
-      delete this.cache[key]
-      return null
-    }
-    return data.value
+    if (!data) return
+    return { valid: data.expiresOn > Date.now(), value: data.value }
   }
   cleanupExpired () {
     for (const key in this.cache) {
@@ -162,7 +161,8 @@ const cacheFactory = {
   }
 }
 
-// Passed like `new Authflow('bob', cacheFactory, ...)` to the Authflow constructor
+// Passed like so:
+const authflow = new Authflow('Notch', cacheFactory)
 ```
 
 ## FAQ

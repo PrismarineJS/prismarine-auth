@@ -182,7 +182,7 @@ class MicrosoftAuthFlow {
       response.certificates = await this.mca.fetchCertificates(response.token).catch(e => debug('Failed to obtain keypair data', e))
     }
     if (options.fetchAttributes) {
-      // TODO: Implement this
+      // TODO: Implement fetchAttributes on MinecraftJavaTokenManager
       // response.attributes = await this.mca.fetchAttributes(response.token).catch(e => debug('Failed to obtain attributes data', e))
     }
 

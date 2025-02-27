@@ -72,7 +72,7 @@ declare module 'prismarine-auth' {
     id: string,
     state: string,
     url: string,
-    variant: 'CLASSIC'|'SLIM'
+    variant: 'CLASSIC' | 'SLIM'
   }
 
   export interface MinecraftJavaProfileCape {
@@ -138,29 +138,30 @@ declare module 'prismarine-auth' {
   }
 
   type ServerDeviceCodeResponse = {
-      user_code: string
-      device_code: string
-      verification_uri: string
-      expires_in: number
-      interval: number
-      message: string
+    userURL: string,
+    userCode: string,
+    deviceId: string,
+    expiresInSeconds?: number,
+    // The Unix timestamp in milliseconds when the device code expires
+    expiresOn: number,
+    checkingInterval?: number,
+    message: string
   }
 
   export interface Cache {
+    // Erases all keys in the cache
     reset(): Promise<void>
 
     // Stores a key-value pair in the cache
     set(key: string, value: any, options: { expiresOn?: number, obtainedOn?: number }): Promise<void>
     // Retrieves a value from the cache
-    get(key: string): Promise<any>
+    get(key: string): Promise<{ valid: boolean, value?: any, expiresOn?: number }>
 
     // Removes all expired keys
     cleanupExpired(): Promise<void>
     // Returns true if the cache is empty
     isEmpty(): Promise<boolean>
   }
-
-  export type CacheFactory = (options: { username: string, cacheName: string }) => Cache
 
   export interface CacheFactory {
     createCache(options: { username: string, cacheName: string }): Promise<Cache>
@@ -183,55 +184,55 @@ declare module 'prismarine-auth' {
     PlayFabId: string;
     NewlyCreated: boolean;
     SettingsForUser: {
-        NeedsAttribution: boolean;
-        GatherDeviceInfo: boolean;
-        GatherFocusInfo: boolean;
+      NeedsAttribution: boolean;
+      GatherDeviceInfo: boolean;
+      GatherFocusInfo: boolean;
     };
     LastLoginTime: string;
     InfoResultPayload: {
-        AccountInfo: {
-            PlayFabId: string;
-            Created: string;
-            TitleInfo: {
-                Origination: string;
-                Created: string;
-                LastLogin: string;
-                FirstLogin: string;
-                isBanned: boolean;
-                TitlePlayerAccount: {
-                    Id: string;
-                    Type: string;
-                    TypeString: string;
-                };
-            };
-            PrivateInfo: Record<string, unknown>;
-            XboxInfo: {
-                XboxUserId: string;
-                XboxUserSandbox: string;
-            };
-        };
-        UserInventory: any[];
-        UserDataVersion: number;
-        UserReadOnlyDataVersion: number;
-        CharacterInventories: any[];
-        PlayerProfile: {
-            PublisherId: string;
-            TitleId: string;
-            PlayerId: string;
-        };
-    };
-    EntityToken: {
-        EntityToken: string;
-        TokenExpiration: string;
-        Entity: {
+      AccountInfo: {
+        PlayFabId: string;
+        Created: string;
+        TitleInfo: {
+          Origination: string;
+          Created: string;
+          LastLogin: string;
+          FirstLogin: string;
+          isBanned: boolean;
+          TitlePlayerAccount: {
             Id: string;
             Type: string;
             TypeString: string;
+          };
         };
+        PrivateInfo: Record<string, unknown>;
+        XboxInfo: {
+          XboxUserId: string;
+          XboxUserSandbox: string;
+        };
+      };
+      UserInventory: any[];
+      UserDataVersion: number;
+      UserReadOnlyDataVersion: number;
+      CharacterInventories: any[];
+      PlayerProfile: {
+        PublisherId: string;
+        TitleId: string;
+        PlayerId: string;
+      };
+    };
+    EntityToken: {
+      EntityToken: string;
+      TokenExpiration: string;
+      Entity: {
+        Id: string;
+        Type: string;
+        TypeString: string;
+      };
     };
     TreatmentAssignment: {
-        Variants: any[];
-        Variables: any[];
+      Variants: any[];
+      Variables: any[];
     };
   }
 }
