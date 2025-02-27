@@ -16,7 +16,7 @@ npm install prismarine-auth
 ### Authflow
 **Parameters**
 - username? {String} - Username for authentication
-- cacherOrDir? {String | CacheFactory} - Where we will store your tokens (optional, defaults to current folder) or a factory object that returns a Cache (see [API.md](docs/API.md))
+- cacherOrDir? {String | CacheFactory} - Where we will store your tokens (optional, defaults to node_modules) or a factory object that returns a Cache (see [API.md](docs/API.md))
 - options {Object?}
     - [flow] {enum} Required if options is specified - see [API.md](docs/API.md) for options
     - [forceRefresh] {boolean} - Clear all cached tokens for the specified `username` to get new ones on subsequent token requests

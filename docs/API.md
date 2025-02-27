@@ -11,7 +11,7 @@ This is the main exposed class you interact with. Every instance holds its own t
 * `username` (optional, default='')
   * When using device code auth - a unique id
   * When using password auth - your microsoft account email
-* `cacherOrDir` (optional) - Where to store cached tokens or a cache factory function.
+* `cacherOrDir` (optional, default='node_modules') - Where to store cached tokens or a cache factory function. node_modules if not specified.
 * `options` (optional)
   * `flow` (required) The auth flow to use. One of `live`, `msal`, `sisu`. If no `options` argument is specified, `msal` will be used.
     * `live` - Generate an XSTS token using the live.com domain which allows for user, device and title authentication. This flow will only work with Windows Live client IDs (such as official Microsoft apps, not custom Azure apps).
