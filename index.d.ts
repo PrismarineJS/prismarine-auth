@@ -15,7 +15,7 @@ declare module 'prismarine-auth' {
      * @param options Options
      * @param codeCallback Optional callback to recieve token information using device code auth
      */
-    constructor(username?: string, cache?: string | CacheFactory, options?: MicrosoftAuthFlowOptions, codeCallback?: (res: ServerDeviceCodeResponse) => void)
+    constructor(username?: string, cacherOrDir?: string | CacheFactory, options?: MicrosoftAuthFlowOptions, codeCallback?: (res: ServerDeviceCodeResponse) => void)
 
     // Returns a Microsoft Oauth access token -- https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens
     getMsaToken(): Promise<string>
@@ -151,12 +151,10 @@ declare module 'prismarine-auth' {
   export interface Cache {
     // Erases all keys in the cache
     reset(): Promise<void>
-
     // Stores a key-value pair in the cache
     set(key: string, value: any, options: { expiresOn?: number, obtainedOn?: number }): Promise<void>
     // Retrieves a value from the cache
     get(key: string): Promise<{ valid: boolean, value?: any, expiresOn?: number }>
-
     // Removes all expired keys
     cleanupExpired(): Promise<void>
     // Returns true if the cache is empty
