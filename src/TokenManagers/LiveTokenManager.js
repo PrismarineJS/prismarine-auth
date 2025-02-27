@@ -100,8 +100,16 @@ class LiveTokenManager {
         return res
       })
       .then(checkStatus).then(resp => {
-        resp.message = `To sign in, use a web browser to open the page ${resp.verification_uri} and use the code ${resp.user_code} or visit http://microsoft.com/link?otc=${resp.user_code}`
-        deviceCodeCallback(resp)
+        resp.message ||= `To sign in, use a web browser to open the page ${resp.verification_uri} and use the code ${resp.user_code} or visit http://microsoft.com/link?otc=${resp.user_code}`
+        deviceCodeCallback({
+          userURL: resp.verification_uri,
+          userCode: resp.user_code,
+          deviceId: resp.device_code,
+          checkingInterval: resp.interval,
+          message: resp.message,
+          expiresInSeconds: resp.expires_in, // s
+          expiresOn: acquireTime + (resp.expires_in * 1000) // ms
+        })
         return resp
       })
     const expireTime = acquireTime + (res.expires_in * 1000) - 100 /* for safety */

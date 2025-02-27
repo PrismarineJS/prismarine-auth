@@ -113,10 +113,19 @@ class MsaTokenManager {
 
   // Authenticate with device_code flow
   async authDeviceCode (dataCallback, timeout) {
+    // Note: microsoft.com auth does not support ?otc URL option
     const deviceCodeRequest = {
       deviceCodeCallback: (resp) => {
         debug('[msa] device_code response: ', resp)
-        dataCallback(resp)
+        dataCallback({
+          userURL: resp.verificationUri,
+          userCode: resp.userCode,
+          deviceId: resp.deviceCode,
+          checkingInterval: resp.interval,
+          message: resp.message,
+          expiresInSeconds: resp.expiresIn,
+          expiresOn: Date.now() + (resp.expiresIn * 1000)
+        })
       },
       timeout,
       scopes: this.scopes

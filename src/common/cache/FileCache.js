@@ -5,16 +5,26 @@ const fs = require('fs')
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000
 
+function getFileForHash (hash, cacheName) {
+  return `./${hash}_${cacheName}-cache.json`
+}
+
+function getFileFor (cacheName, identifier) {
+  const hash = createHash(identifier)
+  return getFileForHash(hash, cacheName)
+}
+
 class FileCache {
-  constructor (cacheLocation) {
+  constructor (cacheLocation, cacheName, identifier) {
     this.cacheLocation = cacheLocation
+    this.cacheName = cacheName
+    this.identifier = identifier
     this.validCheckBufferPeriod = 1000
   }
 
   static async createForIdentifier (cacheDir, cacheName, identifier) {
-    const hash = createHash(identifier)
-    const cacheLocationWithHash = join(cacheDir, `./${hash}_${cacheName}.json`)
-    return new FileCache(cacheLocationWithHash)
+    const cacheLocationWithHash = join(cacheDir, getFileFor(cacheName, identifier))
+    return new FileCache(cacheLocationWithHash, cacheName, identifier)
   }
 
   async reset () {
@@ -105,7 +115,7 @@ class FileCache {
 
 function getCaches (cacheDir) {
   return fs.readdirSync(cacheDir)
-    .filter(file => file.endsWith('.json'))
+    .filter(file => file.endsWith('-cache.json'))
     .map(file => new FileCache(`${cacheDir}/${file}`))
 }
 
@@ -129,13 +139,11 @@ function createFileSystemCache (cacheDir, validCacheIds) {
       return FileCache.createForIdentifier(cacheDir, cacheName, username)
     },
     hasCache (cacheName, identifier) {
-      const hash = createHash(identifier)
-      const cacheLocationWithHash = join(cacheDir, `./${hash}_${cacheName}.json`)
+      const cacheLocationWithHash = join(cacheDir, getFileFor(cacheName, identifier))
       return fs.existsSync(cacheLocationWithHash)
     },
     deleteCache (cacheName, identifier) {
-      const hash = createHash(identifier)
-      const cacheLocationWithHash = join(cacheDir, `./${hash}_${cacheName}.json`)
+      const cacheLocationWithHash = join(cacheDir, getFileFor(cacheName, identifier))
       fs.unlinkSync(cacheLocationWithHash)
     },
     deleteCaches (identifier) {
@@ -155,4 +163,4 @@ function createFileSystemCache (cacheDir, validCacheIds) {
   }
 }
 
-module.exports = { createFileSystemCache }
+module.exports = { FileCache, createFileSystemCache }

@@ -151,9 +151,6 @@ const cacheFactory = {
   async createCache ({ username, cacheName }) {
     return new InMemoryCache()
   },
-  hashKey (cacheName, identifier) {
-    return `${cacheName}:${identifier}`
-  },
   async deleteCache (cacheName, identifier) {
     // (should delete the cache for the given identifier)
   },
