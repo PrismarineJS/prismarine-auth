@@ -20,6 +20,7 @@ This is the main exposed class you interact with. Every instance holds its own t
   * `password` (optional) If you specify this option, we use password based auth. Note this may be unreliable.
   * `authTitle` - The client ID for the service you are logging into. When using the `msal` flow, this is your custom Azure client token. When using `live`, this is the Windows Live SSO client ID - used when authenticating as a Windows app (such as a vanilla Minecraft client). For a list of titles, see `require('prismarine-auth').Titles` and FAQ section below for more info. (Required if using `sisu` or `live` flow, on `msal` flow we fallback to a default client ID.)
   * `deviceType` (optional) if specifying an authTitle, the device type to auth as. For example, `Win32`, `iOS`, `Android`, `Nintendo`
+  * `scopes` {string[]} - Extra scopes to add to the auth request. By default, this includes Xbox and offline_access scopes; setting this will replace those scopes (but keep `offline_access` on `msal` flow  which is required for caching). *Note that the flows will differ depending on specified `flow`.*
   * `forceRefresh` (optional) boolean - Clear all cached tokens for the specified `username` to get new ones on subsequent token requests
   * `abortSignal` (optional) An AbortSignal to cancel the request
 * `codeCallback` (optional) The callback to call when doing device code auth. Otherwise, the code will be logged to the console.

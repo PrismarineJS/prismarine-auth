@@ -23,6 +23,7 @@ npm install prismarine-auth
     - [password] {string} - If passed we will do password based authentication.
     - [authTitle] {string} - See the [API.md](docs/API.md)
     - [deviceType] {string} - See the [API.md](docs/API.md)
+    - [scopes] {string[]} - Extra scopes to add to the auth request. By default, this includes Xbox and offline_access scopes; setting this will replace those scopes (but keep `offline_access` on `msal` flow which is required for caching). *Note that the flows will differ depending on specified `flow`.*
     - [abortSignal] {AbortSignal} - (Optional) An AbortSignal to cancel the request.
 - onMsaCode {Function} - (For device code auth) What we should do when we get the code. Useful for passing the code to another function.
 

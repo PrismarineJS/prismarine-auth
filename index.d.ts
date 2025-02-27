@@ -118,7 +118,10 @@ declare module 'prismarine-auth' {
     flow: 'live' | 'msal' | 'sisu'
     // Reset the cache and obtain fresh tokens for everything
     forceRefresh?: boolean,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    // Extra scopes to add to the auth request. By default, this includes Xbox and offline_access scopes;
+    // setting this will replace those scopes (but keep offline_access on MSAL flow which is required for caching).
+    scopes: string[]
   }
 
   export enum Titles {

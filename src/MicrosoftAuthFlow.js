@@ -45,20 +45,29 @@ class MicrosoftAuthFlow {
     }
 
     if (this.options.flow === 'live' || this.options.flow === 'sisu') {
+      // For microsoft first party/minecraft apps. Some possible authTitle (client IDs) are exposed in the Titles object
       if (!this.options.authTitle) throw new Error(`Please specify an "authTitle" in Authflow constructor when using ${this.options.flow} flow`)
-      this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'],
-        await cacher.createCache({ cacheName: this.options.flow, username }), abortSignal)
+      this.msa = new LiveTokenManager(
+        this.options.authTitle,
+        [...(this.options.scopes ?? ['service::user.auth.xboxlive.com::MBI_SSL'])],
+        await cacher.createCache({ cacheName: this.options.flow, username }),
+        abortSignal
+      )
       this.doTitleAuth = true
     } else if (this.options.flow === 'msal') {
+      // For Microsoft azure tokens where the client ID (UUID) is the authTitle
       let config = this.options.msalConfig
       if (!config) {
         config = structuredClone(msalConfig)
         if (!this.options.authTitle) throw new Error('Must specify an Azure client ID token inside the `authTitle` parameter when using Azure-based auth. See https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app#register-an-application for more information on obtaining an Azure token.')
         config.auth.clientId = this.options.authTitle
       }
-      const scopes = this.options.scopes ?? ['XboxLive.signin']
-      this.msa = new MsaTokenManager(config, scopes.concat('offline_access'),
-        await cacher.createCache({ cacheName: 'msal', username }), abortSignal)
+      this.msa = new MsaTokenManager(
+        config,
+        [...(this.options.scopes ?? ['XboxLive.signin']), 'offline_access'],
+        await cacher.createCache({ cacheName: 'msal', username }),
+        abortSignal
+      )
     } else {
       throw new Error(`Unknown flow: ${this.options.flow} (expected "live", "sisu", or "msal")`)
     }
