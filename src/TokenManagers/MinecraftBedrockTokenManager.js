@@ -4,32 +4,35 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatusWithHelp } = require('../common/Util')
 
 class BedrockTokenManager {
-  constructor (cache) {
+  constructor (cache, abortSignal) {
     this.cache = cache
+    this.abortSignal = abortSignal
   }
 
   async getCachedAccessToken () {
-    const { mca: token } = await this.cache.getCached()
+    const token = await this.cache.get('accessTokens')
     debug('[mc] token cache', token)
     if (!token) return
     debug('Auth token', token)
-    const jwt = token.chain[0]
-    const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
-
-    const body = JSON.parse(String(payload))
-    const expires = new Date(body.exp * 1000)
-    const remainingMs = expires - Date.now()
-    const valid = remainingMs > 1000
-    return { valid, until: expires, chain: token.chain }
+    return {
+      valid: token.valid,
+      until: token.expiresOn,
+      chain: token.value.chain
+    }
   }
 
   async setCachedAccessToken (data) {
-    await this.cache.setCachedPartial({
-      mca: {
-        ...data,
-        obtainedOn: Date.now()
-      }
-    })
+    if (!data.chain || !data.chain.length) {
+      throw new Error('Invalid data: missing chain information')
+    }
+    const jwt = data.chain[0]
+    const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
+
+    const body = JSON.parse(String(payload))
+    const expiresIn = body.exp * 1000
+    data.expires = expiresIn
+
+    await this.cache.set('accessTokens', data, { obtainedOn: Date.now(), expiresOn: expiresIn })
   }
 
   async verifyTokens () {
@@ -52,6 +55,7 @@ class BedrockTokenManager {
       Authorization: `XBL3.0 x=${xsts.userHash};${xsts.XSTSToken}`
     }
     const MineServicesResponse = await fetch(Endpoints.minecraftBedrock.authenticate, {
+      signal: this.abortSignal,
       method: 'post',
       headers,
       body: JSON.stringify({ identityPublicKey: clientPublicKey })

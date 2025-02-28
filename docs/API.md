@@ -11,7 +11,7 @@ This is the main exposed class you interact with. Every instance holds its own t
 * `username` (optional, default='')
   * When using device code auth - a unique id
   * When using password auth - your microsoft account email
-* `cache` (optional, default='node_modules') - Where to store cached tokens or a cache factory function. node_modules if not specified.
+* `cacherOrDir` (optional, default='node_modules') - Where to store cached tokens or a cache factory function. node_modules if not specified.
 * `options` (optional)
   * `flow` (required) The auth flow to use. One of `live`, `msal`, `sisu`. If no `options` argument is specified, `msal` will be used.
     * `live` - Generate an XSTS token using the live.com domain which allows for user, device and title authentication. This flow will only work with Windows Live client IDs (such as official Microsoft apps, not custom Azure apps).
@@ -20,7 +20,9 @@ This is the main exposed class you interact with. Every instance holds its own t
   * `password` (optional) If you specify this option, we use password based auth. Note this may be unreliable.
   * `authTitle` - The client ID for the service you are logging into. When using the `msal` flow, this is your custom Azure client token. When using `live`, this is the Windows Live SSO client ID - used when authenticating as a Windows app (such as a vanilla Minecraft client). For a list of titles, see `require('prismarine-auth').Titles` and FAQ section below for more info. (Required if using `sisu` or `live` flow, on `msal` flow we fallback to a default client ID.)
   * `deviceType` (optional) if specifying an authTitle, the device type to auth as. For example, `Win32`, `iOS`, `Android`, `Nintendo`
+  * `scopes` {string[]} - Extra scopes to add to the auth request. By default, this includes Xbox and offline_access scopes; setting this will replace those scopes (but keep `offline_access` on `msal` flow  which is required for caching). *Note that the flows will differ depending on specified `flow`.*
   * `forceRefresh` (optional) boolean - Clear all cached tokens for the specified `username` to get new ones on subsequent token requests
+  * `abortSignal` (optional) An AbortSignal to cancel the request
 * `codeCallback` (optional) The callback to call when doing device code auth. Otherwise, the code will be logged to the console.
 
 #### getMsaToken () : Promise<string>
@@ -77,57 +79,95 @@ const flow = new Authflow('', './', { authTitle: Titles.MinecraftNintendoSwitch,
 flow.getMinecraftJavaToken().then(console.log)
 ```
 
-### Cache
+### Caching
 
-prismarine-auth uses caching to ensure users don't have to constantly sign in when authenticating to Microsoft/Xbox services. By default, if you pass a String value to Authflow's `cacheDir` function call argument, we'll use the local file system to store and retrieve data to build a cache. However, in some circumstances, you may not have access to the local file system, or have a more advanced use-case that requires database retreival, for example. In these scenarios, you can implement cache storage and retreval yourself to match your needs.
+prismarine-auth uses caching so users don't have to repeatedly sign in when authenticating 
+to Microsoft/Xbox services.
 
-If you pass a function to Authflow's `cacheDir` function call argument, you are expected to return a *factory method*, which means your function should instantiate and return a class or an object that implements the interface [defined here](https://github.com/PrismarineJS/prismarine-auth/blob/cf0957495458dc7cb0f2579d97b13d682be27d8f/index.d.ts#L125) and copied below:
+By default, if you pass a String value to Authflow's `cacherOrDir` function call argument, we use the local file system 
+to store and retrieve data to build a cache. However, you may for example not have access to the local file system,
+or have a more advanced use-case that requires database retrieval. In these scenarios, you can implement cache storage 
+and retrieval yourself to match your needs.
 
+If you pass an object to Authflow's `cacherOrDir` function call argument, you are expected to return a 
+*factory object* that implements the following interface:
 
-```typescript
-// Return the stored value, this can be called multiple times
-getCached(): Promise<any>
-// Replace the stored value
-setCached(value: any): Promise<void>
-// Replace an part of the stored value. Implement this using the spread operator
-setCachedPartial(value: any): Promise<void>
-```
-
-Your cache function itself will be passed an object with the following properties:
-
-```js
-{
-  username: string, // Name of the user we're trying to get a token for
-  cacheName: string, // Depends on the cache usage, each cache has a unique name
+```ts
+interface CacheFactory {
+  createCache(options: { username: string, cacheName: string }): Promise<Cache>
+  hasCache(cacheName: string, identifier: string): Promise<boolean>
+  deleteCache(cacheName: string, identifier: string): Promise<void>
+  deleteCaches(cacheName: string): Promise<void>
+  cleanup(): Promise<void>
 }
 ```
 
-As an example of usage, you could create a minimal in memory cache like this (note that the returned class instance implements all the functions in the interface linked above):
+When .createCache() is called on the factory object, your function should instantiate and return 
+a class or an object that implements the `Cache` interface [defined here](../index.d.ts) and copied below:
 
-```js
-class InMemoryCache {
-  private cache = {}
+```ts
+interface Cache {
+  // Erases all keys in the cache
+  reset(): Promise<void>
+  // Stores a key-value pair in the cache
+  set(key: string, value: any, options: { expiresOn?: number, obtainedOn?: number }): Promise<void>
+  // Retrieves a value from the cache
+  get(key: string): Promise<{ valid: boolean, value?: any, expiresOn?: number }>
+  // Removes all expired keys
+  cleanupExpired(): Promise<void>
+  // Returns true if the cache is empty
+  isEmpty(): Promise<boolean>
+}
+```
+
+As an example of usage, you could create a minimal in memory cache like this:
+
+```ts
+class InMemoryCache implements Cache {
+  cache = {}
   async reset () {
     // (should clear the data in the cache like a first run)
   }
-  async getCached () {
-    return this.cache
+  async set (key, value, { expiresOn = Date.now() + 9000, obtainedOn = Date.now() } = {}) {
+    this.cache[key] = { value, expiresOn, obtainedOn }
   }
-  async setCached (value) {
-    this.cache = value
+  async get (key) {
+    const data = this.cache[key]
+    if (!data) return
+    return { valid: data.expiresOn > Date.now(), value: data.value }
   }
-  async setCachedPartial (value) {
-    this.cache = {
-      ...this.cache,
-      ...value
+  cleanupExpired () {
+    for (const key in this.cache) {
+      if (this.cache[key].expiresOn < Date.now()) {
+        delete this.cache[key]
+      }
     }
+  }
+  isEmpty () {
+    return Promise.resolve(Object.keys(this.cache).length === 0)
   }
 }
 
-function cacheFactory ({ username, cacheName }) {
-  return new InMemoryCache()
+const cacheFactory = {
+  async createCache ({ username, cacheName }) {
+    return new InMemoryCache()
+  },
+  async hasCache (cacheName, identifier) {
+    // (should return true if the cache exists for the given identifier)
+  },
+  async deleteCache (cacheName, identifier) {
+    // (should delete the cache for the given identifier)
+  },
+  async deleteCaches (cacheName) {
+    // (should delete all caches for the given cacheName)
+  },
+  async cleanup () {
+    // (should clean up any resources used by the cache)
+  }
 }
-// Passed like `new Authflow('bob', cacheFactory, ...)`
+
+// Passed like so:
+const authflow = new Authflow('Notch', cacheFactory)
 ```
 
 ## FAQ
