@@ -167,7 +167,7 @@ declare module 'prismarine-auth' {
 
   export interface CacheFactory {
     createCache(options: { username: string, cacheName: string }): Promise<Cache>
-    hashKey(cacheName: string, identifier: string): string;
+    hasCache(cacheName: string, identifier: string): Promise<boolean>
     deleteCache(cacheName: string, identifier: string): Promise<void>
     deleteCaches(cacheName: string): Promise<void>
     cleanup(): Promise<void>
