@@ -96,12 +96,12 @@ class FileCache {
     for (const key in cache) {
       const entry = cache[key]
       if (entry.expiresOn) {
-        if (entry.expiresOn > now) {
+        if ((entry.expiresOn > now) && (entry.value !== undefined)) {
           newCache[key] = cache[key]
         }
       } else {
         debug('No expiry date for cache entry', key, 'in', this.cacheLocation, '. Setting to 30 days.')
-        newCache[key].expiresOn = now + ONE_MONTH_MS
+        newCache[key] = { ...cache[key], expiresOn: now + ONE_MONTH_MS }
       }
     }
     this.cache = newCache
