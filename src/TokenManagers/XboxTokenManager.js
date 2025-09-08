@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 
-const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
+const { live, xnet } = require('@xboxreplay/xboxlive-auth')
 const debug = require('debug')('prismarine-auth')
 const { SmartBuffer } = require('smart-buffer')
 
@@ -119,9 +119,8 @@ class XboxTokenManager {
 
   async doReplayAuth (email, password, options = {}) {
     try {
-      const preAuthResponse = await XboxLiveAuth.preAuth()
-      const logUserResponse = await XboxLiveAuth.logUser(preAuthResponse, { email, password })
-      const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(logUserResponse.access_token)
+      const logUserResponse = await live.authenticateWithCredentials({ email, password })
+      const xblUserToken = await xnet.exchangeRpsTicketForUserToken(logUserResponse.access_token)
       await this.setCachedToken({ userToken: xblUserToken })
       debug('[xbl] user token:', xblUserToken)
       const xsts = await this.getXSTSToken({ userToken: xblUserToken.Token }, options)
