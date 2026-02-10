@@ -4,8 +4,9 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class MinecraftBedrockServicesTokenManager {
-  constructor (cache) {
+  constructor (cache, fetchFn = fetch) {
     this.cache = cache
+    this.fetch = fetchFn
   }
 
   async getCachedAccessToken () {
@@ -25,7 +26,7 @@ class MinecraftBedrockServicesTokenManager {
   }
 
   async getAccessToken (sessionTicket, options = {}) {
-    const response = await fetch(Endpoints.minecraftBedrock.servicesSessionStart, {
+    const response = await this.fetch(Endpoints.minecraftBedrock.servicesSessionStart, {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

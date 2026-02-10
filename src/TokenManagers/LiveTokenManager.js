@@ -4,10 +4,11 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class LiveTokenManager {
-  constructor (clientId, scopes, cache) {
+  constructor (clientId, scopes, cache, fetchFn = fetch) {
     this.clientId = clientId
     this.scopes = scopes
     this.cache = cache
+    this.fetch = fetchFn
   }
 
   async verifyTokens () {
@@ -46,7 +47,7 @@ class LiveTokenManager {
       credentials: 'include' // This cookie handler does not work on node-fetch ...
     }
 
-    const token = await fetch(Endpoints.live.tokenRequest, codeRequest).then(checkStatus)
+    const token = await this.fetch(Endpoints.live.tokenRequest, codeRequest).then(checkStatus)
     this.updateCache(token)
     return token
   }
@@ -91,7 +92,7 @@ class LiveTokenManager {
 
     const cookies = []
 
-    const res = await fetch(Endpoints.live.deviceCodeRequest, codeRequest)
+    const res = await this.fetch(Endpoints.live.deviceCodeRequest, codeRequest)
       .then(res => {
         if (res.status !== 200) {
           res.text().then(console.warn)
@@ -128,7 +129,7 @@ class LiveTokenManager {
           }).toString()
         }
 
-        const token = await fetch(Endpoints.live.tokenRequest + '?client_id=' + this.clientId, verifi)
+        const token = await this.fetch(Endpoints.live.tokenRequest + '?client_id=' + this.clientId, verifi)
           .then(res => res.json()).then(res => {
             if (res.error) {
               if (res.error === 'authorization_pending') {

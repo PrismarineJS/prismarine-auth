@@ -18,10 +18,11 @@ const checkIfValid = (expires) => {
 
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {
-  constructor (ecKey, cache) {
+  constructor (ecKey, cache, fetchFn = fetch) {
     this.key = ecKey
     this.jwk = { ...ecKey.publicKey.export({ format: 'jwk' }), alg: 'ES256', use: 'sig' }
     this.cache = cache
+    this.fetch = fetchFn
 
     this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
   }
@@ -78,7 +79,7 @@ class XboxTokenManager {
     const signature = this.sign(Endpoints.xbox.userAuth, '', body).toString('base64')
     const headers = { ...this.headers, signature, 'Content-Type': 'application/json', accept: 'application/json', 'x-xbl-contract-version': '2' }
 
-    const ret = await fetch(Endpoints.xbox.userAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await this.fetch(Endpoints.xbox.userAuth, { method: 'post', headers, body }).then(checkStatus)
 
     await this.setCachedToken({ userToken: ret })
 
@@ -151,7 +152,7 @@ class XboxTokenManager {
 
     const headers = { Signature: signature }
 
-    const req = await fetch(Endpoints.xbox.sisuAuthorize, { method: 'post', headers, body })
+    const req = await this.fetch(Endpoints.xbox.sisuAuthorize, { method: 'post', headers, body })
     const ret = await req.json()
     if (!req.ok) this.checkTokenError(parseInt(req.headers.get('x-err')), ret)
 
@@ -190,7 +191,7 @@ class XboxTokenManager {
 
     const headers = { ...this.headers, Signature: signature }
 
-    const req = await fetch(Endpoints.xbox.xstsAuthorize, { method: 'post', headers, body })
+    const req = await this.fetch(Endpoints.xbox.xstsAuthorize, { method: 'post', headers, body })
     const ret = await req.json()
     if (!req.ok) this.checkTokenError(ret.XErr, ret)
 
@@ -229,7 +230,7 @@ class XboxTokenManager {
     const signature = this.sign(Endpoints.xbox.deviceAuth, '', body).toString('base64')
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Endpoints.xbox.deviceAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await this.fetch(Endpoints.xbox.deviceAuth, { method: 'post', headers, body }).then(checkStatus)
 
     await this.setCachedToken({ deviceToken: ret })
 
@@ -255,7 +256,7 @@ class XboxTokenManager {
 
     const headers = { ...this.headers, Signature: signature }
 
-    const ret = await fetch(Endpoints.xbox.titleAuth, { method: 'post', headers, body }).then(checkStatus)
+    const ret = await this.fetch(Endpoints.xbox.titleAuth, { method: 'post', headers, body }).then(checkStatus)
 
     await this.setCachedToken({ titleToken: ret })
 
