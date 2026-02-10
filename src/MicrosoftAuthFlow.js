@@ -20,14 +20,16 @@ const MinecraftServicesTokenManager = require('./TokenManagers/MinecraftBedrockS
 
 function createProxyFetch (proxy) {
   if (proxy.type === 'socks5') {
-    return (url, options = {}) => fetch(url, { ...options, dispatcher: socksDispatcher({
-      type: 5,
-      host: proxy.host,
-      port: proxy.port,
-      userId: proxy.username,
-      password: proxy.password
+    return (url, options = {}) => fetch(url, {
+      ...options,
+      dispatcher: socksDispatcher({
+        type: 5,
+        host: proxy.host,
+        port: proxy.port,
+        userId: proxy.username,
+        password: proxy.password
+      })
     })
-  })
   }
   // otherwise use http proxy undici
   return (url, options = {}) => fetch(url, { ...options, dispatcher: new ProxyAgent(`http://${proxy.username}:${proxy.password}@${proxy.host}:${proxy.port}`) })
