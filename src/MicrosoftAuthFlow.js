@@ -25,10 +25,11 @@ function createProxyFetch (proxy) {
       host: proxy.host,
       port: proxy.port,
       userId: proxy.username,
-      password: proxy.password,
-    }) })
+      password: proxy.password
+    })
+  })
   }
-  //otherwise use http proxy undici
+  // otherwise use http proxy undici
   return (url, options = {}) => fetch(url, { ...options, dispatcher: new ProxyAgent(`http://${proxy.username}:${proxy.password}@${proxy.host}:${proxy.port}`) })
 }
 

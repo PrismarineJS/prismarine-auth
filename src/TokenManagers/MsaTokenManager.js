@@ -3,7 +3,6 @@ const debug = require('debug')('prismarine-auth')
 
 class MsaTokenManager {
   constructor (msalConfig, scopes, cache) {
-    console.log("GAY")
     this.msaClientId = msalConfig.auth.clientId
     this.scopes = scopes
     this.cache = cache
