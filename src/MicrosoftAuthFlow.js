@@ -3,6 +3,7 @@ const path = require('path')
 const crypto = require('crypto')
 const debug = require('debug')('prismarine-auth')
 const { socksDispatcher } = require('fetch-socks')
+const { ProxyAgent } = require('undici')
 
 const Titles = require('./common/Titles')
 const { createHash } = require('./common/Util')
@@ -18,13 +19,17 @@ const PlayfabTokenManager = require('./TokenManagers/PlayfabTokenManager')
 const MinecraftServicesTokenManager = require('./TokenManagers/MinecraftBedrockServicesManager')
 
 function createProxyFetch (proxy) {
-  return (url, options = {}) => fetch(url, { ...options, dispatcher: socksDispatcher({
-    type: 5,
-    host: proxy.host,
-    port: proxy.port,
-    userId: proxy.username,
-    password: proxy.password,
-  }) })
+  if (proxy.type === 'socks5') {
+    return (url, options = {}) => fetch(url, { ...options, dispatcher: socksDispatcher({
+      type: 5,
+      host: proxy.host,
+      port: proxy.port,
+      userId: proxy.username,
+      password: proxy.password,
+    }) })
+  }
+  //otherwise use http proxy undici
+  return (url, options = {}) => fetch(url, { ...options, dispatcher: new ProxyAgent(`http://${proxy.username}:${proxy.password}@${proxy.host}:${proxy.port}`) })
 }
 
 async function retry (methodFn, beforeRetry, times) {

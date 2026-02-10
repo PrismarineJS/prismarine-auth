@@ -113,6 +113,7 @@ declare module 'prismarine-auth' {
     port: number
     username?: string
     password?: string
+    type?: string
   }
 
   export interface MicrosoftAuthFlowOptions {
