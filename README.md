@@ -16,13 +16,15 @@ npm install prismarine-auth
 ### Authflow
 **Parameters**
 - username? {String} - Username for authentication
-- cacheDirectory? {String | Function} - Where we will store your tokens (optional) or a factory function that returns a cache.
+- cacherOrDir? {String | CacheFactory} - Where we will store your tokens (optional, defaults to node_modules) or a factory object that returns a Cache (see [API.md](docs/API.md))
 - options {Object?}
     - [flow] {enum} Required if options is specified - see [API.md](docs/API.md) for options
     - [forceRefresh] {boolean} - Clear all cached tokens for the specified `username` to get new ones on subsequent token requests
     - [password] {string} - If passed we will do password based authentication.
     - [authTitle] {string} - See the [API.md](docs/API.md)
     - [deviceType] {string} - See the [API.md](docs/API.md)
+    - [scopes] {string[]} - Extra scopes to add to the auth request. By default, this includes Xbox and offline_access scopes; setting this will replace those scopes (but keep `offline_access` on `msal` flow which is required for caching). *Note that the flows will differ depending on specified `flow`.*
+    - [abortSignal] {AbortSignal} - (Optional) An AbortSignal to cancel the request.
 - onMsaCode {Function} - (For device code auth) What we should do when we get the code. Useful for passing the code to another function.
 
 ### Examples

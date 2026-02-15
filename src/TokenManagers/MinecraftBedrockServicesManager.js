@@ -4,28 +4,29 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class MinecraftBedrockServicesTokenManager {
-  constructor (cache) {
+  constructor (cache, abortSignal) {
     this.cache = cache
+    this.abortSignal = abortSignal
   }
 
   async getCachedAccessToken () {
-    const { mcs: token } = await this.cache.getCached()
-    debug('[mcs] token cache', token)
-
-    if (!token) return { valid: false }
-
-    const expires = new Date(token.validUntil)
-    const remainingMs = expires - Date.now()
-    const valid = remainingMs > 1000
-    return { valid, until: expires, token: token.mcToken, data: token }
+    const cached = await this.cache.get('mcs')
+    if (!cached) return { valid: false }
+    return {
+      valid: cached.valid,
+      until: cached.expiresOn,
+      token: cached.value.mcToken,
+      data: cached.value
+    }
   }
 
   async setCachedToken (data) {
-    await this.cache.setCachedPartial(data)
+    await this.cache.set('mcs', data, { obtainedOn: Date.now(), expiresOn: data.validUntil })
   }
 
   async getAccessToken (sessionTicket, options = {}) {
     const response = await fetch(Endpoints.minecraftBedrock.servicesSessionStart, {
+      signal: this.abortSignal,
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
