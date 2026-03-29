@@ -20,7 +20,7 @@ class BedrockTokenManager {
     const expires = new Date(body.exp * 1000)
     const remainingMs = expires - Date.now()
     const valid = remainingMs > 1000
-    return { valid, until: expires, chain: token.chain }
+    return { valid, until: expires, chain: token.chain, token: token.token || token.Token || '' }
   }
 
   async setCachedAccessToken (data) {

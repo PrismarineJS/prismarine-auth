@@ -210,8 +210,8 @@ class MicrosoftAuthFlow {
     // is this even a good idea to cache?
     if (await this.mba.verifyTokens() && false) { // eslint-disable-line
       debug('[mc] Using existing tokens')
-      const { chain } = this.mba.getCachedAccessToken()
-      return chain
+      const { chain, token } = await this.mba.getCachedAccessToken()
+      return { chain, token }
     } else {
       if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
       debug('[mc] Need to obtain tokens')
@@ -224,7 +224,10 @@ class MicrosoftAuthFlow {
         if (!body.extraData.titleId && this.doTitleAuth) {
           throw Error('missing titleId in response')
         }
-        return token.chain
+        return {
+          chain: token.chain,
+          token: token.token || token.Token || ''
+        }
       }, () => { this.xbl.forceRefresh = true }, 2)
     }
   }
