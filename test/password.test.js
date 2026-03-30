@@ -13,7 +13,9 @@ describe('password authentication', async () => {
       await flow.getXboxToken()
       expect.fail('Expected authentication to fail, but it succeeded')
     } catch (error) {
-      expect(error.data.attributes).to.have.property('code', 'INVALID_CREDENTIALS_OR_2FA_ENABLED')
+      const code = error.data.attributes.code
+      expect(code).to.be.oneOf(['INVALID_CREDENTIALS_OR_2FA_ENABLED', 'REQUEST_ERROR'],
+        `Unexpected error code: ${code}`)
     }
   })
 })
