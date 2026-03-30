@@ -1,5 +1,11 @@
 ## History
 
+### 3.1.0
+* [Update CI to Node 24 (#163)](https://github.com/PrismarineJS/prismarine-auth/commit/6ad5670edd569293a1d99f1d62d2b641d9a91c9f) (thanks @rom1504)
+* [Rename workflow back to publish.yml to match npm trusted publisher config (#162)](https://github.com/PrismarineJS/prismarine-auth/commit/2d62147f27911f17bddb4ffd1bc51efefb4e119d) (thanks @rom1504)
+* [Update Node.js version to 24 in workflow](https://github.com/PrismarineJS/prismarine-auth/commit/d3edb32326457a297c87357a72f2e5c169d7a0b3) (thanks @rom1504)
+* [Rename publish.yml to npm-publish.yml](https://github.com/PrismarineJS/prismarine-auth/commit/df10ea78f8ee88a40388534f3f7a77d420103714) (thanks @extremeheat)
+
 ### 3.0.0
 * [bedrock: Return new Minecraft session token in .getMinecraftBedrockToken() (#160)](https://github.com/PrismarineJS/prismarine-auth/commit/c14f3f185d6670f026fdbe2623e20e97b2198c56) (thanks @extremeheat)
 * [Fix publish condition for npm-publish v4 (#159)](https://github.com/PrismarineJS/prismarine-auth/commit/b7b4408fd5f497125bfe30f78d1248e18a2e908b) (thanks @rom1504)
