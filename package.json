@@ -1,6 +1,6 @@
 {
   "name": "prismarine-auth",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Authentication library for Microsoft, Xbox Live, and Minecraft with caching support",
   "main": "index.js",
   "scripts": {

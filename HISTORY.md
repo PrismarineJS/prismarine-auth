@@ -1,5 +1,8 @@
 ## History
 
+### 3.1.1
+* [bedrock: Fix attainment of new multiplayer session token (#165)](https://github.com/PrismarineJS/prismarine-auth/commit/91264e3124d585d96eab1e40e93ebc6aad08d42a) (thanks @extremeheat)
+
 ### 3.1.0
 * [Update CI to Node 24 (#163)](https://github.com/PrismarineJS/prismarine-auth/commit/6ad5670edd569293a1d99f1d62d2b641d9a91c9f) (thanks @rom1504)
 * [Rename workflow back to publish.yml to match npm trusted publisher config (#162)](https://github.com/PrismarineJS/prismarine-auth/commit/2d62147f27911f17bddb4ffd1bc51efefb4e119d) (thanks @rom1504)
