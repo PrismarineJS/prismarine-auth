@@ -60,6 +60,23 @@ class MinecraftBedrockServicesTokenManager {
 
     return tokenResponse
   }
+
+  async getMultiplayerToken (serviceToken, publicKey) {
+    const response = await fetch(Endpoints.minecraftBedrock.multiplayerSessionStart, {
+      method: 'post',
+      headers: {
+        accept: '*/*',
+        authorization: serviceToken,
+        'content-type': 'application/json',
+        'User-Agent': 'libhttpclient/1.0.0.0',
+        'Accept-Language': 'en-US',
+        'Accept-Encoding': 'gzip, deflate, br'
+      },
+      body: JSON.stringify({ publicKey })
+    }).then(checkStatus)
+
+    return response?.result?.signedToken || response?.signedToken || ''
+  }
 }
 
 module.exports = MinecraftBedrockServicesTokenManager

@@ -33,7 +33,13 @@ declare module 'prismarine-auth' {
       fetchProfile?: boolean
     }): Promise<{ token: string, entitlements: MinecraftJavaEntitlements, profile: MinecraftJavaProfile, certificates: MinecraftJavaCertificates }>
     // Returns the Minecraft Bedrock login payload. Public key parameter must be a KeyLike object.
-    getMinecraftBedrockToken(publicKey: KeyObject): Promise<MinecraftBedrockLogin>
+    getMinecraftBedrockToken(publicKey: KeyObject, config?: { version?: string }): Promise<MinecraftBedrockLogin>
+
+    // Returns a Minecraft Bedrock Edition auth chain. Public key parameter must be a KeyLike object.
+    getMinecraftBedrockChain(publicKey: KeyObject): Promise<string[]>
+
+    // Returns a Bedrock multiplayer login token bound to the provided public key.
+    getMinecraftBedrockMultiplayerToken(publicKey: KeyObject, config?: { version?: string }): Promise<string>
 
     getMinecraftBedrockServicesToken(config: { version: string }): Promise<GetMinecraftBedrockServicesResponse>
 

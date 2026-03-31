@@ -13,7 +13,8 @@ module.exports = {
     minecraftBedrock: {
       XSTSRelyingParty: 'https://multiplayer.minecraft.net/',
       authenticate: 'https://multiplayer.minecraft.net/authentication',
-      servicesSessionStart: 'https://authorization.franchise.minecraft-services.net/api/v1.0/session/start'
+      servicesSessionStart: 'https://authorization.franchise.minecraft-services.net/api/v1.0/session/start',
+      multiplayerSessionStart: 'https://authorization.franchise.minecraft-services.net/api/v1.0/multiplayer/session/start'
     },
     xbox: {
       authRelyingParty: 'http://auth.xboxlive.com',
