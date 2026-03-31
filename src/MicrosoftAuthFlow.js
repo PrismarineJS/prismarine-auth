@@ -238,10 +238,8 @@ class MicrosoftAuthFlow {
   }
 
   async getMinecraftBedrockToken (publicKey, options = {}) {
-    const [chain, token] = await Promise.all([
-      this.getMinecraftBedrockChain(publicKey),
-      this.getMinecraftBedrockMultiplayerToken(publicKey, options)
-    ])
+    const chain = await this.getMinecraftBedrockChain(publicKey)
+    const token = await this.getMinecraftBedrockMultiplayerToken(publicKey, options)
     return { chain, token }
   }
 }
