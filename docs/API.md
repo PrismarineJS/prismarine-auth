@@ -48,13 +48,22 @@ Returns a Minecraft Java Edition auth token.
 * If you specify `fetchProfile`, we will do a call to `https://api.minecraftservices.com/minecraft/profile` for the currently signed in user and returns the results. Undefined if request fails.
 * If `fetchCertificates` is set to true, we obtain profile keys from Mojang for the player which are used for chat singing.
 
-### getMinecraftBedrockToken (publicKey: KeyObject): Promise<MinecraftBedrockLogin>
+### getMinecraftBedrockToken (publicKey: KeyObject, config?: { version?: string }): Promise<MinecraftBedrockLogin>
 
 Returns a Minecraft: Bedrock Edition auth token. The first parameter is a Node.js KeyObject. Please see the examples folder for example usage.
 
 The return object contains:
 - `chain`: the certificate JWT chain returned from the Bedrock auth server
-- `token`: the multiplayer login token returned alongside the chain, if present
+- `token`: the multiplayer login token returned alongside the chain
+
+### getMinecraftBedrockChain (publicKey: KeyObject): Promise<string[]>
+
+Returns the Bedrock certificate JWT chain from the Bedrock auth server.
+
+### getMinecraftBedrockMultiplayerToken (publicKey: KeyObject, config?: { version?: string }): Promise<string>
+
+Returns a Bedrock multiplayer login token bound to the provided public key.
+This token is obtained from the Minecraft franchise authorization service and is used as the `Token` field in newer Bedrock login requests.
 
 ### getPlayfabLogin (): Promise<GetPlayfabLoginResponse>
 

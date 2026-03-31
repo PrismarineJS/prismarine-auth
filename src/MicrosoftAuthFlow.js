@@ -127,13 +127,14 @@ class MicrosoftAuthFlow {
     return playfab
   }
 
-  async getMinecraftBedrockServicesToken ({ verison }) {
+  async getMinecraftBedrockServicesToken ({ version = '1.20.62' }) {
+    version = version.startsWith('1.') ? version : `1.${version}`
     const cache = await this.mcs.getCachedAccessToken()
     if (cache.valid) {
       return cache.data
     }
     const playfab = await this.getPlayfabLogin()
-    const mcs = await this.mcs.getAccessToken(playfab.SessionTicket, { verison })
+    const mcs = await this.mcs.getAccessToken(playfab.SessionTicket, { version })
     return mcs
   }
 
@@ -205,13 +206,13 @@ class MicrosoftAuthFlow {
     return response
   }
 
-  async getMinecraftBedrockToken (publicKey) {
+  async getMinecraftBedrockChain (publicKey) {
     // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
     // is this even a good idea to cache?
     if (await this.mba.verifyTokens() && false) { // eslint-disable-line
       debug('[mc] Using existing tokens')
-      const { chain, token } = await this.mba.getCachedAccessToken()
-      return { chain, token }
+      const { chain } = await this.mba.getCachedAccessToken()
+      return chain
     } else {
       if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
       debug('[mc] Need to obtain tokens')
@@ -224,12 +225,22 @@ class MicrosoftAuthFlow {
         if (!body.extraData.titleId && this.doTitleAuth) {
           throw Error('missing titleId in response')
         }
-        return {
-          chain: token.chain,
-          token: token.token || token.Token || ''
-        }
+        return token.chain
       }, () => { this.xbl.forceRefresh = true }, 2)
     }
+  }
+
+  async getMinecraftBedrockMultiplayerToken (publicKey, options = {}) {
+    if (!publicKey) throw new Error('Need to specifiy a ECDH x509 URL encoded public key')
+    const { mcToken } = await this.getMinecraftBedrockServicesToken(options)
+    if (!mcToken) throw new Error('Failed to obtain Minecraft Bedrock services token')
+    return await this.mcs.getMultiplayerToken(mcToken, publicKey)
+  }
+
+  async getMinecraftBedrockToken (publicKey, options = {}) {
+    const chain = await this.getMinecraftBedrockChain(publicKey)
+    const token = await this.getMinecraftBedrockMultiplayerToken(publicKey, options)
+    return { chain, token }
   }
 }
 
