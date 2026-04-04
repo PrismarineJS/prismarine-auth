@@ -2,6 +2,8 @@ const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
 const debug = require('debug')('prismarine-auth')
+const { socksDispatcher } = require('fetch-socks')
+const { ProxyAgent } = require('undici')
 
 const Titles = require('./common/Titles')
 const { createHash } = require('./common/Util')
@@ -15,6 +17,27 @@ const MsaTokenManager = require('./TokenManagers/MsaTokenManager')
 const BedrockTokenManager = require('./TokenManagers/MinecraftBedrockTokenManager')
 const PlayfabTokenManager = require('./TokenManagers/PlayfabTokenManager')
 const MinecraftServicesTokenManager = require('./TokenManagers/MinecraftBedrockServicesManager')
+
+function buildHttpProxyUrl (proxy) {
+  const auth = proxy.username ? `${proxy.username}:${proxy.password || ''}@` : ''
+  return `http://${auth}${proxy.host}:${proxy.port}`
+}
+
+function wrapFetch (dispatcher) {
+  return (url, options = {}) => fetch(url, { ...options, dispatcher })
+}
+
+function createProxyFetch (proxy) {
+  if (proxy.type === 'socks5') {
+    const config = { type: 5, host: proxy.host, port: proxy.port }
+    if (proxy.username) {
+      config.userId = proxy.username
+      config.password = proxy.password
+    }
+    return wrapFetch(socksDispatcher(config))
+  }
+  return wrapFetch(new ProxyAgent(buildHttpProxyUrl(proxy)))
+}
 
 async function retry (methodFn, beforeRetry, times) {
   while (times--) {
@@ -37,6 +60,7 @@ class MicrosoftAuthFlow {
       throw new Error("Missing 'flow' argument in options. See docs for more information.")
     }
     this.options = options || { flow: 'live', authTitle: Titles.MinecraftNintendoSwitch }
+    this.fetch = this.options.proxy ? createProxyFetch(this.options.proxy) : fetch
     this.initTokenManagers(username, cache, options?.forceRefresh)
     this.codeCallback = codeCallback
   }
@@ -71,7 +95,7 @@ class MicrosoftAuthFlow {
 
     if (this.options.flow === 'live' || this.options.flow === 'sisu') {
       if (!this.options.authTitle) throw new Error(`Please specify an "authTitle" in Authflow constructor when using ${this.options.flow} flow`)
-      this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'], cache({ cacheName: this.options.flow, username }))
+      this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'], cache({ cacheName: this.options.flow, username }), this.fetch)
       this.doTitleAuth = true
     } else if (this.options.flow === 'msal') {
       let config = this.options.msalConfig
@@ -86,11 +110,11 @@ class MicrosoftAuthFlow {
     }
 
     const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
-    this.xbl = new XboxTokenManager(keyPair, cache({ cacheName: 'xbl', username }))
-    this.mba = new BedrockTokenManager(cache({ cacheName: 'bed', username }))
-    this.mca = new JavaTokenManager(cache({ cacheName: 'mca', username }))
-    this.mcs = new MinecraftServicesTokenManager(cache({ cacheName: 'mcs', username }))
-    this.pfb = new PlayfabTokenManager(cache({ cacheName: 'pfb', username }))
+    this.xbl = new XboxTokenManager(keyPair, cache({ cacheName: 'xbl', username }), this.fetch)
+    this.mba = new BedrockTokenManager(cache({ cacheName: 'bed', username }), this.fetch)
+    this.mca = new JavaTokenManager(cache({ cacheName: 'mca', username }), this.fetch)
+    this.mcs = new MinecraftServicesTokenManager(cache({ cacheName: 'mcs', username }), this.fetch)
+    this.pfb = new PlayfabTokenManager(cache({ cacheName: 'pfb', username }), this.fetch)
   }
 
   async getMsaToken () {
