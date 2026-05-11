@@ -119,6 +119,14 @@ declare module 'prismarine-auth' {
     refreshAfter: string
   }
 
+  export interface ProxyOptions {
+    host: string
+    port: number
+    username?: string
+    password?: string
+    type?: string
+  }
+
   export interface MicrosoftAuthFlowOptions {
     // If using Azure auth, specify an custom object to pass to MSAL
     msalConfig?: object
@@ -129,6 +137,8 @@ declare module 'prismarine-auth' {
     flow: 'live' | 'msal' | 'sisu'
     // Reset the cache and obtain fresh tokens for everything
     forceRefresh?: boolean
+    // Proxy configuration
+    proxy?: ProxyOptions
   }
 
   export enum Titles {

@@ -4,8 +4,9 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatusWithHelp } = require('../common/Util')
 
 class BedrockTokenManager {
-  constructor (cache) {
+  constructor (cache, fetchFn = fetch) {
     this.cache = cache
+    this.fetch = fetchFn
   }
 
   async getCachedAccessToken () {
@@ -51,7 +52,7 @@ class BedrockTokenManager {
       'User-Agent': 'MCPE/UWP',
       Authorization: `XBL3.0 x=${xsts.userHash};${xsts.XSTSToken}`
     }
-    const MineServicesResponse = await fetch(Endpoints.minecraftBedrock.authenticate, {
+    const MineServicesResponse = await this.fetch(Endpoints.minecraftBedrock.authenticate, {
       method: 'post',
       headers,
       body: JSON.stringify({ identityPublicKey: clientPublicKey })
