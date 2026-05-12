@@ -1,5 +1,6 @@
 const debug = require('debug')('prismarine-auth')
 const { Endpoints } = require('../common/Constants')
+const { checkStatus } = require('../common/Util')
 
 class PlayfabTokenManager {
   constructor (cache) {
@@ -48,11 +49,11 @@ class PlayfabTokenManager {
         TitleId: '20CA2',
         XboxToken: `XBL3.0 x=${xsts.userHash};${xsts.XSTSToken}`
       })
-    })
+    }).then(checkStatus)
 
-    const data = await response.json()
-    await this.setCachedAccessToken({ pfb: data.data })
-    return data.data
+    await this.setCachedAccessToken({ pfb: response.data })
+
+    return response.data
   }
 }
 

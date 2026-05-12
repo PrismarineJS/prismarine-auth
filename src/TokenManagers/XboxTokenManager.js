@@ -50,14 +50,32 @@ class XboxTokenManager {
     return result
   }
 
-  checkTokenError (errorCode, response) {
+  getXboxErrorCode (error) {
+    const headerErrorCode = Number.parseInt(error.response?.headers.get('x-err'), 10)
+    if (Number.isInteger(headerErrorCode)) return headerErrorCode
+
+    const bodyErrorCode = Number.parseInt(error.data?.XErr, 10)
+    if (Number.isInteger(bodyErrorCode)) return bodyErrorCode
+  }
+
+  createXboxTokenError (error) {
+    const errorCode = this.getXboxErrorCode(error)
+    if (!Number.isInteger(errorCode)) return error
+
     // { Identity: '0', XErr: 2148916233, Message: '', Redirect: 'https://start.ui.xboxlive.com/CreateAccount' }
     // https://wiki.vg/Microsoft_Authentication_Scheme#Authenticate_with_XSTS
     // Because we do the full auth sequence like the official XAL, the issue with accounts under 18 (2148916238)
     // should not happen through title auth. But the user must always have an xbox.com profile before being able
     // to obtain a Minecraft or Xbox token.
-    if (errorCode in xboxLiveErrors) throw new Error(xboxLiveErrors[errorCode])
-    else throw new Error(`Xbox Live authentication failed to obtain a XSTS token. XErr: ${errorCode}\n${JSON.stringify(response)}`)
+    const bodySuffix = error.body ? `\n${error.body}` : ''
+    const message = xboxLiveErrors[errorCode] ?? `Xbox Live authentication failed to obtain a XSTS token. XErr: ${errorCode}${bodySuffix}`
+    const xboxError = new Error(message)
+    xboxError.cause = error
+    xboxError.response = error.response
+    xboxError.body = error.body
+    xboxError.data = error.data
+    xboxError.errorCode = errorCode
+    return xboxError
   }
 
   async getUserToken (accessToken, azure) {
@@ -150,22 +168,24 @@ class XboxTokenManager {
 
     const headers = { Signature: signature }
 
-    const req = await fetch(Endpoints.xbox.sisuAuthorize, { method: 'post', headers, body })
-    const ret = await req.json()
-    if (!req.ok) this.checkTokenError(parseInt(req.headers.get('x-err')), ret)
+    try {
+      const ret = await fetch(Endpoints.xbox.sisuAuthorize, { method: 'post', headers, body }).then(checkStatus)
 
-    debug('Sisu Auth Response', ret)
-    const xsts = {
-      userXUID: ret.AuthorizationToken.DisplayClaims.xui[0].xid || null,
-      userHash: ret.AuthorizationToken.DisplayClaims.xui[0].uhs,
-      XSTSToken: ret.AuthorizationToken.Token,
-      expiresOn: ret.AuthorizationToken.NotAfter
+      debug('Sisu Auth Response', ret)
+      const xsts = {
+        userXUID: ret.AuthorizationToken.DisplayClaims.xui[0].xid || null,
+        userHash: ret.AuthorizationToken.DisplayClaims.xui[0].uhs,
+        XSTSToken: ret.AuthorizationToken.Token,
+        expiresOn: ret.AuthorizationToken.NotAfter
+      }
+
+      await this.setCachedToken({ userToken: ret.UserToken, titleToken: ret.TitleToken, [createHash(options.relyingParty)]: xsts })
+
+      debug('[xbl] xsts', xsts)
+      return xsts
+    } catch (error) {
+      throw this.createXboxTokenError(error)
     }
-
-    await this.setCachedToken({ userToken: ret.UserToken, titleToken: ret.TitleToken, [createHash(options.relyingParty)]: xsts })
-
-    debug('[xbl] xsts', xsts)
-    return xsts
   }
 
   async getXSTSToken (tokens, options = {}) {
@@ -189,21 +209,23 @@ class XboxTokenManager {
 
     const headers = { ...this.headers, Signature: signature }
 
-    const req = await fetch(Endpoints.xbox.xstsAuthorize, { method: 'post', headers, body })
-    const ret = await req.json()
-    if (!req.ok) this.checkTokenError(ret.XErr, ret)
+    try {
+      const ret = await fetch(Endpoints.xbox.xstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
 
-    const xsts = {
-      userXUID: ret.DisplayClaims.xui[0].xid || null,
-      userHash: ret.DisplayClaims.xui[0].uhs,
-      XSTSToken: ret.Token,
-      expiresOn: ret.NotAfter
+      const xsts = {
+        userXUID: ret.DisplayClaims.xui[0].xid || null,
+        userHash: ret.DisplayClaims.xui[0].uhs,
+        XSTSToken: ret.Token,
+        expiresOn: ret.NotAfter
+      }
+
+      await this.setCachedToken({ [createHash(options.relyingParty)]: xsts })
+
+      debug('[xbl] xsts', xsts)
+      return xsts
+    } catch (error) {
+      throw this.createXboxTokenError(error)
     }
-
-    await this.setCachedToken({ [createHash(options.relyingParty)]: xsts })
-
-    debug('[xbl] xsts', xsts)
-    return xsts
   }
 
   /**
