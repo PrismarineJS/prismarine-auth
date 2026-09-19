@@ -5,220 +5,169 @@ const { XboxClient, isXuid } = require('./client')
 
 const debug = require('debug')('prismarine-auth:xsapi')
 
-class Host {
-  constructor (session, authflow) {
-    this.session = session
-
-    this.authflow = authflow
-
-    this.rest = new XboxClient(this.authflow, session.options)
-
-    this.subscriptionId = v4()
-
-    this.profile = null
-
-    this.rta = null
-
-    this.connectionId = null
-  }
-
-  async connect () {
-    this.rta = new XboxRTA(this.authflow)
-    try {
-      this.profile = await this.rest.getProfile('me')
-      this.session.assertActive()
-      await this.rta.connect()
-      this.session.assertActive()
-
-      const subResponse = await this.rta.subscribe('https://sessiondirectory.xboxlive.com/connections/')
-      this.session.assertActive()
-      this.connectionId = subResponse.data.ConnectionId
-
-      this.rta.on('subscribe', event => {
-        this.onSubscribe(event).catch(error => this.session.emit('error', error))
-      })
-    } finally {
-      // Authentication can finish after end(); do not leave a late socket open.
-      if (this.session._ended) await this.close()
-    }
-  }
-
-  async close () {
-    const ws = this.rta?.ws
-    // xbox-rta.destroy() only closes OPEN sockets, not CONNECTING sockets.
-    if (ws?.readyState === 0) {
-      ws.onopen = null
-      ws.onclose = null
-      ws.on('error', () => {})
-      ws.terminate()
-    }
-    await this.rta?.destroy()
-  }
-
-  async onSubscribe (event) {
-    if (this.session._ended) return
-    const connectionId = event.data?.ConnectionId
-
-    if (connectionId && typeof connectionId === 'string') {
-      debug('Received RTA subscribe event', event)
-
-      try {
-        this.connectionId = connectionId
-
-        await this.rest.updateConnection(this.session.session.name, connectionId)
-        await this.rest.setActivity(this.session.session.name)
-      } catch (e) {
-        debug('Failed to update connection, session may have been abandoned', e)
-        await this.session.end()
-        this.session.emit('error', new Error('Xbox session connection was lost', { cause: e }))
-      }
-    }
-  }
-}
-
 class SessionDirectory extends EventEmitter {
   constructor (authflow, options = {}) {
     super()
-    this._ended = false
     for (const field of ['titleId', 'scid', 'templateName']) {
       if (!options[field]) throw new TypeError(`Xbox session requires ${field}`)
     }
-    this.options = options
-
+    this.options = { ...options }
     this.authflow = authflow
-
-    this.host = new Host(this, this.authflow)
-
-    this.session = { name: '' }
+    this.client = new XboxClient(authflow, this.options)
+    this.subscriptionId = v4()
+    this.name = ''
+    this.profile = null
+    this.connectionId = null
+    this.rta = null
+    this._started = false
+    this._ended = false
+    this._ready = false
   }
-
-  get client () { return this.host.rest }
 
   assertActive () {
     if (this._ended) throw new Error('Xbox session is closed')
   }
 
-  async joinSession (sessionName) {
+  start (name) {
     this.assertActive()
-    this.session.name = sessionName
+    if (this._started) throw new Error('Xbox session already started; create a new SessionDirectory')
+    this._started = true
+    this.name = name
+  }
 
-    await this.host.connect()
-
-    await this.host.rest.addConnection(this.session.name, this.host.profile.id, this.host.connectionId, this.host.subscriptionId)
-    if (this._ended) await this.host.rest.leaveSession(this.session.name)
+  async connect () {
+    this.rta = new XboxRTA(this.authflow)
+    // Attach before connect/subscribe: the dependency emits errors as well as rejecting requests.
+    this.rta.on('error', error => { this.fail(error) })
+    this.rta.on('subscribe', event => {
+      // Initial subscription is consumed by the awaited subscribe() below.
+      if (this._ready) this.onSubscribe(event).catch(error => this.fail(error))
+    })
+    this.profile = await this.client.getProfile('me')
     this.assertActive()
-    await this.host.rest.setActivity(this.session.name)
+    await this.rta.connect({ timeout: this.options.timeout })
+    this.assertActive()
+    const response = await this.rta.subscribe('https://sessiondirectory.xboxlive.com/connections/')
+    this.assertActive()
+    this.connectionId = response.data.ConnectionId
+  }
 
-    return this.getSession()
+  fail (error) {
+    if (this._ended) return
+    const closing = this.end()
+    // Startup errors belong to the rejected create/join promise. Established sessions emit.
+    if (this._ready) {
+      closing.then(() => this.emit('error', error), cleanupError => this.emit('error', cleanupError))
+        .catch(error => { debug('Session error listener failed: %s', error.message) })
+    } else {
+      closing.catch(error => { debug('Session cleanup failed: %s', error.message) })
+    }
+  }
+
+  async onSubscribe (event) {
+    if (this._ended) return
+    const connectionId = event.data?.ConnectionId
+    if (typeof connectionId !== 'string') return
+    this.connectionId = connectionId
+    try {
+      await this.updateSession({ members: { me: { properties: { system: { active: true, connection: connectionId } } } } })
+      this.assertActive()
+      await this.client.setActivity(this.name)
+    } catch (cause) {
+      this.fail(new Error('Xbox session connection was lost', { cause }))
+    }
+  }
+
+  async joinSession (name) {
+    this.start(name)
+    try {
+      await this.connect()
+      this.assertActive()
+      await this.client.addConnection(this.name, this.profile.id, this.connectionId, this.subscriptionId)
+      await this.checkCompletion()
+      await this.client.setActivity(this.name)
+      this.assertActive()
+      const session = await this.getSession()
+      this.assertActive()
+      this._ready = true
+      return session
+    } catch (error) {
+      await this.end()
+      throw error
+    }
   }
 
   async createSession (properties = {}) {
-    this.assertActive()
-    this.properties = properties
-
-    this.session.name = v4()
-
-    await this.host.connect()
-
-    await this.createAndPublishSession()
+    this.start(v4())
+    try {
+      await this.connect()
+      this.assertActive()
+      const resolved = typeof properties === 'function' ? properties({ profile: this.profile }) : properties
+      await this.updateSession({
+        properties: resolved,
+        members: {
+          me: {
+            constants: { system: { xuid: this.profile.id, initialize: true } },
+            properties: {
+              system: { active: true, connection: this.connectionId, subscription: { id: this.subscriptionId, changeTypes: ['everything'] } }
+            }
+          }
+        }
+      })
+      this.assertActive()
+      await this.client.setActivity(this.name)
+      this.assertActive()
+      const session = await this.getSession()
+      await this.updateSession({ properties: session.properties })
+      this._ready = true
+    } catch (error) {
+      await this.end()
+      throw error
+    }
   }
 
   end () {
     if (this._endPromise) return this._endPromise
     this._ended = true
-    this.host.rest.abortPending()
+    this.client.abortPending()
     this._endPromise = this.closeSession()
     return this._endPromise
   }
 
   async closeSession () {
     try {
-      await this.host.close()
+      await this.rta?.destroy()
     } finally {
-      if (this.session.name) {
-        await this.host.rest.leaveSession(this.session.name)
-          .catch(() => { debug(`Failed to leave session ${this.session.name}`) })
+      if (this.name) {
+        await this.client.leaveSession(this.name)
+          .catch(error => { debug('Failed to leave session %s: %s', this.name, error.message) })
       }
     }
-    debug(`Abandoned session, name: ${this.session.name}`)
   }
 
   async invitePlayer (identifier) {
     this.assertActive()
-    debug(`Inviting player, identifier: ${identifier}`)
-
-    if (!isXuid(identifier)) {
-      const profile = await this.host.rest.getProfile(identifier)
-        .catch(() => { throw new Error(`Failed to get profile for identifier: ${identifier}`) })
-      identifier = profile.id
-    }
-
+    if (!isXuid(identifier)) identifier = (await this.client.getProfile(identifier)).id
     this.assertActive()
-    await this.host.rest.sendInvite(this.session.name, identifier)
-
-    debug(`Invited player, xuid: ${identifier}`)
+    await this.client.sendInvite(this.name, identifier)
   }
 
   async getSession () {
-    return await this.host.rest.getSession(this.session.name)
+    this.assertActive()
+    return this.client.getSession(this.name)
   }
 
-  async updateSession (payload) {
-    this.assertActive()
-    await this.host.rest.updateSession(this.session.name, payload)
+  async checkCompletion () {
     if (this._ended) {
-      await this.host.rest.leaveSession(this.session.name)
+      await this.client.leaveSession(this.name)
       this.assertActive()
     }
   }
 
-  async createAndPublishSession () {
-    await this.updateSession(this.createSessionBody())
-
-    debug(`Created session, name: ${this.session.name}`)
-
+  async updateSession (payload) {
     this.assertActive()
-    await this.host.rest.setActivity(this.session.name)
-
-    const session = await this.getSession()
-
-    await this.updateSession({ properties: session.properties })
-
-    debug(`Published session, name: ${this.session.name}`)
-
-    return session
-  }
-
-  createSessionBody () {
-    if (!this.host.connectionId) throw new Error('No session owner')
-
-    const properties = typeof this.properties === 'function'
-      ? this.properties({ profile: this.host.profile })
-      : this.properties
-
-    return {
-      properties,
-      members: {
-        me: {
-          constants: {
-            system: {
-              xuid: this.host.profile.id,
-              initialize: true
-            }
-          },
-          properties: {
-            system: {
-              active: true,
-              connection: this.host.connectionId,
-              subscription: {
-                id: this.host.subscriptionId,
-                changeTypes: ['everything']
-              }
-            }
-          }
-        }
-      }
-    }
+    await this.client.updateSession(this.name, payload)
+    await this.checkCompletion()
   }
 }
 

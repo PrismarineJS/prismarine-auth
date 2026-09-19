@@ -45,6 +45,16 @@ class XboxClient {
     }
   }
 
+  sessionRef (name) {
+    this.requireSessionConfig()
+    return { scid: this.options.scid, templateName: this.options.templateName, name }
+  }
+
+  sessionUrl (name) {
+    const ref = this.sessionRef(name)
+    return `https://sessiondirectory.xboxlive.com/serviceconfigs/${encodeURIComponent(ref.scid)}/sessionTemplates/${encodeURIComponent(ref.templateName)}/sessions/${encodeURIComponent(ref.name)}`
+  }
+
   async getProfile (input) {
     input = input === 'me' ? 'me' : isXuid(input) ? `xuids(${input})` : `gt(${encodeURIComponent(input)})`
     const response = await this.get(`https://profile.xboxlive.com/users/${input}/settings`, { contractVersion: '2' })
@@ -64,7 +74,7 @@ class XboxClient {
     return this.sendHandle({
       version: 1,
       type: 'activity',
-      sessionRef: { scid: this.options.scid, templateName: this.options.templateName, name: sessionName }
+      sessionRef: this.sessionRef(sessionName)
     })
   }
 
@@ -73,7 +83,7 @@ class XboxClient {
     return this.sendHandle({
       version: 1,
       type: 'invite',
-      sessionRef: { scid: this.options.scid, templateName: this.options.templateName, name: sessionName },
+      sessionRef: this.sessionRef(sessionName),
       invitedXuid: xuid,
       inviteAttributes: { titleId: this.options.titleId }
     })
@@ -100,7 +110,7 @@ class XboxClient {
 
   async getSession (sessionName) {
     this.requireSessionConfig()
-    const response = await this.get(`https://sessiondirectory.xboxlive.com/serviceconfigs/${encodeURIComponent(this.options.scid)}/sessionTemplates/${encodeURIComponent(this.options.templateName)}/sessions/${encodeURIComponent(sessionName)}`, {
+    const response = await this.get(this.sessionUrl(sessionName), {
       contractVersion: '107'
     })
 
@@ -109,7 +119,7 @@ class XboxClient {
 
   async updateSession (sessionName, payload) {
     this.requireSessionConfig()
-    const response = await this.put(`https://sessiondirectory.xboxlive.com/serviceconfigs/${encodeURIComponent(this.options.scid)}/sessionTemplates/${encodeURIComponent(this.options.templateName)}/sessions/${encodeURIComponent(sessionName)}`, {
+    const response = await this.put(this.sessionUrl(sessionName), {
       data: payload,
       contractVersion: '107'
     })

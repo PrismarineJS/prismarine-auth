@@ -7,6 +7,8 @@ Consumers should coordinate dependency updates. See [proposal #183](https://gith
 
 This module requires Node.js 18 or newer (native fetch, Response and AbortSignal support).
 It uses an existing Authflow for token acquisition/caching and xbox-rta for subscriptions.
+The dependency is temporarily pinned to a patched fork commit while the upstream lifecycle
+fixes are reviewed; it must not be replaced with unpatched 2.2.0.
 It contains no Minecraft title IDs, lobby templates, world properties or transport logic.
 
 ```js
@@ -78,11 +80,14 @@ between sessions shares credentials, not request cancellation.
   close RTA, then attempt a bounded leave request. Leave failures are debug-logged. A late join
   or update completion triggers another leave attempt rather than publishing an ended session.
 - `error`: asynchronous subscription/update failures. Register a listener and catch rejected
-  promises from explicit operations. If create/join fails, call `end()` in your cleanup path.
+  promises from explicit operations. Failed create/join operations automatically end the session; explicit cleanup remains idempotent.
 
-Use one SessionDirectory per joined/hosted session. Calls to its low-level `client` are not
+Use one SessionDirectory per joined/hosted session. Repeated or concurrent create/join attempts
+are rejected without replacing the active connection. RTA startup uses the configured timeout
+(default 15 seconds), and end() cancels authentication/nonce waiting and pending subscriptions.
+Startup failures reject the create/join promise; established RTA failures emit `error` after cleanup. Calls to its low-level `client` are not
 prevented after `end()`; the owner is responsible for not starting new work on an ended session.
-Internal `host` and request bookkeeping are not public API. Diagnostics use
+Connection fields and request bookkeeping are not public API. Diagnostics use
 `DEBUG=prismarine-auth:xsapi`.
 
 The initial extraction retains the existing create-and-publish behavior from bedrock-protocol.
