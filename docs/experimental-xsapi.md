@@ -84,7 +84,8 @@ between sessions shares credentials, not request cancellation.
 
 Use one SessionDirectory per joined/hosted session. Repeated or concurrent create/join attempts
 are rejected without replacing the active connection. RTA startup uses the configured timeout
-(default 15 seconds), and end() cancels authentication/nonce waiting and pending subscriptions.
+(default 15 seconds) through authentication, nonce retrieval and WebSocket opening. Ending the
+session cancels startup and pending subscriptions, including a stalled WebSocket handshake.
 Startup failures reject the create/join promise; established RTA failures emit `error` after cleanup. Calls to its low-level `client` are not
 prevented after `end()`; the owner is responsible for not starting new work on an ended session.
 Connection fields and request bookkeeping are not public API. Diagnostics use

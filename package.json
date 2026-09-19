@@ -41,6 +41,6 @@
     "json-bigint": "^1.0.0",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2",
-    "xbox-rta": "github:extremeheat/xbox-rta#153175046e8798df396661b216c51f6ff8c0cdcd"
+    "xbox-rta": "github:extremeheat/xbox-rta#8fe305a18897b77b8e68b34ad42d8cd513c87bd0"
   }
 }
