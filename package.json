@@ -41,6 +41,6 @@
     "json-bigint": "^1.0.0",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2",
-    "xbox-rta": "^2.2.0"
+    "xbox-rta": "2.2.0"
   }
 }
