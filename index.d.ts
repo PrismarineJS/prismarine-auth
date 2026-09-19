@@ -2,6 +2,9 @@
 import { KeyObject } from 'crypto'
 
 declare module 'prismarine-auth' {
+  /** Experimental Xbox services; see docs/experimental-xsapi.md. */
+  export const experimental: { xsapi: typeof import('./types/xsapi') }
+
   export class Authflow {
 
     username: string
