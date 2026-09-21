@@ -29,7 +29,8 @@
     "chai-as-promised": "^7.1.1",
     "mocha": "^11.0.1",
     "prismarine-auth": "file:.",
-    "standard": "^17.0.0"
+    "standard": "^17.0.0",
+    "prismarine-xbox-services": "PrismarineJS/prismarine-xbox-services#052a9676f514c5470a723651b1dbb1adcf238944"
   },
   "dependencies": {
     "@azure/msal-node": "^2.0.2",

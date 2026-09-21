@@ -50,6 +50,10 @@ If `flow` is `live`, the default, then you can only specify existing Microsoft c
 ### getXboxToken
 See [docs/API.md](docs/API.md)
 
+For Xbox profiles, multiplayer sessions, RTA and PlayFab service calls, use
+[prismarine-xbox-services](https://github.com/PrismarineJS/prismarine-xbox-services)
+with an Authflow. See the [services integration guide](docs/xbox-services.md).
+
 
 ### getMinecraftJavaToken
 ```js
