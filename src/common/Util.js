@@ -1,22 +1,46 @@
 const debug = require('debug')('prismarine-auth')
 const crypto = require('crypto')
 
-async function checkStatus (res) {
-  if (res.ok) { // res.status >= 200 && res.status < 300
-    return res.json()
-  } else {
-    const resp = await res.text()
-    debug('Request fail', resp)
-    throw Error(`${res.status} ${res.statusText} ${resp}`)
+async function checkStatus (res, errorDict) {
+  const { body, data } = await readResponseBody(res, { strictJson: res.ok })
+
+  if (!res.ok) {
+    debug('Request fail', body)
+    const message = [`HTTP ${res.status}`, res.statusText, body, errorDict?.[res.status]].filter(part => part).join(' ')
+    const err = new Error(message)
+    err.response = res
+    err.body = body
+    err.data = data
+    throw err
+  }
+
+  return data
+}
+
+async function readResponseBody (res, options = {}) {
+  const contentType = res.headers.get('content-type') || ''
+  const body = await res.text()
+
+  return {
+    body,
+    data: parseResponseBody(body, contentType.includes('application/json'), res, options)
   }
 }
 
-function checkStatusWithHelp (errorDict) {
-  return async function (res) {
-    if (res.ok) return res.json() // res.status >= 200 && res.status < 300
-    const resp = await res.text()
-    debug('Request fail', resp)
-    throw new Error(`${res.status} ${res.statusText} ${resp} ${errorDict[res.status] ?? ''}`)
+function parseResponseBody (body, isJson, res, { strictJson = false } = {}) {
+  if (!isJson || !body) return body
+
+  try {
+    return JSON.parse(body)
+  } catch (cause) {
+    if (!strictJson) return body
+
+    const err = new Error(`Failed to parse response as JSON (${res.status} ${res.statusText}): ${body}`)
+    err.cause = cause
+    err.response = res
+    err.body = body
+    err.data = body
+    throw err
   }
 }
 
@@ -30,4 +54,4 @@ function nextUUID () {
   return globalThis.crypto.randomUUID()
 }
 
-module.exports = { checkStatus, checkStatusWithHelp, createHash, nextUUID }
+module.exports = { checkStatus, createHash, nextUUID }
