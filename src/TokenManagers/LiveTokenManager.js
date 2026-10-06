@@ -4,10 +4,11 @@ const { Endpoints } = require('../common/Constants')
 const { checkStatus } = require('../common/Util')
 
 class LiveTokenManager {
-  constructor (clientId, scopes, cache) {
+  constructor (clientId, scopes, cache, xboxSignInScreen) {
     this.clientId = clientId
     this.scopes = scopes
     this.cache = cache
+    this.xboxSignInScreen = xboxSignInScreen
   }
 
   async verifyTokens () {
@@ -78,9 +79,11 @@ class LiveTokenManager {
 
   async authDeviceCode (deviceCodeCallback) {
     const acquireTime = Date.now()
+    const searchParams = new URLSearchParams({ scope: this.scopes, client_id: this.clientId, response_type: 'device_code' })
+    if (this.xboxSignInScreen) searchParams.append("cmode", "xbox")
     const codeRequest = {
       method: 'post',
-      body: new URLSearchParams({ scope: this.scopes, client_id: this.clientId, response_type: 'device_code' }).toString(),
+      body: searchParams.toString(),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
