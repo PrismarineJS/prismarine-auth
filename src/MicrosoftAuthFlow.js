@@ -71,7 +71,7 @@ class MicrosoftAuthFlow {
 
     if (this.options.flow === 'live' || this.options.flow === 'sisu') {
       if (!this.options.authTitle) throw new Error(`Please specify an "authTitle" in Authflow constructor when using ${this.options.flow} flow`)
-      this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'], cache({ cacheName: this.options.flow, username }), this.options.xboxSignInScreen)
+      this.msa = new LiveTokenManager(this.options.authTitle, ['service::user.auth.xboxlive.com::MBI_SSL'], cache({ cacheName: this.options.flow, username }), this.options.xboxSignInScreen ?? false)
       this.doTitleAuth = true
     } else if (this.options.flow === 'msal') {
       let config = this.options.msalConfig
