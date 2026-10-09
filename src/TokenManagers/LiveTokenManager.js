@@ -80,7 +80,7 @@ class LiveTokenManager {
   async authDeviceCode (deviceCodeCallback) {
     const acquireTime = Date.now()
     const searchParams = new URLSearchParams({ scope: this.scopes, client_id: this.clientId, response_type: 'device_code' })
-    if (this.xboxSignInScreen) searchParams.append("cmode", "xbox")
+    if (this.xboxSignInScreen) searchParams.append('cmode', 'xbox')
     const codeRequest = {
       method: 'post',
       body: searchParams.toString(),
