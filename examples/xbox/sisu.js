@@ -6,7 +6,7 @@ if (process.argv.length !== 4) {
 }
 
 const doAuth = async () => {
-  const flow = new Authflow(process.argv[2], process.argv[3], { authTitle: Titles.MinecraftJava, deviceType: 'Win32', flow: 'sisu' })
+  const flow = new Authflow(process.argv[2], process.argv[3], { authTitle: Titles.MinecraftJava, deviceType: 'Win32', flow: 'sisu', xboxSignInScreen: true })
   const response = await flow.getXboxToken()
   console.log(response)
 }
