@@ -128,7 +128,9 @@ declare module 'prismarine-auth' {
     password?: string
     flow: 'live' | 'msal' | 'sisu'
     // Reset the cache and obtain fresh tokens for everything
-    forceRefresh?: boolean
+    forceRefresh?: boolean,
+    // This allows users to create/view their Xbox profile before continuing to link.
+    xboxSignInScreen?: boolean
   }
 
   export enum Titles {
